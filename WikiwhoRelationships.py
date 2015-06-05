@@ -17,8 +17,12 @@ from structures import Text
 
 from etc.Relation import Relation
 
-from sys import argv,exit
+from sys import path, argv, exit
+path.append("WikiCodeCleaner")
+from WikiCodeCleaner.clean import clean as cleanWikiCode
+
 import getopt
+import re
 
 from copy import deepcopy, copy
 
@@ -677,7 +681,7 @@ def printRevision(revision):
     """Print all text that was introduced in this revision."""
 
     print("Printing authorhship for revision: ", revision.wikipedia_id)
-    text = []
+    textList = []
     for hash_paragraph in revision.ordered_paragraphs:
         p_copy = deepcopy(revision.paragraphs[hash_paragraph])
         paragraph = p_copy.pop(0)
@@ -687,8 +691,24 @@ def printRevision(revision):
 
             for word in sentence.words:
                 if word.revision is revision.wikipedia_id:
-                    text.append(word.value)
-    print(" ".join(text))
+                    textList.append(word.value)
+    text = cleanText(textList)
+    print(text)
+
+def cleanText(textList):
+    """The text is received as a list, which will be split into words separated
+    by spaces. WikiCode and other symbols are being removed using
+    0nse/WikiCodeCleaner.
+    Before it is passed to the Cleaner, it must be compiled again, so that the
+    WikiCode markup is restored: e.g. "[[link]]" instead of "[ [ link ] ]"."""
+    text = " ".join(textList)
+    # symbol surrounded by spaces:
+    symbols = re.compile(r" [^\w] ")
+    text = symbols.sub("", text)
+
+    text = cleanWikiCode(text)
+
+    return text
 
 def printRevisionTrackAppearance(revision):
 
