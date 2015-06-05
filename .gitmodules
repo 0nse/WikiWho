@@ -1,0 +1,3 @@
+[submodule "WikiCodeCleaner"]
+	path = WikiCodeCleaner
+	url = https://github.com/0nse/WikiCodeCleaner.git
