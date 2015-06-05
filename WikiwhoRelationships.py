@@ -561,7 +561,8 @@ def analyseWordsInSentences(unmatched_sentences_curr, unmatched_sentences_prev, 
 
     text_curr = []
     for sentence_curr in unmatched_sentences_curr:
-        splitted = Text.splitIntoWords(sentence_curr.value)
+        cleanedSentence = cleanText(sentence_curr.value)
+        splitted = Text.splitIntoWords(cleanedSentence)
         text_curr.extend(splitted)
         sentence_curr.splitted.extend(splitted)
 
@@ -692,23 +693,13 @@ def printRevision(revision):
             for word in sentence.words:
                 if word.revision is revision.wikipedia_id:
                     textList.append(word.value)
-    text = cleanText(textList)
-    print(text)
+    print(" ".join(textList))
 
-def cleanText(textList):
-    """The text is received as a list, which will be split into words separated
-    by spaces. WikiCode and other symbols are being removed using
-    0nse/WikiCodeCleaner.
-    Before it is passed to the Cleaner, it must be compiled again, so that the
-    WikiCode markup is restored: e.g. "[[link]]" instead of "[ [ link ] ]"."""
-    text = " ".join(textList)
-    # symbol surrounded by spaces:
-    symbols = re.compile(r" [^\w] ")
-    text = symbols.sub("", text)
+def cleanText(text):
+    """WikiCode and other symbols are being removed using
+    0nse/WikiCodeCleaner."""
 
-    text = cleanWikiCode(text)
-
-    return text
+    return cleanWikiCode(text)
 
 def printRevisionTrackAppearance(revision):
 
