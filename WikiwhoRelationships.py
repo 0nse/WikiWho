@@ -7,7 +7,6 @@ Created on Feb 20, 2013
 
 from mw.xml_dump import Iterator as mwIterator
 from difflib import Differ
-from time import time
 
 from structures.Revision import Revision
 from structures.Paragraph import Paragraph
@@ -810,9 +809,7 @@ if __name__ == '__main__':
 
     (file_name, revision, output) = main(argv[1:])
 
-    time1 = time()
     (revisions, order, relations) = analyseArticle(file_name)
-    time2 = time()
 
     if (output == 'r'):
         printRelationships(relations, order)
