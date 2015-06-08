@@ -59,80 +59,82 @@ def analyseArticle(file_name):
     for page in dumpIterator:
         i = 0
 
-        # Iterate over revisions of the article.
-        for revision in page:
-            vandalism = False
+        if page.namespace is 4 and page.title.startswith("Wikipedia:Articles for deletion"):
+            print("Now processing: %s" % page.title)
+            # Iterate over revisions of the article.
+            for revision in page:
+                vandalism = False
 
-            # Update the information about the previous revision.
-            revision_prev = revision_curr
+                # Update the information about the previous revision.
+                revision_prev = revision_curr
 
-            if (revision.sha1 == None):
-                revision.sha1 = Text.calculateHash(revision.text.encode("utf-8"))
+                if (revision.sha1 == None):
+                    revision.sha1 = Text.calculateHash(revision.text.encode("utf-8"))
 
-            if (revision.sha1 in spam):
-                vandalism = True
-
-            #TODO: SPAM detection: DELETION
-            if (revision.comment!= None and revision.comment.find(FLAG) > 0):
-                pass
-            else:
-                if (revision_prev.length > PREVIOUS_LENGTH) and (len(revision.text) < CURR_LENGTH) and (((len(revision.text)-revision_prev.length)/float(revision_prev.length)) <= CHANGE_PERCENTAGE):
+                if (revision.sha1 in spam):
                     vandalism = True
-                    revision_curr = revision_prev
 
-            if (not vandalism):
-                # Information about the current revision.
-                revision_curr = Revision()
-                revision_curr.id = i
-                revision_curr.wikipedia_id = int(revision.id)
-                revision_curr.length = len(revision.text)
-                revision_curr.timestamp = revision.timestamp
-
-                # Relation of the current relation.
-                relation = Relation()
-                relation.revision = int(revision.id)
-                relation.length = len(revision.text)
-
-                # Some revisions don't have contributor.
-                if (revision.contributor != None):
-                    revision_curr.contributor_id = revision.contributor.id
-                    revision_curr.contributor_name = revision.contributor.user_text.encode('utf-8')
-                    relation.author = revision.contributor.user_text.encode('utf-8')
+                #TODO: SPAM detection: DELETION
+                if (revision.comment!= None and revision.comment.find(FLAG) > 0):
+                    pass
                 else:
-                    revision_curr.contributor_id = 'Not Available ' + revision.id
-                    revision_curr.contribur_name = 'Not Available ' + revision.id
-                    relation.author = 'Not Available ' + revision.id
-
-                # Content within the revision.
-                text_curr = revision.text.encode('utf-8')
-                text_curr = text_curr.lower()
-
-                # Perform comparison.
-                vandalism = determineAuthorship(revision_curr, revision_prev, text_curr, relation)
-
+                    if (revision_prev.length > PREVIOUS_LENGTH) and (len(revision.text) < CURR_LENGTH) and (((len(revision.text)-revision_prev.length)/float(revision_prev.length)) <= CHANGE_PERCENTAGE):
+                        vandalism = True
+                        revision_curr = revision_prev
 
                 if (not vandalism):
-                    # Add the current revision with all the information.
-                    revisions.update({revision_curr.wikipedia_id : revision_curr})
-                    relations.update({revision_curr.wikipedia_id : relation})
-                    revision_order.append((revision_curr.wikipedia_id, False))
-                    # Update the fake revision id.
-                    i = i+1
+                    # Information about the current revision.
+                    revision_curr = Revision()
+                    revision_curr.id = i
+                    revision_curr.wikipedia_id = int(revision.id)
+                    revision_curr.length = len(revision.text)
+                    revision_curr.timestamp = revision.timestamp
 
-                    # Calculate the number of tokens in the revision.
-                    total = 0
-                    for p in revision_curr.ordered_paragraphs:
-                        for paragraph_curr in revision_curr.paragraphs[p]:
-                            for hash_sentence_curr in paragraph_curr.sentences.keys():
-                                for sentence_curr in paragraph_curr.sentences[hash_sentence_curr]:
-                                    total = total + len(sentence_curr.words)
-                    revision_curr.total_tokens = total
-                    relation.total_tokens = total
+                    # Relation of the current relation.
+                    relation = Relation()
+                    relation.revision = int(revision.id)
+                    relation.length = len(revision.text)
 
-                else:
-                    revision_order.append((revision_curr.wikipedia_id, True))
-                    revision_curr = revision_prev
-                    spam.append(revision.sha1)
+                    # Some revisions don't have contributor.
+                    if (revision.contributor != None):
+                        revision_curr.contributor_id = revision.contributor.id
+                        revision_curr.contributor_name = revision.contributor.user_text.encode('utf-8')
+                        relation.author = revision.contributor.user_text.encode('utf-8')
+                    else:
+                        revision_curr.contributor_id = 'Not Available ' + revision.id
+                        revision_curr.contribur_name = 'Not Available ' + revision.id
+                        relation.author = 'Not Available ' + revision.id
+
+                    # Content within the revision.
+                    text_curr = revision.text.encode('utf-8')
+                    text_curr = text_curr.lower()
+
+                    # Perform comparison.
+                    vandalism = determineAuthorship(revision_curr, revision_prev, text_curr, relation)
+
+
+                    if (not vandalism):
+                        # Add the current revision with all the information.
+                        revisions.update({revision_curr.wikipedia_id : revision_curr})
+                        relations.update({revision_curr.wikipedia_id : relation})
+                        revision_order.append((revision_curr.wikipedia_id, False))
+                        # Update the fake revision id.
+                        i = i+1
+
+                        # Calculate the number of tokens in the revision.
+                        total = 0
+                        for p in revision_curr.ordered_paragraphs:
+                            for paragraph_curr in revision_curr.paragraphs[p]:
+                                for hash_sentence_curr in paragraph_curr.sentences.keys():
+                                    for sentence_curr in paragraph_curr.sentences[hash_sentence_curr]:
+                                        total = total + len(sentence_curr.words)
+                        revision_curr.total_tokens = total
+                        relation.total_tokens = total
+
+                    else:
+                        revision_order.append((revision_curr.wikipedia_id, True))
+                        revision_curr = revision_prev
+                        spam.append(revision.sha1)
 
     return (revisions, revision_order, relations)
 
@@ -560,6 +562,10 @@ def analyseWordsInSentences(unmatched_sentences_curr, unmatched_sentences_prev, 
 
     text_curr = []
     for sentence_curr in unmatched_sentences_curr:
+        # Naturally, the performance here is bad. However,
+        # applying it after identifying words only from this
+        # revision is difficult as the sentence would have
+        # to be properly reconstructed:
         cleanedSentence = cleanText(sentence_curr.value)
         splitted = Text.splitIntoWords(cleanedSentence)
         text_curr.extend(splitted)
