@@ -390,9 +390,14 @@ def analyseSentencesInParagraphs(unmatched_paragraphs_curr, unmatched_paragraphs
 
     # Iterate over the unmatched paragraphs of the current revision.
     for paragraph_curr in unmatched_paragraphs_curr:
+        # Naturally, the performance here is bad. However,
+        # applying it after identifying words only from this
+        # revision is difficult as the sentence would have
+        # to be properly reconstructed:
+        cleanedParagraph = cleanText(paragraph_curr.value)
 
         # Split the current paragraph into sentences.
-        sentences = Text.splitIntoSentences(paragraph_curr.value)
+        sentences = Text.splitIntoSentences(cleanedParagraph)
 
         # Iterate over the sentences of the current paragraph
         for sentence in sentences:
@@ -562,12 +567,7 @@ def analyseWordsInSentences(unmatched_sentences_curr, unmatched_sentences_prev, 
 
     text_curr = []
     for sentence_curr in unmatched_sentences_curr:
-        # Naturally, the performance here is bad. However,
-        # applying it after identifying words only from this
-        # revision is difficult as the sentence would have
-        # to be properly reconstructed:
-        cleanedSentence = cleanText(sentence_curr.value)
-        splitted = Text.splitIntoWords(cleanedSentence)
+        splitted = Text.splitIntoWords(sentence_curr.value)
         text_curr.extend(splitted)
         sentence_curr.splitted.extend(splitted)
 
