@@ -8,20 +8,20 @@ Created on Feb 20, 2013
 from mw.xml_dump import Iterator as mwIterator
 from difflib import Differ
 
-from structures.Revision import Revision
+from structures import Text
 from structures.Paragraph import Paragraph
+from structures.Revision import Revision
 from structures.Sentence import Sentence
 from structures.Word import Word
-from structures import Text
 
 from etc.Relation import Relation
 
-from sys import path, argv, exit
-path.append("WikiCodeCleaner")
-from WikiCodeCleaner.clean import clean as cleanWikiCode
-
 import getopt
 import re
+from sys import path, argv, exit
+
+path.append("WikiCodeCleaner")
+from WikiCodeCleaner.clean import clean as cleanWikiCode
 
 from copy import deepcopy, copy
 
@@ -390,14 +390,9 @@ def analyseSentencesInParagraphs(unmatched_paragraphs_curr, unmatched_paragraphs
 
     # Iterate over the unmatched paragraphs of the current revision.
     for paragraph_curr in unmatched_paragraphs_curr:
-        # Naturally, the performance here is bad. However,
-        # applying it after identifying words only from this
-        # revision is difficult as the sentence would have
-        # to be properly reconstructed:
-        cleanedParagraph = cleanText(paragraph_curr.value)
 
         # Split the current paragraph into sentences.
-        sentences = Text.splitIntoSentences(cleanedParagraph)
+        sentences = Text.splitIntoSentences(paragraph_curr.value)
 
         # Iterate over the sentences of the current paragraph
         for sentence in sentences:
@@ -698,7 +693,30 @@ def printRevision(revision):
             for word in sentence.words:
                 if word.revision is revision.wikipedia_id:
                     textList.append(word.value)
-    print(" ".join(textList))
+    text = mergeText(textList)
+    print(cleanText(text))
+
+def mergeText(textList):
+    if not textList:
+        return ""
+
+    word = textList[0]
+    text = word + " " if doesWordContainSymbols(word) else word
+
+    for word in textList[1:]:
+        if doesWordContainSymbols(word):
+            text = text.strip()
+            text += word
+        else:
+            text += word + " "
+
+    return text.strip()
+
+def doesWordContainSymbols(word):
+    # this is string.punctuation without ' and " and `:
+    punctuation = "!#$%&()*+,-./:;<=>?@[\\]^_{|}~"
+    return any(c in word for c in punctuation)
+
 
 def cleanText(text):
     """WikiCode and other symbols are being removed using
