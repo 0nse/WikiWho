@@ -706,15 +706,14 @@ def printRevision(revision):
             for word in sentence.words:
                 if word.revision is revision.wikipedia_id:
                     textList.append(word.value)
-    text = mergeText(textList)
-    print(cleanText(text))
+    print(cleanText(textList))
 
 def mergeText(textList):
     if not textList:
         return ""
 
     word = textList[0]
-    text = word + " " if doesWordContainSymbols(word) else word
+    text = word if doesWordContainSymbols(word) else word + " "
 
     for word in textList[1:]:
         if doesWordContainSymbols(word):
@@ -731,9 +730,10 @@ def doesWordContainSymbols(word):
     return any(c in word for c in punctuation)
 
 
-def cleanText(text):
+def cleanText(textList):
     """WikiCode and other symbols are being removed using
     0nse/WikiCodeCleaner."""
+    text = mergeText(textList)
 
     return cleanWikiCode(text)
 
