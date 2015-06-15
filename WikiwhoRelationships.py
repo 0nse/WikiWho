@@ -43,7 +43,6 @@ CURR_LENGTH = 1000
 FLAG = "move"
 UNMATCHED_PARAGRAPH = 0.0
 WORD_DENSITY = 10
-WORD_LEN = 100
 
 def sortRevisions(page):
     """ Iterates over all page revisions and sorts them ascendingly by their ID.
