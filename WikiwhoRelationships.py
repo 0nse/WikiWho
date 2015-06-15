@@ -43,6 +43,18 @@ UNMATCHED_PARAGRAPH = 0.0
 WORD_DENSITY = 10
 WORD_LEN = 100
 
+def sortRevisions(page):
+    """ Iterates over all page revisions and sorts them ascendingly by their ID.
+    Wikipedia dumps should have them already sorted in the first place. However,
+    I stumbled upon one (rare?) export where this was not the case. As the order
+    is crucial to the WikiWho algorithm, we are better safe than sorry.
+    """
+    revisions = []
+    for revision in page:
+        revisions.append(revision)
+    revisions.sort(key = lambda x: x.id)
+    return revisions
+
 def analyseArticle(file_name):
     # Container of relationships.
     relations = {}
@@ -62,7 +74,8 @@ def analyseArticle(file_name):
         if page.namespace is 4 and page.title.startswith("Wikipedia:Articles for deletion"):
             print("Now processing: %s" % page.title)
             # Iterate over revisions of the article.
-            for revision in page:
+            sortedRevisions = sortRevisions(page)
+            for revision in sortedRevisions:
                 vandalism = False
 
                 # Update the information about the previous revision.
