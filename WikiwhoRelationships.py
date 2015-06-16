@@ -19,6 +19,7 @@ from structures.Word import Word
 from etc.Relation import Relation
 
 import getopt
+import os
 import re
 from sys import path, argv, exit
 
@@ -56,7 +57,26 @@ def sortRevisions(page):
     revisions.sort(key = lambda x: x.id)
     return revisions
 
-def analyseArticle(file_name):
+def extractFileNamesFromPath(path):
+    """ Returns a list of file names that are identified under path.
+    If path is a directory, its contents will be returned non-recursively. Thus,
+    all non-directories with the suffix ".xml" will be returned. The list will be
+    sorted alphabetically in ascending manner.
+    If path identifies a file, it will be returned as a list.
+    When path does neither, a FileNotFoundError is thrown.
+    """
+    if os.path.isdir(path):
+        directoryContents = os.listdir(path)
+        # filter for XML files only.
+        fileNames = [f for f in directoryContents if f.lower().endswith(".xml")]
+        fileNames.sort()
+    elif os.path.isfile(path):
+        fileNames = [path]
+    else:
+        raise FileNotFoundError('No file or directory could be found in "%s"' % path)
+    return fileNames
+
+def analyseArticles(path):
     # Container of relationships.
     relations = {}
 
@@ -65,89 +85,94 @@ def analyseArticle(file_name):
     revision_prev = Revision()
     text_curr = None
 
-    # Access the file.
-    dumpIterator = mwIterator.from_file(open(file_name))
+    for fileName in extractFileNamesFromPath(path):
+        # Access the file.
+        dumpIterator = mwIterator.from_file(open(fileName))
 
-    # Iterate over the pages.
-    for page in dumpIterator:
-        i = 0
+        # Iterate over the pages.
+        for page in dumpIterator:
+            i = 0
 
-        if page.namespace is 4 and page.title.startswith("Wikipedia:Articles for deletion"):
-            print("Now processing: %s" % page.title)
-            # Iterate over revisions of the article.
-            sortedRevisions = sortRevisions(page)
-            for revision in sortedRevisions:
-                vandalism = False
+            if page.namespace is 4 and page.title.startswith("Wikipedia:Articles for deletion"):
+                print("Now processing: %s" % page.title)
+                # Iterate over revisions of the article.
+                sortedRevisions = sortRevisions(page)
+                for revision in sortedRevisions:
+                    vandalism = False
 
-                # Update the information about the previous revision.
-                revision_prev = revision_curr
+                    # Update the information about the previous revision.
+                    revision_prev = revision_curr
 
-                if (revision.sha1 == None):
-                    revision.sha1 = Text.calculateHash(revision.text)
+                    if (revision.sha1 == None):
+                        revision.sha1 = Text.calculateHash(revision.text)
 
-                if (revision.sha1 in spam):
-                    vandalism = True
-
-                #TODO: SPAM detection: DELETION
-                if (revision.comment!= None and revision.comment.find(FLAG) > 0):
-                    pass
-                else:
-                    if (revision_prev.length > PREVIOUS_LENGTH) and (len(revision.text) < CURR_LENGTH) and (((len(revision.text)-revision_prev.length)/float(revision_prev.length)) <= CHANGE_PERCENTAGE):
+                    if (revision.sha1 in spam):
                         vandalism = True
-                        revision_curr = revision_prev
 
-                if (not vandalism):
-                    # Information about the current revision.
-                    revision_curr = Revision()
-                    revision_curr.id = i
-                    revision_curr.wikipedia_id = int(revision.id)
-                    revision_curr.length = len(revision.text)
-                    revision_curr.timestamp = revision.timestamp
-
-                    # Relation of the current relation.
-                    relation = Relation()
-                    relation.revision = int(revision.id)
-                    relation.length = len(revision.text)
-
-                    # Some revisions don't have contributor.
-                    if (revision.contributor != None):
-                        revision_curr.contributor_id = revision.contributor.id
-                        revision_curr.contributor_name = revision.contributor.user_text
-                        relation.author = revision.contributor.user_text
+                    #TODO: SPAM detection: DELETION
+                    if (revision.comment!= None and revision.comment.find(FLAG) > 0):
+                        pass
                     else:
-                        revision_curr.contributor_id = 'Not Available ' + revision.id
-                        revision_curr.contribur_name = 'Not Available ' + revision.id
-                        relation.author = 'Not Available ' + revision.id
-
-                    # Content within the revision.
-                    text_curr = revision.text.lower()
-
-                    # Perform comparison.
-                    vandalism = determineAuthorship(revision_curr, revision_prev, text_curr, relation)
-
+                        if (
+                            ( revision_prev.length > PREVIOUS_LENGTH )
+                            and ( len(revision.text) < CURR_LENGTH )
+                            and ( ( (len(revision.text) - revision_prev.length) / float(revision_prev.length) ) <= CHANGE_PERCENTAGE )
+                           ):
+                            vandalism = True
+                            revision_curr = revision_prev
 
                     if (not vandalism):
-                        # Add the current revision with all the information.
-                        revisions.update({revision_curr.wikipedia_id : revision_curr})
-                        relations.update({revision_curr.wikipedia_id : relation})
-                        revision_order.append((revision_curr.wikipedia_id, False))
-                        # Update the fake revision id.
-                        i = i+1
+                        # Information about the current revision.
+                        revision_curr = Revision()
+                        revision_curr.id = i
+                        revision_curr.wikipedia_id = int(revision.id)
+                        revision_curr.length = len(revision.text)
+                        revision_curr.timestamp = revision.timestamp
 
-                        # Calculate the number of tokens in the revision.
-                        total = 0
-                        for p in revision_curr.ordered_paragraphs:
-                            for paragraph_curr in revision_curr.paragraphs[p]:
-                                for hash_sentence_curr in paragraph_curr.sentences.keys():
-                                    for sentence_curr in paragraph_curr.sentences[hash_sentence_curr]:
-                                        total = total + len(sentence_curr.words)
-                        revision_curr.total_tokens = total
-                        relation.total_tokens = total
+                        # Relation of the current relation.
+                        relation = Relation()
+                        relation.revision = int(revision.id)
+                        relation.length = len(revision.text)
 
-                    else:
-                        revision_order.append((revision_curr.wikipedia_id, True))
-                        revision_curr = revision_prev
-                        spam.append(revision.sha1)
+                        # Some revisions don't have contributor.
+                        if (revision.contributor != None):
+                            revision_curr.contributor_id = revision.contributor.id
+                            revision_curr.contributor_name = revision.contributor.user_text
+                            relation.author = revision.contributor.user_text
+                        else:
+                            revision_curr.contributor_id = 'Not Available ' + revision.id
+                            revision_curr.contribur_name = 'Not Available ' + revision.id
+                            relation.author = 'Not Available ' + revision.id
+
+                        # Content within the revision.
+                        text_curr = revision.text.lower()
+
+                        # Perform comparison.
+                        vandalism = determineAuthorship(revision_curr, revision_prev, text_curr, relation)
+
+
+                        if (not vandalism):
+                            # Add the current revision with all the information.
+                            revisions.update({revision_curr.wikipedia_id : revision_curr})
+                            relations.update({revision_curr.wikipedia_id : relation})
+                            revision_order.append((revision_curr.wikipedia_id, False))
+                            # Update the fake revision id.
+                            i = i+1
+
+                            # Calculate the number of tokens in the revision.
+                            total = 0
+                            for p in revision_curr.ordered_paragraphs:
+                                for paragraph_curr in revision_curr.paragraphs[p]:
+                                    for hash_sentence_curr in paragraph_curr.sentences.keys():
+                                        for sentence_curr in paragraph_curr.sentences[hash_sentence_curr]:
+                                            total = total + len(sentence_curr.words)
+                            revision_curr.total_tokens = total
+                            relation.total_tokens = total
+
+                        else:
+                            revision_order.append((revision_curr.wikipedia_id, True))
+                            revision_curr = revision_prev
+                            spam.append(revision.sha1)
 
     return (revisions, revision_order, relations)
 
@@ -559,7 +584,6 @@ def analyseSentencesInParagraphs(unmatched_paragraphs_curr, unmatched_paragraphs
 
     return (unmatched_sentences_curr, unmatched_sentences_prev, matched_sentences_prev, total_sentences)
 
-
 def analyseWordsInSentences(unmatched_sentences_curr, unmatched_sentences_prev, revision_curr, possible_vandalism, relation):
 
     matched_words_prev = []
@@ -683,13 +707,11 @@ def analyseWordsInSentences(unmatched_sentences_curr, unmatched_sentences_prev, 
 
     return (matched_words_prev, possible_vandalism)
 
-
 def printAllRevisions(order, revisions):
 
     for (revision, vandalism) in order:
         if not(vandalism):
             printRevision(revisions[revision])
-
 
 def printRevision(revision):
     """Print all text that was introduced in this revision."""
@@ -728,7 +750,6 @@ def doesWordContainSymbols(word):
     # this is string.punctuation without ' and " and `:
     punctuation = "!#$%&()*+,-./:;<=>?@[\\]^_{|}~"
     return any(c in word for c in punctuation)
-
 
 def cleanText(textList):
     """WikiCode and other symbols are being removed using
@@ -803,8 +824,6 @@ def printJSON(relations, order):
         relation = relations[revision]
         print(str(relation.revision) + "\t" + str(relation.author) + "\t" + str(relation.deleted) + "\t" + str(relation.revert) + "\t" + str(relation.reintroduced) + "\t" + str(relation.redeleted) + "\t" + str(relation.added)  + "\t" +  str(relation.total_tokens))
 
-
-
 def main(my_argv):
     inputfile = ''
     revision = None
@@ -828,7 +847,7 @@ def main(my_argv):
             print("WikiWho: An algorithm for detecting attribution of authorship in revisioned content")
             print()
             print('Usage: Wikiwho.py -i <inputfile> [-rev <revision_id>]')
-            print("-i --ifile File to analyze")
+            print("-i --ifile File or directory to analyze")
             print("-o --type of output: <a> for authorship, <r> for relations")
             print("-r --revision Revision to analyse. If not specified, the last revision is printed.")
             print("-h --help This help.")
@@ -844,9 +863,9 @@ def main(my_argv):
 
 if __name__ == '__main__':
 
-    (file_name, revision, output) = main(argv[1:])
+    (path, revision, output) = main(argv[1:])
 
-    (revisions, order, relations) = analyseArticle(file_name)
+    (revisions, order, relations) = analyseArticles(path)
 
     if (output == 'r'):
         printRelationships(relations, order)
