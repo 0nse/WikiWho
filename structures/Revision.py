@@ -29,10 +29,6 @@ class Revision(object):
 
     def to_dict(self):
         revision = {}
-        #json_revision.update({'id' : revisions[revision].wikipedia_id})
-        #revision.update({'author' : {'id' : self.contributor_id, 'name' : self.contributor_name}})
-        #json_revision.update({'length' : revisions[revision].length})
-        #json_revision.update({'paragraphs' : revisions[revision].ordered_paragraphs})
         revision.update({'obj' : []})
         for paragraph_hash in self.ordered_paragraphs:
             p = []
