@@ -11,28 +11,16 @@ following link:
 
 ## Running WikiWho
 
-python WikiwhoRelationships.py
+`python WikiWho.py`
 
-parameters:
-
--i \[source_file_name.xml\] (complete history dump XML of one article. If this parameter identifies a directory, all XML-files in said directory will be processed.)
-
--o [a | r] --> what type of output to produce --> a=authorship for all tokens of a revision | r= interactions for every revision with each other revision in the past. I.e., this will list you all revisions and for each type of interaction we defined (delete, undelete, reintro, ..) the revisions that were target of that interaction and the number of tokens that interaction included. We will soon provide code that will spit put a more aggregated version of this as an editor-editor network. Yet, from the output available right now, you can already construct such a network yourself by summing up the positive and/or negative interactions between two editors over the whole revision history or a part of it.
-
--r [\<revid\> | all] --> what revision to show. revID or "all" for -o a, revID only for -o r
+**Parameters**:
+* `-i [source_file_name or directory]` (complete history dump of articles, either as XML, bzip2, gzip, LZMA or 7zip. Alternatively, if a directory is specified, all files residing in it, matching one of the supported file types, will be processed.)
+* `-r [<revid> | all]` (what revision to show. revID or "all". If this parameter is missing, `-r all` will be assumed.)
 
 
-example A:
-
-python WikiwhoRelationships.py -i Randomarticle.xml -o a -r 5
-
-gives authorship for all tokens of revision 5 (has to be an actual revision id) of Randomarticle
-
-example B:
-
-python WikiwhoRelationships.py -i Randomarticle.xml -o r -r 5
-
-gives the edit interactions produced at every revision to other revisions, up to revision number 5 (has to be an actual revision id) of Randomarticle
+**Example**:
+* `python WikiwhoRelationships.py -i Randomarticle.xml -r 5`
+Returns the edit interactions produced at every revision up to revision number 5 (has to be an actual revision id) of `Randomarticle.xml`.
 
 ## Licence
 This work is released under a GPLv3 licence. It is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.

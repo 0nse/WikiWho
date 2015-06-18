@@ -834,52 +834,40 @@ def printJSON(relations, order):
 def main(my_argv):
     inputfile = ''
     revision = None
-    output = ''
 
-    if (len(my_argv) <= 3):
-        try:
+    try:
+        if (len(my_argv) <= 2):
             opts, _ = getopt.getopt(my_argv,"i:",["ifile="])
-        except getopt.GetoptError:
-            print('Usage: Wikiwho.py -i <inputfile> -o <output> [-rev <revision_id>]')
-            exit(2)
-    else:
-        try:
-            opts, _ = getopt.getopt(my_argv,"i:o:r:",["ifile=","revision=", "output="])
-        except getopt.GetoptError:
-            print('Usage: Wikiwho.py -i <inputfile> -o output [-rev <revision_id>]')
-            exit(2)
+        else:
+            opts, _ = getopt.getopt(my_argv,"i:r:",["ifile=","revision="])
+    except getopt.GetoptError:
+        print('Usage: Wikiwho.py -i <inputfile> [-r <revision_id>]')
+        exit(2)
 
     for opt, arg in opts:
         if opt in ('-h', "--help"):
-            print("WikiWho: An algorithm for detecting attribution of authorship in revisioned content")
+            print("WikiWho DiscussionParser: An algorithm for extracting posts on Wikipedia page deletion discussions.")
             print()
-            print('Usage: Wikiwho.py -i <inputfile> [-rev <revision_id>]')
+            print('Usage: WikiWho.py -i <inputfile> [-rev <revision_id>]')
             print("-i --ifile File or directory to analyze")
             print("-o --type of output: <a> for authorship, <r> for relations")
-            print("-r --revision Revision to analyse. If not specified, the last revision is printed.")
             print("-h --help This help.")
             exit()
         elif opt in ("-i", "--ifile"):
             inputfile = arg
         elif opt in ("-r", "--revision"):
             revision = arg
-        elif opt in ("-o", "--output"):
-            output = arg
 
-    return (inputfile,revision,output)
+    return (inputfile,revision)
 
 if __name__ == '__main__':
 
-    (path, revision, output) = main(argv[1:])
+    (path, revision) = main(argv[1:])
 
     (revisions, order, relations) = analyseArticles(path)
 
-    if (output == 'r'):
-        printRelationships(relations, order)
-
-    if (output == 'a'):
-        print("revision", revision)
-        if (revision == 'all'):
-            printAllRevisions(order, revisions)
-        else:
-            printRevision(revisions[int(revision)])
+    print("revision", revision)
+    if (not revision or revision == 'all'):
+        printAllRevisions(order, revisions)
+    else:
+        printRevision(revisions[int(revision)])
