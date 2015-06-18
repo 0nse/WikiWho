@@ -1,5 +1,5 @@
 # WikiWho
-An algorithm to identify authorship and editor interactions in Wiki revisioned content.
+An algorithm for extracting posts on Wikipedia page deletion discussions.
 
 ## Installation Requirements
 WikiWho has been tested on Arch Linux running Python 3.4.3.
