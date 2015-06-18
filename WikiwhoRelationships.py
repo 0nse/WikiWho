@@ -8,6 +8,8 @@ Created on Feb 20, 2013
 '''
 
 from mw.xml_dump import Iterator as mwIterator
+from mw.xml_dump.functions import EXTENSIONS as mwExtensions
+from mw.xml_dump.functions import open_file
 from difflib import Differ
 
 from structures import Text
@@ -60,15 +62,20 @@ def sortRevisions(page):
 def extractFileNamesFromPath(path):
     """ Returns a list of file names that are identified under path.
     If path is a directory, its contents will be returned non-recursively. Thus,
-    all non-directories with the suffix ".xml" will be returned. The list will be
-    sorted alphabetically in ascending manner.
+    all non-directories with the suffix of a supported datatype will be returned.
+    The list will be sorted alphabetically in ascending manner.
     If path identifies a file, it will be returned as a list.
     When path does neither, a FileNotFoundError is thrown.
     """
     if os.path.isdir(path):
         directoryContents = os.listdir(path)
+        fileNames = []
         # filter for XML files only.
-        fileNames = [f for f in directoryContents if f.lower().endswith(".xml")]
+        for supportedFiletype in mwExtensions.keys():
+            fileNames.extend(os.path.join(path, f)
+                               for f in directoryContents
+                               if f.lower().endswith("." + supportedFiletype)
+                            )
         fileNames.sort()
     elif os.path.isfile(path):
         fileNames = [path]
@@ -87,7 +94,7 @@ def analyseArticles(path):
 
     for fileName in extractFileNamesFromPath(path):
         # Access the file.
-        dumpIterator = mwIterator.from_file(open(fileName))
+        dumpIterator = mwIterator.from_file(open_file(fileName))
 
         # Iterate over the pages.
         for page in dumpIterator:
