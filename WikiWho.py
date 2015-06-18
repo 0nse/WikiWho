@@ -72,7 +72,7 @@ def extractFileNamesFromPath(path):
         raise FileNotFoundError('No file or directory could be found in "%s"' % path)
     return fileNames
 
-def processDeletionDiscussion(page, i):
+def processDeletionDiscussion(page):
     # Revisions to compare.
     revision_curr = Revision()
     revision_prev = Revision()
@@ -108,7 +108,6 @@ def processDeletionDiscussion(page, i):
         if (not vandalism):
             # Information about the current revision.
             revision_curr = Revision()
-            revision_curr.id = i
             revision_curr.wikipedia_id = int(revision.id)
             revision_curr.length = len(revision.text)
             revision_curr.timestamp = revision.timestamp
@@ -140,7 +139,6 @@ def processDeletionDiscussion(page, i):
                 revisions.update({revision_curr.wikipedia_id : revision_curr})
                 revision_order.append((revision_curr.wikipedia_id, False))
                 # Update the fake revision id.
-                i = i+1
 
                 # Calculate the number of tokens in the revision.
                 total = 0
@@ -165,10 +163,9 @@ def analyseDumps(path):
 
         # Iterate over the pages.
         for page in dumpIterator:
-            i = 0
 
             if page.namespace is 4 and page.title.startswith("Wikipedia:Articles for deletion"):
-                i = processDeletionDiscussion(page, i)
+                processDeletionDiscussion(page)
     return (revisions, revision_order)
 
 def main(my_argv):
