@@ -2,20 +2,20 @@ from functions.analyseParagraphsInRevision import analyseParagraphsInRevision
 from functions.analyseSentencesInParagraphs import analyseSentencesInParagraphs
 from functions.analyseWordsInSentences import analyseWordsInSentences
 
-# Spam detection variable.
-UNMATCHED_PARAGRAPH = 0.0
-
-# Containers for unmatched paragraphs and sentences in both revisions.
-unmatched_sentences_curr = []
-unmatched_sentences_prev = []
-matched_sentences_prev = []
-matched_words_prev = []
-possible_vandalism = False
-vandalism = False
-
-paragraphs_ht = {}
-
 def determineAuthorship(revision_curr, revision_prev, text_curr, relation, revisions):
+    matched_words_prev = []
+
+    # Spam detection variable.
+    UNMATCHED_PARAGRAPH = 0.0
+
+    # Containers for unmatched paragraphs and sentences in both revisions.
+    unmatched_sentences_curr = []
+    unmatched_sentences_prev = []
+    matched_sentences_prev = []
+    possible_vandalism = False
+    vandalism = False
+
+    paragraphs_ht = {}
 
     # Analysis of the paragraphs in the current revision.
     (unmatched_paragraphs_curr, unmatched_paragraphs_prev, matched_paragraphs_prev, paragraphs_ht) = analyseParagraphsInRevision(revision_curr, revision_prev, text_curr, relation, revisions)

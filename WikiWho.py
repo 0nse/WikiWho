@@ -25,7 +25,7 @@ from sys import argv, exit
 
 # Container of revisions.
 revisions = {}
-revision_order = []
+revisions_order = []
 
 # Hash tables.
 spam = []
@@ -137,7 +137,7 @@ def processDeletionDiscussion(page):
             if (not vandalism):
                 # Add the current revision with all the information.
                 revisions.update({revision_curr.wikipedia_id : revision_curr})
-                revision_order.append((revision_curr.wikipedia_id, False))
+                revisions_order.append((revision_curr.wikipedia_id, False))
                 # Update the fake revision id.
 
                 # Calculate the number of tokens in the revision.
@@ -151,12 +151,12 @@ def processDeletionDiscussion(page):
                 relation.total_tokens = total
 
             else:
-                revision_order.append((revision_curr.wikipedia_id, True))
+                revisions_order.append((revision_curr.wikipedia_id, True))
                 revision_curr = revision_prev
                 spam.append(revision.sha1)
 
 
-def analyseDumps(path):
+def analyseDumps(path, revision):
     for fileName in extractFileNamesFromPath(path):
         # Access the file.
         dumpIterator = mwIterator.from_file(open_file(fileName))
@@ -166,7 +166,14 @@ def analyseDumps(path):
 
             if page.namespace is 4 and page.title.startswith("Wikipedia:Articles for deletion"):
                 processDeletionDiscussion(page)
-    return (revisions, revision_order)
+
+                if (not revision or revision == 'all'):
+                    printAllRevisions(revisions_order, revisions)
+                else:
+                    try:
+                        printRevision(revisions[int(revision)])
+                    except:
+                        pass
 
 def main(my_argv):
     inputfile = ''
@@ -194,16 +201,10 @@ def main(my_argv):
         elif opt in ("-r", "--revision"):
             revision = arg
 
-    return (inputfile,revision)
+    return (inputfile, revision)
 
 if __name__ == '__main__':
 
     (path, revision) = main(argv[1:])
 
-    (revisions, order) = analyseDumps(path)
-
-    print("revision", revision)
-    if (not revision or revision == 'all'):
-        printAllRevisions(order, revisions)
-    else:
-        printRevision(revisions[int(revision)])
+    analyseDumps(path, revision)
