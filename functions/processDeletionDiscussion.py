@@ -10,7 +10,7 @@ PREVIOUS_LENGTH = 1000
 CURR_LENGTH = 1000
 FLAG = "move"
 
-def processDeletionDiscussion(page):
+def processDeletionDiscussion(page, revisions, revisions_order):
     # Hash table.
     spam = []
 
@@ -18,10 +18,6 @@ def processDeletionDiscussion(page):
     revision_curr = Revision()
     revision_prev = Revision()
     text_curr = None
-
-    # Container of revisions.
-    revisions = {}
-    revisions_order = []
 
     print("Now processing: %s" % page.title)
     # Iterate over revisions of the article.
@@ -84,7 +80,6 @@ def processDeletionDiscussion(page):
                 # Add the current revision with all the information.
                 revisions.update({revision_curr.wikipedia_id : revision_curr})
                 revisions_order.append((revision_curr.wikipedia_id, False))
-                # Update the fake revision id.
 
                 # Calculate the number of tokens in the revision.
                 total = 0
