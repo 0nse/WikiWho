@@ -73,7 +73,8 @@ def processDeletionDiscussion(page):
                 relation.author = 'Not Available ' + revision.id
 
             # Content within the revision.
-            text_curr = revision.text.lower()
+            text_curr = removeAfDText(revision.text)
+            text_curr = text_curr.lower()
 
             # Perform comparison.
             vandalism = determineAuthorship(revision_curr, revision_prev, text_curr, relation, revisions)
@@ -114,3 +115,11 @@ def sortRevisions(page):
     sortedRevisions.sort(key = lambda x: x.id)
 
     return sortedRevisions
+
+def removeAfDText(text):
+    afdHeader = """:\'\'The following discussion is an archived debate of the proposed deletion of the article below. <span style="color:red">\'\'\'Please do not modify it.\'\'\'</span>  Subsequent comments should be made on the appropriate discussion page (such as the article\'s [[Help:Using talk pages|talk page]] or in a [[Wikipedia:Deletion review|deletion review]]).  No further edits should be made to this page.\'\'"""
+    afdFooter = """:\'\'The above discussion is preserved as an archive of the debate.  <span style="color:red">\'\'\'Please do not modify it.\'\'\'</span> Subsequent comments should be made on the appropriate discussion page (such as the article\'s [[Help:Using talk pages|talk page]] or in a [[Wikipedia:Deletion review|deletion review]]). No further edits should be made to this page."""
+
+    text = text.replace(afdHeader, "")
+    text = text.replace(afdFooter, "")
+    return text
