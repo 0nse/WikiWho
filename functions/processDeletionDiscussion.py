@@ -1,3 +1,5 @@
+import re
+
 from etc.Relation import Relation
 
 from functions.determineAuthorship import determineAuthorship
@@ -114,7 +116,10 @@ def sortRevisions(page):
 def removeAfDText(text):
     afdHeader = """:\'\'The following discussion is an archived debate of the proposed deletion of the article below. <span style="color:red">\'\'\'Please do not modify it.\'\'\'</span>  Subsequent comments should be made on the appropriate discussion page (such as the article\'s [[Help:Using talk pages|talk page]] or in a [[Wikipedia:Deletion review|deletion review]]).  No further edits should be made to this page.\'\'"""
     afdFooter = """:\'\'The above discussion is preserved as an archive of the debate.  <span style="color:red">\'\'\'Please do not modify it.\'\'\'</span> Subsequent comments should be made on the appropriate discussion page (such as the article\'s [[Help:Using talk pages|talk page]] or in a [[Wikipedia:Deletion review|deletion review]]). No further edits should be made to this page."""
+    resultRe = re.compile("The result was '''[^']+'''.")
 
     text = text.replace(afdHeader, "")
     text = text.replace(afdFooter, "")
+    text = resultRe.sub("", text)
+
     return text
