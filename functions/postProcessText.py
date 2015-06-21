@@ -1,12 +1,18 @@
+import re
 from sys import path
 
 path.append("../WikiCodeCleaner")
 from WikiCodeCleaner.clean import clean as cleanWikiCode
 
-def cleanText(textList):
+def cleanText(textList, userName):
     """WikiCode and other symbols are being removed using
-    0nse/WikiCodeCleaner."""
+    0nse/WikiCodeCleaner. Prior to that though, user links
+    to the author of this revision will be removed as they
+    are most likely just part of her signature."""
     text = mergeText(textList)
+
+    userSelfLink = re.compile("\[\[user:" + userName.lower() + "[^\]]+\]\]")
+    text = userSelfLink.sub("", text)
 
     return cleanWikiCode(text)
 

@@ -23,4 +23,4 @@ def printRevision(revision):
             for word in sentence.words:
                 if word.revision is revision.wikipedia_id:
                     textList.append(word.value)
-    print(cleanText(textList))
+    print(cleanText(textList, revision.contributor_name))
