@@ -12,7 +12,7 @@ PREVIOUS_LENGTH = 1000
 CURR_LENGTH = 1000
 FLAG = "move"
 
-def processDeletionDiscussion(page, revisions, revisions_order):
+def processDeletionDiscussion(page, revisions):
     # Hash table.
     spam = []
 
@@ -20,6 +20,9 @@ def processDeletionDiscussion(page, revisions, revisions_order):
     revision_curr = Revision()
     revision_prev = Revision()
     text_curr = None
+
+    # Container of current revision order.
+    revisions_order = []
 
     print("Now processing: %s" % page.title)
     # Iterate over revisions of the article.
@@ -37,7 +40,7 @@ def processDeletionDiscussion(page, revisions, revisions_order):
             vandalism = True
 
         #TODO: SPAM detection: DELETION
-        if (revision.comment!= None and revision.comment.find(FLAG) > 0):
+        if (revision.comment != None and revision.comment.find(FLAG) > 0):
             pass
         else:
             if (

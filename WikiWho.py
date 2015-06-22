@@ -45,7 +45,6 @@ def extractFileNamesFromPath(path):
 def analyseDumps(path, revision):
     # Container of revisions.
     revisions = {}
-    revisions_order = []
 
     for fileName in extractFileNamesFromPath(path):
         # Access the file.
@@ -58,7 +57,7 @@ def analyseDumps(path, revision):
                and page.title.startswith("Wikipedia:Articles for deletion/") \
                and not page.title.startswith("Wikipedia:Articles for deletion/Old/") \
                and page.title != "Wikipedia:Articles for deletion/Old":
-                (revisions_order, revisions) = processDeletionDiscussion(page, revisions, revisions_order)
+                (revisions_order, revisions) = processDeletionDiscussion(page, revisions)
 
                 if (not revision or revision == 'all'):
                     printAllRevisions(revisions_order, revisions)
