@@ -57,7 +57,7 @@ def analyseDumps(path, revision):
             if page.namespace is 4 \
                and page.title.startswith("Wikipedia:Articles for deletion/") \
                and not page.title.startswith("Wikipedia:Articles for deletion/Old/") \
-               and page.title is not "Wikipedia:Articles for deletion/Old":
+               and page.title != "Wikipedia:Articles for deletion/Old":
                 (revisions_order, revisions) = processDeletionDiscussion(page, revisions, revisions_order)
 
                 if (not revision or revision == 'all'):
