@@ -43,9 +43,6 @@ def extractFileNamesFromPath(path):
     return fileNames
 
 def analyseDumps(path, revision):
-    # Container of revisions.
-    revisions = {}
-
     for fileName in extractFileNamesFromPath(path):
         # Access the file.
         dumpIterator = mwIterator.from_file(open_file(fileName))
@@ -57,7 +54,7 @@ def analyseDumps(path, revision):
                and page.title.startswith("Wikipedia:Articles for deletion/") \
                and not page.title.startswith("Wikipedia:Articles for deletion/Old/") \
                and page.title != "Wikipedia:Articles for deletion/Old":
-                (revisions_order, revisions) = processDeletionDiscussion(page, revisions)
+                (revisions_order, revisions) = processDeletionDiscussion(page)
 
                 if (not revision or revision == 'all'):
                     printAllRevisions(revisions_order, revisions)

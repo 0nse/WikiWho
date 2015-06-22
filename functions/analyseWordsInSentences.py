@@ -5,10 +5,10 @@ from difflib import Differ
 # Spam detection.
 WORD_DENSITY = 10
 
-matched_words_prev = []
-unmatched_words_prev = []
-
 def analyseWordsInSentences(unmatched_sentences_curr, unmatched_sentences_prev, revision_curr, possible_vandalism, revisions):
+
+    matched_words_prev = []
+    unmatched_words_prev = []
 
     # Split sentences into words.
     text_prev = []

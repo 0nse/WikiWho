@@ -10,7 +10,7 @@ PREVIOUS_LENGTH = 1000
 CURR_LENGTH = 1000
 FLAG = "move"
 
-def processDeletionDiscussion(page, revisions):
+def processDeletionDiscussion(page):
     # Hash table.
     spam = []
 
@@ -19,8 +19,9 @@ def processDeletionDiscussion(page, revisions):
     revision_prev = Revision()
     text_curr = None
 
-    # Container of current revision order.
+    # Container of current revision (order).
     revisions_order = []
+    revisions = {}
 
     print("Now processing: %s" % page.title)
     # Iterate over revisions of the article.
