@@ -1,7 +1,5 @@
 import re
 
-from etc.Relation import Relation
-
 from functions.determineAuthorship import determineAuthorship
 
 from structures.Revision import Revision
@@ -58,27 +56,20 @@ def processDeletionDiscussion(page, revisions):
             revision_curr.length = len(revision.text)
             revision_curr.timestamp = revision.timestamp
 
-            # Relation of the current relation.
-            relation = Relation()
-            relation.revision = int(revision.id)
-            relation.length = len(revision.text)
-
             # Some revisions don't have contributor.
             if (revision.contributor != None):
                 revision_curr.contributor_id = revision.contributor.id
                 revision_curr.contributor_name = revision.contributor.user_text
-                relation.author = revision.contributor.user_text
             else:
                 revision_curr.contributor_id = 'Not Available ' + revision.id
                 revision_curr.contribur_name = 'Not Available ' + revision.id
-                relation.author = 'Not Available ' + revision.id
 
             # Content within the revision.
             text_curr = removeAfDText(revision.text)
             text_curr = text_curr.lower()
 
             # Perform comparison.
-            vandalism = determineAuthorship(revision_curr, revision_prev, text_curr, relation, revisions)
+            vandalism = determineAuthorship(revision_curr, revision_prev, text_curr, revisions)
 
 
             if (not vandalism):
@@ -94,7 +85,6 @@ def processDeletionDiscussion(page, revisions):
                             for sentence_curr in paragraph_curr.sentences[hash_sentence_curr]:
                                 total = total + len(sentence_curr.words)
                 revision_curr.total_tokens = total
-                relation.total_tokens = total
 
             else:
                 revisions_order.append((revision_curr.wikipedia_id, True))

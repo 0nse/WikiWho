@@ -8,7 +8,7 @@ WORD_DENSITY = 10
 matched_words_prev = []
 unmatched_words_prev = []
 
-def analyseWordsInSentences(unmatched_sentences_curr, unmatched_sentences_prev, revision_curr, possible_vandalism, relation, revisions):
+def analyseWordsInSentences(unmatched_sentences_curr, unmatched_sentences_prev, revision_curr, possible_vandalism, revisions):
 
     # Split sentences into words.
     text_prev = []
@@ -48,7 +48,6 @@ def analyseWordsInSentences(unmatched_sentences_curr, unmatched_sentences_prev, 
                 word_curr.value = word
                 sentence_curr.words.append(word_curr)
                 word_curr.used.append(revision_curr.wikipedia_id)
-                relation.added = relation.added + 1
 
         return (matched_words_prev, possible_vandalism)
 
@@ -88,16 +87,6 @@ def analyseWordsInSentences(unmatched_sentences_curr, unmatched_sentences_prev, 
                                 matched_words_prev.append(word_prev)
                                 diff[pos] = ''
                                 word_prev.deleted.append(revision_curr.wikipedia_id)
-                                if (revisions[word_prev.revision].contributor_id != revision_curr.contributor_id):
-                                    if (word_prev.revision in relation.deleted.keys()):
-                                        relation.deleted.update({word_prev.revision : relation.deleted[word_prev.revision] + 1 })
-                                    else:
-                                        relation.deleted.update({word_prev.revision : 1 })
-                                else:
-                                    if (word_prev.revision in relation.self_deleted.keys()):
-                                        relation.self_deleted.update({word_prev.revision : relation.self_deleted[word_prev.revision] + 1 })
-                                    else:
-                                        relation.self_deleted.update({word_prev.revision : 1 })
                                 break
 
                     elif (word_diff[0] == '+'):
@@ -109,7 +98,6 @@ def analyseWordsInSentences(unmatched_sentences_curr, unmatched_sentences_prev, 
                         word_curr.revision = revision_curr.wikipedia_id
                         word_curr.used.append(revision_curr.wikipedia_id)
                         sentence_curr.words.append(word_curr)
-                        relation.added = relation.added + 1
 
                         diff[pos] = ''
                         pos = len(diff)+1
@@ -124,6 +112,5 @@ def analyseWordsInSentences(unmatched_sentences_curr, unmatched_sentences_prev, 
                 word_curr.revision = revision_curr.wikipedia_id
                 word_curr.used.append(revision_curr.wikipedia_id)
                 sentence_curr.words.append(word_curr)
-                relation.added = relation.added + 1
 
     return (matched_words_prev, possible_vandalism)

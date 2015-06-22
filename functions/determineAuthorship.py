@@ -2,7 +2,7 @@ from functions.analyseParagraphsInRevision import analyseParagraphsInRevision
 from functions.analyseSentencesInParagraphs import analyseSentencesInParagraphs
 from functions.analyseWordsInSentences import analyseWordsInSentences
 
-def determineAuthorship(revision_curr, revision_prev, text_curr, relation, revisions):
+def determineAuthorship(revision_curr, revision_prev, text_curr, revisions):
     matched_words_prev = []
 
     # Spam detection variable.
@@ -18,11 +18,11 @@ def determineAuthorship(revision_curr, revision_prev, text_curr, relation, revis
     paragraphs_ht = {}
 
     # Analysis of the paragraphs in the current revision.
-    (unmatched_paragraphs_curr, unmatched_paragraphs_prev, matched_paragraphs_prev, paragraphs_ht) = analyseParagraphsInRevision(revision_curr, revision_prev, text_curr, relation, revisions)
+    (unmatched_paragraphs_curr, unmatched_paragraphs_prev, matched_paragraphs_prev, paragraphs_ht) = analyseParagraphsInRevision(revision_curr, revision_prev, text_curr, revisions)
 
     # Analysis of the sentences in the unmatched paragraphs of the current revision.
     if (len(unmatched_paragraphs_curr)>0):
-        (unmatched_sentences_curr, unmatched_sentences_prev, matched_sentences_prev, sentences_ht) = analyseSentencesInParagraphs(unmatched_paragraphs_curr, unmatched_paragraphs_prev, revision_curr, revision_prev, relation, revisions)
+        (unmatched_sentences_curr, unmatched_sentences_prev, matched_sentences_prev, sentences_ht) = analyseSentencesInParagraphs(unmatched_paragraphs_curr, unmatched_paragraphs_prev, revision_curr, revision_prev, revisions)
 
         #TODO: SPAM detection
         if (len(unmatched_paragraphs_curr)/float(len(revision_curr.ordered_paragraphs)) > UNMATCHED_PARAGRAPH):
@@ -30,7 +30,7 @@ def determineAuthorship(revision_curr, revision_prev, text_curr, relation, revis
 
         # Analysis of words in unmatched sentences (diff of both texts).
         if (len(unmatched_sentences_curr)>0):
-            (matched_words_prev, vandalism) = analyseWordsInSentences(unmatched_sentences_curr, unmatched_sentences_prev, revision_curr, possible_vandalism, relation, revisions)
+            (matched_words_prev, vandalism) = analyseWordsInSentences(unmatched_sentences_curr, unmatched_sentences_prev, revision_curr, possible_vandalism, revisions)
 
     if (len(unmatched_paragraphs_curr) == 0):
         for paragraph in unmatched_paragraphs_prev:
@@ -43,46 +43,7 @@ def determineAuthorship(revision_curr, revision_prev, text_curr, relation, revis
     for unmatched_sentence in unmatched_sentences_prev:
         for word_prev in unmatched_sentence.words:
             if not(word_prev.matched):
-                for elem in word_prev.deleted:
-                    if (elem != revision_curr.wikipedia_id) and (elem in revisions.keys()):
-                        if (revisions[elem].contributor_id != revision_curr.contributor_id):
-                            if (elem in relation.redeleted.keys()):
-                                relation.redeleted.update({elem : relation.redeleted[elem] + 1})
-                            else:
-                                relation.redeleted.update({elem : 1})
-                        else:
-                            if (elem in relation.self_redeleted.keys()):
-                                relation.self_redeleted.update({elem : relation.self_redeleted[elem] + 1})
-                            else:
-                                relation.self_redeleted.update({elem : 1})
-
-                # Revert: deleting something that somebody else reintroduced.
-                for elem in word_prev.freq:
-                    if (elem != revision_curr.wikipedia_id) and (elem in revisions.keys()):
-                        if (revisions[elem].contributor_id != revision_curr.contributor_id):
-                            if (elem in relation.revert.keys()):
-                                relation.revert.update({elem: relation.revert[elem] +1})
-                            else:
-                                relation.revert.update({elem: 1})
-                        else:
-                            if (elem in relation.self_revert.keys()):
-                                relation.self_revert.update({elem: relation.self_revert[elem] +1})
-                            else:
-                                relation.self_revert.update({elem: 1})
-
                 word_prev.deleted.append(revision_curr.wikipedia_id)
-                if (revisions[word_prev.revision].contributor_id != revision_curr.contributor_id):
-                    if (word_prev.revision in relation.deleted.keys()):
-                        relation.deleted.update({word_prev.revision : relation.deleted[word_prev.revision] + 1 })
-                    else:
-                        relation.deleted.update({word_prev.revision : 1 })
-                else:
-                    if (word_prev.revision in relation.self_deleted.keys()):
-                        relation.self_deleted.update({word_prev.revision : relation.self_deleted[word_prev.revision] + 1 })
-                    else:
-                        relation.self_deleted.update({word_prev.revision : 1 })
-
-
 
     # Reset matched structures from old revisions.
     for matched_paragraph in matched_paragraphs_prev:

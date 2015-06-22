@@ -1,7 +1,7 @@
 from structures import Text
 from structures.Paragraph import Paragraph
 
-def analyseParagraphsInRevision(revision_curr, revision_prev, text_curr, relation, revisions):
+def analyseParagraphsInRevision(revision_curr, revision_prev, text_curr, revisions):
     # Hash table.
     paragraphs_ht = {}
 
@@ -62,37 +62,6 @@ def analyseParagraphsInRevision(revision_curr, revision_prev, text_curr, relatio
 
                                 if (revision_prev.wikipedia_id not in word_prev.used):
                                     word_prev.freq.append(revision_curr.wikipedia_id)
-
-                                # Revert: reintroducing something that somebody else deleted,
-                                # (and was not used in the previous revision)
-                                if (revision_prev.wikipedia_id not in word_prev.used):
-
-                                    for elem in word_prev.deleted:
-                                        if (elem in revisions.keys()):
-                                            if (revisions[elem].contributor_id != revision_curr.contributor_id):
-                                                if (elem in relation.revert.keys()):
-                                                    relation.revert.update({elem : relation.revert[elem] + 1})
-                                                else:
-                                                    relation.revert.update({elem : 1})
-                                            else:
-                                                if (elem in relation.self_revert.keys()):
-                                                    relation.self_revert.update({elem : relation.self_revert[elem] + 1})
-                                                else:
-                                                    relation.self_revert.update({elem : 1})
-
-
-                                if (revision_prev.wikipedia_id not in word_prev.used):
-                                    if (elem in revisions.keys()):
-                                        if (revisions[word_prev.revision].contributor_id != revision_curr.contributor_id):
-                                            if (word_prev.revision in relation.reintroduced.keys()):
-                                                relation.reintroduced.update({word_prev.revision : relation.reintroduced[word_prev.revision] + 1 })
-                                            else:
-                                                relation.reintroduced.update({word_prev.revision : 1 })
-                                        else:
-                                            if (word_prev.revision in relation.self_reintroduced.keys()):
-                                                relation.self_reintroduced.update({word_prev.revision : relation.self_reintroduced[word_prev.revision] + 1})
-                                            else:
-                                                relation.self_reintroduced.update({word_prev.revision : 1})
 
                     addParagraphs(revision_curr, revision_prev, hash_curr, paragraph_prev)
                     break

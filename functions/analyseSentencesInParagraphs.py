@@ -1,7 +1,7 @@
 from structures import Text
 from structures.Sentence import Sentence
 
-def analyseSentencesInParagraphs(unmatched_paragraphs_curr, unmatched_paragraphs_prev, revision_curr, revision_prev, relation, revisions):
+def analyseSentencesInParagraphs(unmatched_paragraphs_curr, unmatched_paragraphs_prev, revision_curr, revision_prev, revisions):
     # Hash table.
     sentences_ht = {}
 
@@ -98,37 +98,6 @@ def analyseSentencesInParagraphs(unmatched_paragraphs_curr, unmatched_paragraphs
 
                                 if (revision_prev.wikipedia_id not in word_prev.used):
                                     word_prev.freq.append(revision_curr.wikipedia_id)
-
-                                # Revert: reintroducing something that somebody else deleted
-                                if (revision_prev.wikipedia_id not in word_prev.used):
-                                    for elem in word_prev.deleted:
-
-                                        if (elem in revisions.keys()):
-                                            if (revisions[elem].contributor_id != revision_curr.contributor_id):
-                                                if (elem in relation.revert.keys()):
-                                                    relation.revert.update({elem : relation.revert[elem] + 1})
-                                                else:
-                                                    relation.revert.update({elem : 1})
-                                            else:
-                                                if (elem in relation.self_revert.keys()):
-                                                    relation.self_revert.update({elem : relation.self_revert[elem] + 1})
-                                                else:
-                                                    relation.self_revert.update({elem : 1})
-
-                                if (revision_prev.wikipedia_id not in word_prev.used):
-                                    if (elem in revisions.keys()):
-                                        if (revisions[word_prev.revision].contributor_id != revision_curr.contributor_id):
-                                            if (word_prev.revision in relation.reintroduced.keys()):
-                                                relation.reintroduced.update({word_prev.revision : relation.reintroduced[word_prev.revision] + 1 })
-                                            else:
-                                                relation.reintroduced.update({word_prev.revision : 1 })
-                                        else:
-                                            if (word_prev.revision in relation.self_reintroduced.keys()):
-                                                relation.self_reintroduced.update({word_prev.revision : relation.self_reintroduced[word_prev.revision] + 1})
-                                            else:
-                                                relation.self_reintroduced.update({word_prev.revision : 1})
-
-
 
                             # Add the sentence information to the paragraph.
                             if (hash_curr in paragraph_curr.sentences.keys()):
