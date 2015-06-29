@@ -67,6 +67,7 @@ def processDeletionDiscussion(page):
 
             # Content within the revision.
             text_curr = removeAfDText(revision.text)
+            text_curr = preprocessAbbreviations(text_curr)
             text_curr = text_curr.lower()
 
             # Perform comparison.
@@ -108,6 +109,10 @@ def sortRevisions(page):
     return sortedRevisions
 
 def removeAfDText(text):
+    """ Although AfD headers and footers are obviously templates, the dumps do not
+    contain them as marked up template but as the text from them being resolved.
+    Thus, the text has to be manually removed in a preprocessing step.
+    """
     afdHeader = """:\'\'The following discussion is an archived debate of the proposed deletion of the article below. <span style="color:red">\'\'\'Please do not modify it.\'\'\'</span>  Subsequent comments should be made on the appropriate discussion page (such as the article\'s [[Help:Using talk pages|talk page]] or in a [[Wikipedia:Deletion review|deletion review]]).  No further edits should be made to this page.\'\'"""
     afdFooter = """:\'\'The above discussion is preserved as an archive of the debate.  <span style="color:red">\'\'\'Please do not modify it.\'\'\'</span> Subsequent comments should be made on the appropriate discussion page (such as the article\'s [[Help:Using talk pages|talk page]] or in a [[Wikipedia:Deletion review|deletion review]]). No further edits should be made to this page."""
     resultRe = re.compile("The result was '''[^']+'''.")
@@ -115,5 +120,33 @@ def removeAfDText(text):
     text = text.replace(afdHeader, "")
     text = text.replace(afdFooter, "")
     text = resultRe.sub("", text)
+
+    return text
+
+def preprocessAbbreviations(text):
+    """ This method replaces the commonly used abbreviations i.e., e.g., n.b. and
+    PS. with "i-e", "e-g", "n-b" and "p-s" respectively to prevent later steps
+    splitting them into the words "i", "e", "g", "n", "b", "p" and "s". At least
+    for "i.e.", this is an important step, considering we want to inspect the
+    influence the use of the word "i" (and "you") has.
+    If these abbreviations are written without intermediate dot (e.g. "eg."),
+    they will be already interpreted as one word.
+    """
+    # %s may be surrounded by symbols and probably ends with a dot. However, it
+    # cannot be extracted in a re if no symbol separates it from an alphabetic
+    # letter. This is to prevent mismatches as part of real words.
+    abbreviationNotPartOfAWord = r"(?i)[^a-z,A-Z](%s\.{0,1})[^a-z,A-Z]"
+    # We allow a single space after the first dot because mobile phone keyboards
+    # often add them (e.g. SwiftKey) automatically.
+    ieRe = re.compile(abbreviationNotPartOfAWord % "i\. {0,1}e")
+    egRe = re.compile(abbreviationNotPartOfAWord % "e\. {0,1}g")
+    nbRe = re.compile(abbreviationNotPartOfAWord % "n\. {0,1}b")
+    psRe = re.compile(abbreviationNotPartOfAWord % "p\. {0,1}s")
+
+    # All substitutes are space-padded so that words are not merged together.
+    text = ieRe.sub(" i-e ", text)
+    text = egRe.sub(" e-g ", text)
+    text = nbRe.sub(" n-b ", text)
+    text = psRe.sub(" p-s ", text)
 
     return text
