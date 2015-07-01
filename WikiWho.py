@@ -57,10 +57,10 @@ def analyseDumps(path, revision):
                 (revisions_order, revisions) = processDeletionDiscussion(page)
 
                 if (not revision or revision == 'all'):
-                    printAllRevisions(revisions_order, revisions)
+                    writeAllRevisions(revisions_order, revisions)
                 else:
                     try:
-                        printRevision(revisions[int(revision)])
+                        writeRevision(revisions[int(revision)])
                     except:
                         pass
 

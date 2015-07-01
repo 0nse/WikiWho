@@ -83,3 +83,4 @@ target/
 *.swp
 venv/
 *.xml
+*.csv
