@@ -68,6 +68,7 @@ def processDeletionDiscussion(page):
             # Content within the revision.
             text_curr = removeAfDText(revision.text)
             text_curr = preprocessAbbreviations(text_curr)
+            text_curr = useEnDashForParentheticalExpression(text_curr)
             text_curr = text_curr.lower()
 
             # Perform comparison.
@@ -150,3 +151,13 @@ def preprocessAbbreviations(text):
     text = psRe.sub(" p-s ", text)
 
     return text
+
+def useEnDashForParentheticalExpression(text):
+    """ structures.Text.splitIntoWords(text) will split regular dashes into a
+    separate word. Thus a sentence "I like - dare I say love - you" would be
+    split into ["I","like","-","dare","I","say","love","-","you"]. When
+    merging the text later on, we would end up with "like-dare" and in the end
+    with "likedare".
+    To prevent this, we replace the dashes, which are used as parenthetical
+    expressions with an en dash."""
+    return text.replace(" - ", " – ")
