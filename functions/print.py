@@ -1,5 +1,4 @@
 import csv
-from copy import deepcopy, copy
 
 from functions.postProcessText import cleanText
 
@@ -17,11 +16,11 @@ def writeRevision(revision):
     """
     textList = []
     for hash_paragraph in revision.ordered_paragraphs:
-        p_copy = deepcopy(revision.paragraphs[hash_paragraph])
-        paragraph = p_copy.pop(0)
+        para = revision.paragraphs[hash_paragraph]
+        paragraph = para[-1]
 
         for hash_sentence in paragraph.ordered_sentences:
-            sentence = paragraph.sentences[hash_sentence].pop(0)
+            sentence = paragraph.sentences[hash_sentence][-1]
 
             textList.extend( [word.value for word in sentence.words if word.revision is revision.wikipedia_id] )
 
