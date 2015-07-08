@@ -15,12 +15,13 @@ following link:
 
 **Parameters**:
 * `-i [source_file_name or directory]` (complete history dump of articles, either as XML, bzip2, gzip, LZMA or 7zip. Alternatively, if a directory is specified, all files residing in it, matching one of the supported file types, will be processed.)
+* `-b [block log]` (the block log constructed from the Wikipedia data dumps' logging dump through [0nse/WikiParser](https://github.com/0nse/wikiparser))
 * `-r [<revid> | all]` (what revision to show. revID or "all". If this parameter is missing, `-r all` will be assumed.)
 
 
 **Example**:
-* `python WikiwhoRelationships.py -i Randomarticle.xml -r 5`
-Returns the edit interactions produced at every revision up to revision number 5 (has to be an actual revision id) of `Randomarticle.xml`.
+* `python WikiwhoRelationships.py -i randomArticle.xml -b blockLog.csv -r 5`
+Returns the edit interactions produced at every revision up to revision number 5 (has to be an actual revision id) of `randomArticle.xml`.
 
 ## Licence
 This work is released under a GPLv3 licence. It is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.

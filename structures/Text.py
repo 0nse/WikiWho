@@ -4,6 +4,7 @@
 Created on Feb 20, 2013
 
 @author: maribelacosta
+@author: Michael Ruster
 '''
 
 import hashlib

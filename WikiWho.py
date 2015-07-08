@@ -5,6 +5,7 @@ Created on Feb 20, 2013
 
 @author: Maribel Acosta
 @author: Fabian Floeck
+@author: Michael Ruster
 '''
 
 from mw.xml_dump import Iterator as mwIterator
@@ -42,7 +43,12 @@ def extractFileNamesFromPath(path):
         raise FileNotFoundError('No file or directory could be found in "%s"' % path)
     return fileNames
 
-def analyseDumps(path, revision):
+def analyseDumpsAndOutputWriteToDisk(path, revision, blocks):
+    """ Load dump file(s) from path and iterate over their pages and their
+    revisions. All revisions will be matched against the blocks dict to
+    calculate how many seconds after the creation of the revision, the
+    author was blocked (if s/he was blocked at all afterwards).
+    """
     for fileName in extractFileNamesFromPath(path):
         # Access the file.
         dumpIterator = mwIterator.from_file(open_file(fileName))
@@ -57,43 +63,33 @@ def analyseDumps(path, revision):
                 (revisions_order, revisions) = processDeletionDiscussion(page)
 
                 if (not revision or revision == 'all'):
-                    writeAllRevisions(revisions_order, revisions)
+                    writeAllRevisions(revisions_order, revisions, blocks)
                 else:
                     try:
-                        writeRevision(revisions[int(revision)])
+                        writeRevision(revisions[int(revision)], blocks)
                     except:
                         pass
 
-def main(my_argv):
-    inputfile = ''
-    revision = None
-
-    try:
-        if (len(my_argv) <= 2):
-            opts, _ = getopt.getopt(my_argv,"i:",["ifile="])
-        else:
-            opts, _ = getopt.getopt(my_argv,"i:r:",["ifile=","revision="])
-    except getopt.GetoptError:
-        print('Usage: Wikiwho.py -i <inputfile> [-r <revision_id>]')
-        exit(2)
-
-    for opt, arg in opts:
-        if opt in ('-h', "--help"):
-            print("WikiWho DiscussionParser: An algorithm for extracting posts on Wikipedia page deletion discussions.")
-            print()
-            print('Usage: WikiWho.py -i <inputfile> [-rev <revision_id>]')
-            print("-i --ifile File or directory to analyse")
-            print("-h --help This help.")
-            exit()
-        elif opt in ("-i", "--ifile"):
-            inputfile = arg
-        elif opt in ("-r", "--revision"):
-            revision = arg
-
-    return (inputfile, revision)
-
 if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser(description="WikiWho DiscussionParser: An algorithm for extracting posts on Wikipedia page deletion discussions and checking when the post's author has last been blocked.",
+                                     epilog="""
+                                     WikiWho DiscussionParser, Copyright (C) 2015 Fabian Flöck, Maribel Acosta, Michael Ruster (based on  wikiwho by Fabian Flöck, Maribel Acosta).
+                                     WikiWho DiscussionParser comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions. For more information, see the LICENSE and README.md files this program should have been distributed with.
+                                     """)
 
-    (path, revision) = main(argv[1:])
+    parser.add_argument('-i', dest='pageDumpPath', required=True,
+                        help='Path to the Wikipedia page(s) dump (XML, 7z, bz2…).')
+    parser.add_argument('-b', dest='blockLog',  type=argparse.FileType('r'), required=True,
+                        help='Path to the block log file produced wit 0nse/WikiParser (CSV).'),
+    parser.add_argument('-r', dest='revision', default='all', nargs='?',
+                        help='Use this parameter if you are only interested in a subset of revisions (revision ID must exist in data).')
 
-    analyseDumps(path, revision)
+    args = parser.parse_args()
+
+    print("Loading blocked users and the associated blocking timestamps into memory.", end=' ')
+    import timeUntilBlocked
+    blocks = timeUntilBlocked.createBlockedUsersDict(args.blockLog)
+    print("Done.")
+
+    analyseDumpsAndOutputWriteToDisk(args.pageDumpPath, args.revision, blocks)

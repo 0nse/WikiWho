@@ -1,3 +1,10 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+'''
+Created on Jun 18, 2015
+
+@author: Michael Ruster
+'''
 import re
 from sys import path
 

@@ -1,3 +1,10 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+'''
+@author: Maribel Acosta
+@author: Fabian Floeck
+@author: Michael Ruster
+'''
 from structures import Text
 from structures.Sentence import Sentence
 

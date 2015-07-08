@@ -1,3 +1,10 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+'''
+@author: Maribel Acosta
+@author: Fabian Floeck
+@author: Michael Ruster
+'''
 import re
 
 from functions.determineAuthorship import determineAuthorship

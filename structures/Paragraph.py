@@ -13,11 +13,11 @@ class Paragraph(object):
 
 
     def __init__(self):
-        self.hash_value = ''       # The hash value of the paragraph.
-        self.value = ''      # The text of the paragraph.
-        self.sentences = {}  # Dictionary of sentences in the paragraph. It is a dictionary of the form {sentence_hash : Sentence}
+        self.hash_value = ''        # The hash value of the paragraph.
+        self.value = ''             # The text of the paragraph.
+        self.sentences = {}         # Dictionary of sentences in the paragraph. It is a dictionary of the form {sentence_hash : Sentence}
         self.ordered_sentences = [] # List with the hash of the sentences, ordered by hash appeareances.
-        self.matched = False # Flag.
+        self.matched = False        # Flag.
 
     def __repr__(self):
         return str(id(self))
@@ -37,12 +37,3 @@ class Paragraph(object):
         paragraph.update({'obj' : obj_sentences})
 
         return paragraph
-
-        #str(hex(id(self)))
-        #return "<'{0}'.'{1}' object at '{2}'>".format(self.__class__.__module__, self.__class__.__name__, hex(id(self)))
-
-
-
-
-
-

@@ -1,3 +1,10 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+'''
+@author: Maribel Acosta
+@author: Fabian Floeck
+@author: Michael Ruster
+'''
 from functions.analyseParagraphsInRevision import analyseParagraphsInRevision
 from functions.analyseSentencesInParagraphs import analyseSentencesInParagraphs
 from functions.analyseWordsInSentences import analyseWordsInSentences

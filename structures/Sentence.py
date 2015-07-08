@@ -32,6 +32,3 @@ class Sentence(object):
 
         sentence.update({'obj' : obj_words})
         return sentence
-
-
-

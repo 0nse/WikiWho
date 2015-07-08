@@ -11,7 +11,6 @@ class Revision(object):
     classdocs
     '''
 
-
     def __init__(self):
         self.id = 0                  # Fake sequential id. Starts in 0.
         self.wikipedia_id = 0        # Wikipedia revision id.
@@ -37,4 +36,3 @@ class Revision(object):
             revision['obj'].append(p)
 
         return revision
-

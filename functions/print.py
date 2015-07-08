@@ -1,13 +1,21 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+'''
+@author: Maribel Acosta
+@author: Fabian Floeck
+@author: Michael Ruster
+'''
 import csv
 
 from functions.postProcessText import cleanText
+import timeUntilBlocked
 
-def writeAllRevisions(order, revisions):
+def writeAllRevisions(order, revisions, blocks):
     for (revision, vandalism) in order:
         if not(vandalism):
-            writeRevision(revisions[revision])
+            writeRevision(revisions[revision], blocks)
 
-def writeRevision(revision):
+def writeRevision(revision, blocks):
     """This method writes a revision to a CSV file. This features the
     author and timestamp but most importantly the text introduced in
     this revision. Said text will be cleaned so that markup is removed.
@@ -28,6 +36,7 @@ def writeRevision(revision):
 
     # only print a line when this revision introduced new text
     if text.strip():
+        secondsToBlock = timeUntilBlocked.calculateSecondsUntilNextBlock(blocks, revision.contributor_name, revision.timestamp)
         print("Writing authorhship for revision %s to disk." % revision.wikipedia_id)
         with open('deletionRevisions.csv', 'a', newline='') as csvFile:
             spamwriter = csv.writer(csvFile, delimiter='\t',
@@ -36,4 +45,5 @@ def writeRevision(revision):
                                  revision.contributor_id,
                                  revision.contributor_name,
                                  revision.wikipedia_id,
-                                 text])
+                                 text,
+                                 secondsToBlock])

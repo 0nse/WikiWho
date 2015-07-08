@@ -35,4 +35,3 @@ class Word(object):
         word.update({str(self.revision) : self.value})
 
         return word
-
