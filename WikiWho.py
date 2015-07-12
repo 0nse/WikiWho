@@ -50,6 +50,7 @@ def analyseDumpsAndOutputWriteToDisk(path, revision, blocks):
     author was blocked (if s/he was blocked at all afterwards).
     """
     for fileName in extractFileNamesFromPath(path):
+        print('Now processing the file "%s".' % fileName)
         # Access the file.
         dumpIterator = mwIterator.from_file(open_file(fileName))
 
