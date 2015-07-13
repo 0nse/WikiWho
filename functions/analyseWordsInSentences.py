@@ -27,9 +27,9 @@ def analyseWordsInSentences(unmatched_sentences_curr, unmatched_sentences_prev, 
 
     text_curr = []
     for sentence_curr in unmatched_sentences_curr:
-        splitted = Text.splitIntoWords(sentence_curr.value)
-        text_curr.extend(splitted)
-        sentence_curr.splitted.extend(splitted)
+        split = Text.splitIntoWords(sentence_curr.value)
+        text_curr.extend(split)
+        sentence_curr.split.extend(split)
 
     # Edit consists of removing sentences, not adding new content.
     if (len(text_curr) == 0):
@@ -47,7 +47,7 @@ def analyseWordsInSentences(unmatched_sentences_curr, unmatched_sentences_prev, 
 
     if (len(text_prev) == 0):
         for sentence_curr in unmatched_sentences_curr:
-            for word in sentence_curr.splitted:
+            for word in sentence_curr.split:
                 word_curr = Word()
                 word_curr.author_id = revision_curr.contributor_id
                 word_curr.author_name = revision_curr.contributor_name
@@ -64,7 +64,7 @@ def analyseWordsInSentences(unmatched_sentences_curr, unmatched_sentences_prev, 
 
     for sentence_curr in unmatched_sentences_curr:
 
-        for word in sentence_curr.splitted:
+        for word in sentence_curr.split:
             curr_matched = False
             pos = 0
 

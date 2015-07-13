@@ -13,9 +13,9 @@ class Sentence(object):
     '''
 
     def __init__(self):
-        self.hash_value = ''       # The hash value of the sentence.
+        self.hash_value = '' # The hash value of the sentence.
         self.value = ''      # The sentence (simple text).
-        self.splitted = []   # List of strings composing the sentence.
+        self.split = []      # List of strings composing the sentence.
         self.words = []      # List of words in the sentence. It is an array of Word.
         self.matched = False # Flag.
 
