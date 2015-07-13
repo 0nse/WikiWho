@@ -12,6 +12,10 @@ def createBlockedUsersDict(inputFile):
     writes it to disk according to outputFile. Please be aware that, if
     writing permissions are given for outputFile, it will blindly overwrite
     everything you love.
+    This method naïvely parses the date in ISO 8601 format. It refrains from
+    using python-dateutil. However, this has no impact on the data processing
+    as the time differences between block and revision timestamps do not
+    change.
     """
     import csv
 
@@ -20,11 +24,17 @@ def createBlockedUsersDict(inputFile):
         blockLogReader = csv.reader(inputFile, delimiter='\t', quotechar='"')
 
         for [timestamp, blockedUserName, _, _, _] in blockLogReader:
-            timestamp = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
             try:
+                timestamp = datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%SZ')
+            except: # missing seconds:
+                timestamp = datetime.strptime(timestamp, '%Y-%m-%dT%H:%MZ')
+            # Here, we are lacking TZ data. As this is similar to WikiParser's
+            # knowledge, we remove it to be able to compare both timestamps:
+            timestamp = timestamp.replace(tzinfo = None)
+            try: # exists:
                 timestamps = blocks[blockedUserName]
                 timestamps.append(timestamp)
-            except KeyError:
+            except KeyError: # create new:
                 blocks[blockedUserName] = [timestamp]
 
     for timestamps in blocks.values():
@@ -38,7 +48,6 @@ def labelRevisions(blocks, inputFile, outputFile):
     """ Writes outputFile with an additional column, which contains a time
     difference in seconds between when this revision was created and when
     the author was next blocked.
-    sorted in ascending order (oldest timestamp first).
 
     @see calculateSecondsUntilNextBlock(blocks, userName, timestamp)
     """
@@ -51,6 +60,7 @@ def labelRevisions(blocks, inputFile, outputFile):
     with inputFile:
         for [timestamp, userId, userName, revisionId, text] in revisionReader:
 
+            import pdb; pdb.set_trace()
             secondsToBlock = calculateSecondsUntilNextBlock(blocks, userName, timestamp)
 
             revisionWriter.writerow([timestamp,
@@ -67,6 +77,7 @@ def calculateSecondsUntilNextBlock(blocks, userName, timestamp):
     If the author has not been blocked at all (or only at times earlier
     than the current revision, the value will be -1.
     Important: [timestamps, userName] = blocks, blocks' timestamps must be
+    sorted in ascending order (oldest timestamp first).
     """
     timeDifferenceInSeconds = -1
 
