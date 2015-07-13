@@ -75,7 +75,7 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description="WikiWho DiscussionParser: An algorithm for extracting posts on Wikipedia page deletion discussions and checking when the post's author has last been blocked.",
                                      epilog="""
-                                     WikiWho DiscussionParser, Copyright (C) 2015 Fabian Flöck, Maribel Acosta, Michael Ruster (based on  wikiwho by Fabian Flöck, Maribel Acosta).
+                                     WikiWho DiscussionParser, Copyright (C) 2015 Fabian Flöck, Maribel Acosta, Michael Ruster (based on wikiwho by Fabian Flöck, Maribel Acosta).
                                      WikiWho DiscussionParser comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions. For more information, see the LICENSE and README.md files this program should have been distributed with.
                                      """)
 
