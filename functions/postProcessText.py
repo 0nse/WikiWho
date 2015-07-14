@@ -8,7 +8,7 @@ Created on Jun 18, 2015
 import re
 from sys import path
 
-path.append("../WikiCodeCleaner")
+path.append('../WikiCodeCleaner')
 from WikiCodeCleaner.clean import clean as cleanWikiCode
 
 def cleanText(textList, userName):
@@ -18,8 +18,16 @@ def cleanText(textList, userName):
     are most likely just part of her signature."""
     text = mergeText(textList)
 
-    userSelfLink = re.compile("\[\[user:" + userName.lower() + "[^\]]+\]\]")
-    text = userSelfLink.sub("", text)
+    try:
+        userSelfLink = re.compile("\[\[user:" + userName.lower() + "[^\]]+\]\]")
+        text = userSelfLink.sub("", text)
+    except AttributeError:
+        # There exist pages with deleted users and therefore
+        # there is no username. Example:
+        # Articles for deletion/Jonathan Sadko (ID: 2665745)
+        #
+        # We clear the text so that it will not be printed:
+        text = ''
 
     return cleanWikiCode(text)
 
@@ -28,21 +36,21 @@ def mergeText(textList):
     by a space except for symbols which are padded together with
     their previous and next."""
     if not textList:
-        return ""
+        return ''
 
     word = textList[0]
-    text = word if doesWordContainSymbols(word) else word + " "
+    text = word if doesWordContainSymbols(word) else word + ' '
 
     for word in textList[1:]:
         if doesWordContainSymbols(word):
             text = text.strip()
             text += word
         else:
-            text += word + " "
+            text += word + ' '
 
     return text.strip()
 
 def doesWordContainSymbols(word):
     # this is string.punctuation without ' and " and `:
-    punctuation = "!#$%&()*+,-./:;<=>?@[\\]^_{|}~"
+    punctuation = '!#$%&()*+,-./:;<=>?@[\\]^_{|}~'
     return any(c in word for c in punctuation)
