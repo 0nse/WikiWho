@@ -57,10 +57,14 @@ def analyseDumpsAndOutputWriteToDisk(path, revision, blocks):
         # Iterate over the pages.
         for page in dumpIterator:
 
-            if page.namespace is 4 \
+            if (page.namespace is 4 \
                and page.title.startswith("Wikipedia:Articles for deletion/") \
+               # Old links to old discussions:
                and not page.title.startswith("Wikipedia:Articles for deletion/Old/") \
-               and page.title != "Wikipedia:Articles for deletion/Old":
+               and page.title != "Wikipedia:Articles for deletion/Old" \
+               # Log collects discussions by including them through a template:
+               and not page.title.startswith("Wikipedia:Articles for deletion/Log/") \
+               and page.title != "Wikipedia:Articles for deletion/Log"):
                 (revisions_order, revisions) = processDeletionDiscussion(page)
 
                 if (not revision or revision == 'all'):
