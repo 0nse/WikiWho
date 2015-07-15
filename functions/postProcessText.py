@@ -19,7 +19,10 @@ def cleanText(textList, userName):
     text = mergeText(textList)
 
     try:
-        userSelfLink = re.compile("\[\[user:" + userName.lower() + "[^\]]+\]\]")
+        # Escape userName for users such as the 22 year old
+        # cocktail waitress Janet from Texas; User:Hiall:)
+        userName = re.escape(userName.lower())
+        userSelfLink = re.compile("\[\[user:" + userName + "[^\]]+\]\]")
         text = userSelfLink.sub("", text)
     except AttributeError:
         # There exist pages with deleted users and therefore
