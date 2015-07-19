@@ -18,7 +18,7 @@ import xml.etree.cElementTree as ET
 
 from codecs import encode, decode
 
-from sys import argv, exit
+from sys import argv
 
 def generateOutputFile(fileName):
     """ Generate an output file name by replacing fileName's extension

@@ -15,9 +15,8 @@ from mw.xml_dump.functions import open_file
 from functions.print import *
 from functions.processDeletionDiscussion import processDeletionDiscussion
 
-import getopt
 import os
-from sys import argv, exit
+from sys import argv
 
 def extractFileNamesFromPath(path):
     """ Returns a list of file names that are identified under path.
