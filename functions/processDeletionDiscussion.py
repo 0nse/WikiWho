@@ -76,6 +76,7 @@ def processDeletionDiscussion(page):
             text_curr = removeAfDText(revision.text)
             text_curr = preprocessAbbreviations(text_curr)
             text_curr = useEnDashForParentheticalExpression(text_curr)
+            text_curr = removeStandaloneLinks(text_curr)
             text_curr = text_curr.lower()
 
             # Perform comparison.
@@ -116,49 +117,6 @@ def sortRevisions(page):
 
     return sortedRevisions
 
-def removeAfDText(text):
-    """ Although AfD headers and footers are obviously templates, the dumps do not
-    contain them as marked up template but as the text from them being resolved.
-    Thus, the text has to be manually removed in a preprocessing step.
-    """
-    afdHeader = """:\'\'The following discussion is an archived debate of the proposed deletion of the article below. <span style="color:red">\'\'\'Please do not modify it.\'\'\'</span>  Subsequent comments should be made on the appropriate discussion page (such as the article\'s [[Help:Using talk pages|talk page]] or in a [[Wikipedia:Deletion review|deletion review]]).  No further edits should be made to this page.\'\'"""
-    afdFooter = """:\'\'The above discussion is preserved as an archive of the debate.  <span style="color:red">\'\'\'Please do not modify it.\'\'\'</span> Subsequent comments should be made on the appropriate discussion page (such as the article\'s [[Help:Using talk pages|talk page]] or in a [[Wikipedia:Deletion review|deletion review]]). No further edits should be made to this page."""
-    resultRe = re.compile("The result was '''[^']+'''.")
-
-    text = text.replace(afdHeader, "")
-    text = text.replace(afdFooter, "")
-    text = resultRe.sub("", text)
-
-    return text
-
-def preprocessAbbreviations(text):
-    """ This method replaces the commonly used abbreviations i.e., e.g., n.b. and
-    PS. with "i-e", "e-g", "n-b" and "p-s" respectively to prevent later steps
-    splitting them into the words "i", "e", "g", "n", "b", "p" and "s". At least
-    for "i.e.", this is an important step, considering we want to inspect the
-    influence the use of the word "i" (and "you") has.
-    If these abbreviations are written without intermediate dot (e.g. "eg."),
-    they will be already interpreted as one word.
-    """
-    # %s may be surrounded by symbols and probably ends with a dot. However, it
-    # cannot be extracted in a re if no symbol separates it from an alphabetic
-    # letter. This is to prevent mismatches as part of real words.
-    abbreviationNotPartOfAWord = r"(?i)[^a-z,A-Z](%s\.{0,1})[^a-z,A-Z]"
-    # We allow a single space after the first dot because mobile phone keyboards
-    # often add them (e.g. SwiftKey) automatically.
-    ieRe = re.compile(abbreviationNotPartOfAWord % "i\. {0,1}e")
-    egRe = re.compile(abbreviationNotPartOfAWord % "e\. {0,1}g")
-    nbRe = re.compile(abbreviationNotPartOfAWord % "n\. {0,1}b")
-    psRe = re.compile(abbreviationNotPartOfAWord % "p\. {0,1}s")
-
-    # All substitutes are space-padded so that words are not merged together.
-    text = ieRe.sub(" i-e ", text)
-    text = egRe.sub(" e-g ", text)
-    text = nbRe.sub(" n-b ", text)
-    text = psRe.sub(" p-s ", text)
-
-    return text
-
 def useEnDashForParentheticalExpression(text):
     """ structures.Text.splitIntoWords(text) will split regular dashes into a
     separate word. Thus a sentence "I like - dare I say love - you" would be
@@ -168,3 +126,100 @@ def useEnDashForParentheticalExpression(text):
     To prevent this, we replace the dashes, which are used as parenthetical
     expressions with an en dash."""
     return text.replace(" - ", " – ")
+
+
+#===============================================================================
+# The following methods use regular expressions. These expressions are compiled
+# before the method definition so that they are only compiled once:
+#===============================================================================
+afdHeader = """:\'\'The following discussion is an archived debate of the proposed deletion of the article below. <span style="color:red">\'\'\'Please do not modify it.\'\'\'</span>  Subsequent comments should be made on the appropriate discussion page (such as the article\'s [[Help:Using talk pages|talk page]] or in a [[Wikipedia:Deletion review|deletion review]]).  No further edits should be made to this page.\'\'"""
+afdFooter = """:\'\'The above discussion is preserved as an archive of the debate.  <span style="color:red">\'\'\'Please do not modify it.\'\'\'</span> Subsequent comments should be made on the appropriate discussion page (such as the article\'s [[Help:Using talk pages|talk page]] or in a [[Wikipedia:Deletion review|deletion review]]). No further edits should be made to this page."""
+resultRe = re.compile("The result was '''[^']+'''.")
+
+def removeAfDText(text):
+    """ Although AfD headers and footers are obviously templates, the dumps do
+    not contain them as marked up template but as the text from them being
+    resolved. Thus, the text has to be manually removed in a preprocessing step.
+    """
+    text = text.replace(afdHeader, "")
+    text = text.replace(afdFooter, "")
+    text = resultRe.sub("", text)
+
+    return text
+
+
+#===============================================================================
+# %s may be surrounded by symbols and probably ends with a dot. However, it
+# cannot be extracted in a re if no symbol separates it from an alphabetic
+# letter. This is to prevent mismatches as part of real words.
+abbreviationNotPartOfAWord = r"(?i)[^a-z,A-Z](%s\.{0,1})[^a-z,A-Z]"
+# We allow a single space after the first dot because mobile phone keyboards
+# often add them (e.g. SwiftKey) automatically.
+ieRe = re.compile(abbreviationNotPartOfAWord % "i\. {0,1}e")
+egRe = re.compile(abbreviationNotPartOfAWord % "e\. {0,1}g")
+nbRe = re.compile(abbreviationNotPartOfAWord % "n\. {0,1}b")
+psRe = re.compile(abbreviationNotPartOfAWord % "p\. {0,1}s")
+
+def preprocessAbbreviations(text):
+    """ This method replaces the commonly used abbreviations i.e., e.g., n.b.
+    and PS. with "i-e", "e-g", "n-b" and "p-s" respectively to prevent later
+    steps splitting them into the words "i", "e", "g", "n", "b", "p" and "s".
+    At least for "i.e.", this is an important step, considering we want to
+    inspect the influence the use of the word "i" (and "you") has.
+    If these abbreviations are written without intermediate dot (e.g. "eg."),
+    they will be already interpreted as one word.
+    """
+    # All substitutes are space-padded so that words are not merged together.
+    text = ieRe.sub(" i-e ", text)
+    text = egRe.sub(" e-g ", text)
+    text = nbRe.sub(" n-b ", text)
+    text = psRe.sub(" p-s ", text)
+
+    return text
+
+
+#===============================================================================
+# Import the protocols as given by WikiCodeCleaner. Remove '//' as it does not
+# identify a protocol. Add 'www.' because often links are posted without their
+# protocol.
+from WikiCodeCleaner.links import wgUrlProtocols
+try:
+    wgUrlProtocols.remove('//')
+except ValueError: # not in list
+    pass
+# 'www.' must not follow a slash or colon. Else, it would be matched in URIs
+# that contain it as a subdomain but also start with a valid protocol. In these
+# cases, the match should always happen starting with the protocol (because it
+# appears earlier).
+wgUrlProtocols.append('[^:,/]www.')
+uriIndicatorsEscaped = [re.escape(indicator) for indicator in wgUrlProtocols]
+# URIs may not begin with '[' because else they would probably be alread wrapped
+# in markup.
+# (?:^[^\[])
+#    (?: )   is a non matching group.
+#    ^       beginning of the line
+#    |[^\[]  or something that is not an opening square bracket
+#    This is needed because making [ not appearing optional would allow it
+#    again. Therefore, the beginning must either be the beginning of the line or
+#    anything but an opening square bracket.
+# ((?i)(?:%s)[^ ]+)
+#    (?i)    case insensitive
+#    (?:%s)  replaces the regex escaped protocols (OR-concatenated) in an un-
+#            matched group.
+#    [^ ]+   symbols that aren't a space (URI symbols after the protocol/www-
+#            subdomain).
+urisRe = re.compile('(?:^|[^\[])((?i)(?:%s)[^ ]+)' % '|'.join(uriIndicatorsEscaped))
+
+def removeStandaloneLinks(text):
+    """ Remove links that were just pasted into the text without the use of
+    WikiCode. Frequently, users dump a link into their reply without marking
+    them as actual links.
+    We cannot remove those links in a postprocessing step because we lose
+    crucial information: 'http://ddg.gg/ great site' would have been merged into
+    'http://ddg.gg/great site'. However, if the trailing space of the slash
+    would not be removed, we would end up with 'http:/ / ddg.gg/ great site'.
+    Thus we apply this before any splitting in words.
+    """
+    text = urisRe.sub('', text)
+
+    return text
