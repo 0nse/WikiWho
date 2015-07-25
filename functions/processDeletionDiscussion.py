@@ -78,6 +78,7 @@ def processDeletionDiscussion(page):
             text_curr = useEnDashForParentheticalExpression(text_curr)
             text_curr = removeStandaloneLinks(text_curr)
             text_curr = text_curr.lower()
+            revision_curr.content = text_curr
 
             # Perform comparison.
             vandalism = determineAuthorship(revision_curr, revision_prev, text_curr, revisions)
