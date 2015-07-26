@@ -53,10 +53,11 @@ def isRegisteredUser(page):
 
         try: # test for IPv4 address:
             socket.inet_pton(socket.AF_INET, userName)
-        except OSError:
+        # Python < 3.3 will raise a socket.error whereas >= 3.3 raises OSError:
+        except (OSError, socket.error):
             try: # test for IPv6 address:
                 socket.inet_pton(socket.AF_INET6, userName)
-            except OSError:
+            except (OSError, socket.error):
                 return True
 
     # not user page or IP address:
