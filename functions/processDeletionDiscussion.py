@@ -183,7 +183,13 @@ def preprocessAbbreviations(text):
 # Import the protocols as given by WikiCodeCleaner. Remove '//' as it does not
 # identify a protocol. Add 'www.' because often links are posted without their
 # protocol.
-from WikiCodeCleaner.links import wgUrlProtocols
+try:
+    from WikiCodeCleaner.links import wgUrlProtocols
+except:
+    from sys import path
+    path.append('../WikiCodeCleaner')
+    from WikiCodeCleaner.links import wgUrlProtocols
+
 try:
     wgUrlProtocols.remove('//')
 except ValueError: # not in list

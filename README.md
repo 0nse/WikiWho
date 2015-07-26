@@ -23,7 +23,7 @@ This file is the core of this project. It is used to extract deletion discussion
 * `python WikiwhoRelationships.py -i randomArticle.xml -b blockLog.csv -r 5`
 Returns the edit interactions produced at every revision up to revision number 5 (has to be an actual revision id) of `randomArticle.xml`.
 
-### `timeUntilBlocked.py`
+### `BlockTimeCalculation.py`
 Calculates the time between the creation of a post and when the author of said post has been blocked. This data is written as an additional column to the `revision log`. This file is used by `WikiWho.py`. Its standalone purpose is to migrate CSV-files from former WikiWho DiscussionParser revisions.
 
 #### Parameters
@@ -31,11 +31,12 @@ Calculates the time between the creation of a post and when the author of said p
 * `[revision log file]` (processed revisions with authorship but without calculated time until the next block.)
 * `[output file]` (the file to where the new CSV file should be written to.)
 
-### `filterForDeletionDiscussions.py`
-Reads Wikipedia dumps and writes uncompressed XML dumps that only contain Articles for Deletion. With this preprocessing,  the actual WikiWho DiscussionParser can run a lot faster as it neither has to decompress the dumps nor filter for the relevant articles.
+### `DumpFilter.py`
+Reads Wikipedia dumps and writes uncompressed XML dumps that only contain Articles for Deletion (AfD) or user pages of registered users. With preprocessing AfD, the actual WikiWho DiscussionParser can run a lot faster as it neither has to decompress the dumps nor filter for the relevant articles.
 
 #### Parameters
 * `[page dump path]` (the path to the dumps. It can also be a concrete file. The filtered file will be generated with the suffix `_filtered.xml`.)
+* `[<condition>] (optional. It can be `isDeletionDiscussion` for AfD or `isRegisteredUser` for users. The default is `isDeletionDiscussion`.
 
 ## Licence
 This work is released under a GPLv3 licence. It is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
