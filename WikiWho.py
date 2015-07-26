@@ -92,8 +92,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     print("Loading blocked users and the associated blocking timestamps into memory.", end=' ')
-    import timeUntilBlocked
-    blocks = timeUntilBlocked.createBlockedUsersDict(args.blockLog)
+    import BlockTimeCalculation
+    blocks = BlockTimeCalculation.createBlockedUsersDict(args.blockLog)
     print("Done.")
 
     analyseDumpsAndOutputWriteToDisk(args.pageDumpPath, args.revision, blocks)

@@ -8,7 +8,7 @@
 import csv
 
 from functions.postProcessText import cleanText
-import timeUntilBlocked
+import BlockTimeCalculation
 
 def writeAllRevisions(order, revisions, blocks):
     for (revision, vandalism) in order:
@@ -36,7 +36,7 @@ def writeRevision(revision, blocks):
 
     # only print a line when this revision introduced new text
     if text.strip():
-        secondsToBlock = timeUntilBlocked.calculateSecondsUntilNextBlock(blocks, revision.contributor_name, revision.timestamp)
+        secondsToBlock = BlockTimeCalculation.calculateSecondsUntilNextBlock(blocks, revision.contributor_name, revision.timestamp)
         print("Writing authorhship for revision %s to disk." % revision.wikipedia_id)
         with open('deletionRevisions.csv', 'a', newline='') as csvFile:
             spamwriter = csv.writer(csvFile, delimiter='\t',
