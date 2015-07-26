@@ -62,9 +62,10 @@ def isRegisteredUser(page):
     # not user page or IP address:
     return False
 
-def generateOutputFile(fileName):
+def generateOutputFile(fileName, fileSuffix):
     """ Generate an output file name by replacing fileName's extension with
-    'xml' or appending '.xml' if no known was found. """
+    'xml' or appending '.xml' if no known was found. The fileSuffix is
+    prepended to '.xml'. """
     fileNameLower = fileName.lower()
     for extension in mwExtensions:
         extension = '.' + extension
@@ -75,7 +76,7 @@ def generateOutputFile(fileName):
     if not outputFileName:
         print('[W] No known file extension was found for "%s". This should never happen.' % fileName)
 
-    return open(outputFileName + '_filtered.xml', 'ab')
+    return open('%s_%s.xml' % (outputFileName, fileSuffix), 'ab')
 
 def writePage(pageObj, outputFile):
     """ Write the pageObj into outputFile as XML. """
@@ -144,7 +145,13 @@ def filterDumps(path, condition=isDeletionDiscussion):
     for fileName in extractFileNamesFromPath(path):
         print('[I] Now processing the file "%s".' % fileName)
 
-        outputFile = generateOutputFile(fileName)
+        fileSuffix = 'filtered'
+        if condition == isDeletionDiscussion:
+            fileSuffix = 'afd'
+        elif condition == isRegisteredUser:
+            fileSuffix = 'users'
+
+        outputFile = generateOutputFile(fileName, fileSuffix)
         copyXMLDumpHeadToFile(fileName, outputFile)
 
         # Access the file.

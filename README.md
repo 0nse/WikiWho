@@ -35,7 +35,7 @@ Calculates the time between the creation of a post and when the author of said p
 Reads Wikipedia dumps and writes uncompressed XML dumps that only contain Articles for Deletion (AfD) or user pages of registered users. With preprocessing AfD, the actual WikiWho DiscussionParser can run a lot faster as it neither has to decompress the dumps nor filter for the relevant articles.
 
 #### Parameters
-* `[page dump path]` (the path to the dumps. It can also be a concrete file. The filtered file will be generated with the suffix `_filtered.xml`.)
+* `[page dump path]` (the path to the dumps. It can also be a concrete file. The filtered file will be generated with the suffix `_afd.xml` or `_users.xml` for AfD or user pages respectively.)
 * `[<condition>] (optional. It can be `isDeletionDiscussion` for AfD or `isRegisteredUser` for users. The default is `isDeletionDiscussion`.
 
 ## Licence
