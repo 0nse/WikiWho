@@ -20,8 +20,8 @@ This file is the core of this project. Per default, it is used to extract deleti
 * `-c [<condition>]` (optional. It can be `isDeletionDiscussion` for AfD or `isRegisteredUserTalk` for user talk. The default is `isDeletionDiscussion`.
 
 #### Example
-* `python WikiwhoRelationships.py -i randomArticle.xml -b blockLog.csv -r 5`
-Returns the edit interactions produced at every revision up to revision number 5 (has to be an actual revision id) of `randomArticle.xml`.
+* `python WikiwhoRelationships.py -i randomArticle.xml -b blockLog.csv`
+Returns the text introduced in each revision of any given deletion discussion of `randomArticle.xml`.
 
 ### `BlockTimeCalculation.py`
 Calculates the time between the creation of a post and when the author of said post has been blocked. This data is written as an additional column to the `revision log`. This file is used by `WikiWho.py`. Its standalone purpose is to migrate CSV-files from former WikiWho DiscussionParser revisions.
