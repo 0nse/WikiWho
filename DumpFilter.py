@@ -109,7 +109,7 @@ def filterDumps(path, condition=Conditions.isDeletionDiscussion):
             fileSuffix = 'afd'
         elif condition == Conditions.isRegisteredUser:
             fileSuffix = 'users'
-        elif condition -- Conditions.isRegisteredUserTalk:
+        elif condition == Conditions.isRegisteredUserTalk:
             fileSuffix = 'userTalks'
 
         outputFile = generateOutputFile(fileName, fileSuffix)
