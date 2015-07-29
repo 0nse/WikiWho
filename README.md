@@ -16,8 +16,7 @@ This file is the core of this project. Per default, it is used to extract deleti
 
 #### Parameters
 * `-i [source_file_name or directory]` (complete history dump of articles, either as XML, bzip2, gzip, LZMA or 7zip. Alternatively, if a directory is specified, all files residing in it, matching one of the supported file types, will be processed.)
-* `-b [block log]` (the block log constructed from the Wikipedia data dumps' logging dump through [0nse/WikiParser](https://github.com/0nse/wikiparser).)
-* `-r [<revid> | all]` (what revision to show. revID or "all". If this parameter is missing, `-r all` will be assumed.)
+* `-b [<block log>]` (optional when the condition is `isRegisteredUserTalk`. The block log constructed from the Wikipedia data dumps' logging dump through [0nse/WikiParser](https://github.com/0nse/wikiparser).)
 * `-c [<condition>]` (optional. It can be `isDeletionDiscussion` for AfD or `isRegisteredUserTalk` for user talk. The default is `isDeletionDiscussion`.
 
 #### Example
