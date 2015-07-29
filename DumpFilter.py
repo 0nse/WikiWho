@@ -94,7 +94,7 @@ def createSubElement(parent, elementName, obj=None, objAttrName=None):
         pass
     return element
 
-def filterDumps(path, condition=isDeletionDiscussion):
+def filterDumps(path, condition=Conditions.isDeletionDiscussion):
     """ Load dump file(s) from path and iterate over their pages and their
     revisions. All revisions will be matched against condition. Positive matches
     will be written into the output file as XML.
