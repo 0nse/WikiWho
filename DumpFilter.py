@@ -11,6 +11,7 @@ from mw.xml_dump.functions import EXTENSIONS as mwExtensions
 from mw.xml_dump.functions import open_file
 
 from functions.PageProcessing import sortRevisions
+import functions.DumpConditions as Conditions
 
 import WikiWho
 
@@ -18,50 +19,7 @@ import xml.etree.cElementTree as ET
 
 from codecs import encode, decode
 
-import socket
-
 from sys import argv
-
-def isDeletionDiscussion(page):
-    """ A deletion discussion (AfD) is set in the Wikipedia namespace 4. It
-    starts with 'Wikipedia:Articles for deletion/' with a few exceptions. These
-    exceptions are AfD collections using templates to link to the original
-    discussions. """
-    if (page.namespace is 4 \
-       and page.title.startswith('Wikipedia:Articles for deletion/') \
-       # Old links to old discussions:
-       and not page.title.startswith('Wikipedia:Articles for deletion/Old/') \
-       and page.title != 'Wikipedia:Articles for deletion/Old' \
-       # Log collects discussions by including them through a template:
-       and not page.title.startswith('Wikipedia:Articles for deletion/Log/') \
-       and page.title != 'Wikipedia:Articles for deletion/Log'):
-        return True
-
-    return False
-
-def isRegisteredUser(page):
-    """ A user must be a page of namespace 2:User and the page must start with
-    'User:'. Furthermore, an IP address may not follow as we are looking for
-    registered accounts only. This test requires the socket module which is
-    imported in filterDumps."""
-    if (page.namespace is 2 \
-       and page.title.startswith('User:')):
-        userName = page.title[5:]
-
-        if '/' in userName:
-            return False
-
-        try: # test for IPv4 address:
-            socket.inet_pton(socket.AF_INET, userName)
-        # Python < 3.3 will raise a socket.error whereas >= 3.3 raises OSError:
-        except (OSError, socket.error):
-            try: # test for IPv6 address:
-                socket.inet_pton(socket.AF_INET6, userName)
-            except (OSError, socket.error):
-                return True
-
-    # not user page or IP address:
-    return False
 
 def generateOutputFile(fileName, fileSuffix):
     """ Generate an output file name by replacing fileName's extension with
@@ -147,10 +105,12 @@ def filterDumps(path, condition=isDeletionDiscussion):
         print('[I] Now processing the file "%s".' % fileName)
 
         fileSuffix = 'filtered'
-        if condition == isDeletionDiscussion:
+        if condition == Conditions.isDeletionDiscussion:
             fileSuffix = 'afd'
-        elif condition == isRegisteredUser:
+        elif condition == Conditions.isRegisteredUser:
             fileSuffix = 'users'
+        elif condition -- Conditions.isRegisteredUserTalk:
+            fileSuffix = 'userTalks'
 
         outputFile = generateOutputFile(fileName, fileSuffix)
         copyXMLDumpHeadToFile(fileName, outputFile)
@@ -176,15 +136,6 @@ def copyXMLDumpHeadToFile(fileName, outputFile):
             if '</siteinfo>' in decode(line).lower():
                 break
 
-def parseCondition(conditionString):
-    """ Return the condition method by evaluating the string if it is of known
-    a known value. Else, exit. """
-    if conditionString in ['isDeletionDiscussion', 'isRegisteredUser']:
-        return eval(conditionString)
-    else:
-        print('[E] Only "isDeletionDiscussion" and "isRegisteredUser" are valid conditions. Defaulting to "isDeletionDiscussion".')
-        return isDeletionDiscussion
-
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description="WikiWho DiscussionParser DumpFilter: This program will extract all pages from the dumps matching a condition and write them to disk.",
@@ -196,9 +147,9 @@ if __name__ == '__main__':
     parser.add_argument('pageDumpPath', help='Path to the Wikipedia page(s) dump (XML, 7z, bz2…).')
     parser.add_argument('-c', nargs='?', default='isDeletionDiscussion',
                         dest='condition', type=str,
-                        help='A boolean method that returns True or False when given a Page object. Available options are "isDeletionDiscussion" and "isRegisteredUser". Default: "isDeletionDiscussion".')
+                        help='A boolean method that returns True or False when given a Page object. Available options are "isDeletionDiscussion", "isRegisteredUser" and "isRegisteredUserTalk". Default: "isDeletionDiscussion".')
 
     args = parser.parse_args()
 
-    condition = parseCondition(args.condition)
+    condition = Conditions.parse(args.condition)
     filterDumps(args.pageDumpPath, condition)

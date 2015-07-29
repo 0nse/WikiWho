@@ -35,7 +35,7 @@ def process(page, isDeletionDiscussion=True):
     revisions_order = []
     revisions = {}
 
-    print("Now processing: %s" % page.title)
+    print('[I] Now processing the page "%s".' % page.title)
     # Iterate over revisions of the article.
     sortedRevisions = sortRevisions(page)
     for revision in sortedRevisions:
@@ -78,8 +78,9 @@ def process(page, isDeletionDiscussion=True):
                 revision_curr.contribur_name = 'Not Available ' + revision.id
 
             # Content within the revision.
+            text_curr = revision.text
             if isDeletionDiscussion:
-                text_curr = removeAfDText(revision.text)
+                text_curr = removeAfDText(text_curr)
                 text_curr = preprocessAbbreviations(text_curr)
                 text_curr = useEnDashForParentheticalExpression(text_curr)
                 text_curr = removeStandaloneLinks(text_curr)

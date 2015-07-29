@@ -17,6 +17,7 @@ def writeAllRevisions(order, revisions, blocks, pageName = None):
     """ Writes the revisions to disk. Don't pass a pageName if you want to
     process deletion discussions. The pageName is used for user warnings to
     determine the admonished user. """
+    assert (not pageName) ^ (not blocks), '[E] Illegal configuration. Either no pageName is provided or no blocks.'
     for (revisionId, vandalism) in order:
         if not(vandalism):
             revision = revisions[revisionId]
@@ -78,12 +79,14 @@ def writeUserWarning(text, revision, pageName):
     """ Writes user warnings in a block log format into 'userWarnings.csv'. The
     columns look as follows:
     timestamp | blocked user name | warning | issuer ID | issuer name """
-    assert revision.title.startsWith('User:'), '[E] Revision is not a user page:"%s"' % revision.title
-    blockedUserName = revision.title[5:]
+    assert pageName.startswith('User talk:'), '[E] Revision is not a user page:"%s"' % pageName
+    blockedUserName = pageName[10:]
 
     for templateRe in templatesRe:
-        if templateRe.search(text): # contains warning
-            print('[I] Writing admonished user "%s" to disk.' % revision.contributor_name)
+        matchedTemplate = templateRe.search(text)
+        if matchedTemplate:
+            matchedWarning = matchedTemplate.group(1)
+            print('[I] Writing admonished user "%s" with warning "%s" to disk.' % (blockedUserName, matchedWarning))
             with open('userWarnings.csv', 'a', newline='') as csvFile:
                 spamwriter = csv.writer(csvFile, delimiter='\t',
                                         quotechar='|', quoting=csv.QUOTE_MINIMAL)
@@ -91,7 +94,7 @@ def writeUserWarning(text, revision, pageName):
                 spamwriter.writerow([revision.timestamp,
                                      blockedUserName,
                                      revision.wikipedia_id,
-                                     text,
+                                     matchedWarning,
                                      revision.contributor_id,
                                      revision.contributor_name])
             break

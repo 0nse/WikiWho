@@ -127,18 +127,21 @@ def mergeTemplatesSimplified(*lists):
     return mergedSet
 
 def mergeTemplatesRe(*lists):
-    """ Reuses mergeTemplatesSimplified to remove duplicates in the template
-    lists. This method returns a list as regular expression cannot be members of
-    a set. The list contains regular expressions to match the templates. For
-    performance reasons, they are simplified, so e.g.
-    '{{uw-TemplateName|Article|Text|Rubbish}}' will also be matched. """
+    """ Merges all provides lists into a set so that it is duplicate free. This
+    method returns a list of regular expression. For performance reasons, the
+    regular expressions are simplified, so e.g.
+    '{{uw-TemplateName|Article|Text|Rubbish|More rubbish}}' will also be
+    matched.
+    We will have a hard time detecting subsituted warnings. We must rely on the
+    somewhat convention of templates containing a trailing comment string with
+    their name in it.
+    The regular expressions are built so that the template name forms the first
+    and only group."""
     import re
     templatesRe = []
 
-    templatesSet = mergeTemplatesSimplified(lists)
+    templatesSet = set().union(*lists)
     for template in templatesSet:
-        if template.endswith('|'):
-            # match e.g. '{{uw-TemplateName|Article|Text}}' instead of just '{{uw-TemplateName|':
-            template += '[^}]*}}'
-        templatesRe.append(re.compile(template))
+        templatesRe.append(re.compile('{{(uw-%s)[^}]}}' % template))
+        templatesRe.append(re.compile('(?i)<!--.*template:(uw-%s).*-->' % template))
     return templatesRe
