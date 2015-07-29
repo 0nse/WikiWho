@@ -38,19 +38,18 @@ def createBlockedUsersDict(inputFile):
                 blocks[blockedUserName] = [timestamp]
 
     for timestamps in blocks.values():
-        # Sorted so that later time differences must only be computed with
-        # the closest posterior timestamp (if any).
+        # Sorted so that later time differences must only be computed with the
+        # closest posterior timestamp (if any).
         timestamps.sort()
 
     return blocks
 
 def labelRevisions(blocks, inputFile, outputFile):
     """ Writes outputFile with an additional column, which contains a time
-    difference in seconds between when this revision was created and when
-    the author was next blocked.
+    difference in seconds between when this revision was created and when the
+    author was next blocked.
 
-    @see calculateSecondsUntilNextBlock(blocks, userName, timestamp)
-    """
+    @see calculateSecondsUntilNextBlock(blocks, userName, timestamp) """
     import csv
 
     revisionReader = csv.reader(inputFile, delimiter='\t', quotechar='"')

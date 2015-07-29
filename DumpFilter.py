@@ -10,9 +10,9 @@ from mw.xml_dump import Iterator as mwIterator
 from mw.xml_dump.functions import EXTENSIONS as mwExtensions
 from mw.xml_dump.functions import open_file
 
-from functions.processDeletionDiscussion import sortRevisions
+from functions.PageProcessing import sortRevisions
 
-from WikiWho import extractFileNamesFromPath
+import WikiWho
 
 import xml.etree.cElementTree as ET
 
@@ -143,7 +143,7 @@ def filterDumps(path, condition=isDeletionDiscussion):
     condition is a method that returns a boolean value and analyses a Page
     object.
     """
-    for fileName in extractFileNamesFromPath(path):
+    for fileName in WikiWho.extractFileNamesFromPath(path):
         print('[I] Now processing the file "%s".' % fileName)
 
         fileSuffix = 'filtered'
@@ -176,6 +176,15 @@ def copyXMLDumpHeadToFile(fileName, outputFile):
             if '</siteinfo>' in decode(line).lower():
                 break
 
+def parseCondition(conditionString):
+    """ Return the condition method by evaluating the string if it is of known
+    a known value. Else, exit. """
+    if conditionString in ['isDeletionDiscussion', 'isRegisteredUser']:
+        return eval(conditionString)
+    else:
+        print('[E] Only "isDeletionDiscussion" and "isRegisteredUser" are valid conditions. Defaulting to "isDeletionDiscussion".')
+        return isDeletionDiscussion
+
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description="WikiWho DiscussionParser DumpFilter: This program will extract all pages from the dumps matching a condition and write them to disk.",
@@ -185,15 +194,11 @@ if __name__ == '__main__':
                                      """)
 
     parser.add_argument('pageDumpPath', help='Path to the Wikipedia page(s) dump (XML, 7z, bz2…).')
-    parser.add_argument('-c', nargs='?', default=isDeletionDiscussion,
+    parser.add_argument('-c', nargs='?', default='isDeletionDiscussion',
                         dest='condition', type=str,
                         help='A boolean method that returns True or False when given a Page object. Available options are "isDeletionDiscussion" and "isRegisteredUser". Default: "isDeletionDiscussion".')
 
     args = parser.parse_args()
 
-    if args.condition in ['isDeletionDiscussion', 'isRegisteredUser']:
-        filterDumps(args.pageDumpPath, eval(args.condition))
-    else:
-        print('[E] Only "isDeletionDiscussion" and "isRegisteredUser" are valid conditions.')
-        import sys
-        sys.exit(1)
+    condition = parseCondition(args.condition)
+    filterDumps(args.pageDumpPath, condition)

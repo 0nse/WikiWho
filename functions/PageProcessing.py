@@ -17,7 +17,12 @@ PREVIOUS_LENGTH = 1000
 CURR_LENGTH = 1000
 FLAG = "move"
 
-def processDeletionDiscussion(page):
+def process(page, isDeletionDiscussion=True):
+    """ Processes the page to associate every word of every revision with the
+    revision it was created in. If isDeletionDiscussion is True, AfD
+    preprocessing will be applied so that the later cleaning of text will not
+    destroy abbreviations and also so that expanded AfD templates are removed.
+    """
     # Hash table.
     spam = []
 
@@ -73,10 +78,11 @@ def processDeletionDiscussion(page):
                 revision_curr.contribur_name = 'Not Available ' + revision.id
 
             # Content within the revision.
-            text_curr = removeAfDText(revision.text)
-            text_curr = preprocessAbbreviations(text_curr)
-            text_curr = useEnDashForParentheticalExpression(text_curr)
-            text_curr = removeStandaloneLinks(text_curr)
+            if isDeletionDiscussion:
+                text_curr = removeAfDText(revision.text)
+                text_curr = preprocessAbbreviations(text_curr)
+                text_curr = useEnDashForParentheticalExpression(text_curr)
+                text_curr = removeStandaloneLinks(text_curr)
             text_curr = text_curr.lower()
             revision_curr.content = text_curr
 

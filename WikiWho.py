@@ -13,7 +13,9 @@ from mw.xml_dump.functions import EXTENSIONS as mwExtensions
 from mw.xml_dump.functions import open_file
 
 from functions.print import *
-from functions.processDeletionDiscussion import processDeletionDiscussion
+import functions.PageProcessing as PageProcessing
+#from DumpFilter import isDeletionDiscussion, isRegisteredUser, parseCondition
+import DumpFilter
 
 import os
 from sys import argv
@@ -42,37 +44,31 @@ def extractFileNamesFromPath(path):
         raise FileNotFoundError('No file or directory could be found in "%s"' % path)
     return fileNames
 
-def analyseDumpsAndOutputWriteToDisk(path, revision, blocks):
+def analyseDumpsAndOutputWriteToDisk(path, blocks, condition):
     """ Load dump file(s) from path and iterate over their pages and their
     revisions. All revisions will be matched against the blocks dict to
     calculate how many seconds after the creation of the revision, the
     author was blocked (if s/he was blocked at all afterwards).
     """
+    assert condition == DumpFilter.isDeletionDiscussion and not blocks, '[E] Blocks may not be empty when processing deletion discussions.'
+
     for fileName in extractFileNamesFromPath(path):
-        print('Now processing the file "%s".' % fileName)
+        print('[I] Now processing the file "%s".' % fileName)
         # Access the file.
         dumpIterator = mwIterator.from_file(open_file(fileName))
 
         # Iterate over the pages.
         for page in dumpIterator:
 
-            if (page.namespace is 4 \
-               and page.title.startswith("Wikipedia:Articles for deletion/") \
-               # Old links to old discussions:
-               and not page.title.startswith("Wikipedia:Articles for deletion/Old/") \
-               and page.title != "Wikipedia:Articles for deletion/Old" \
-               # Log collects discussions by including them through a template:
-               and not page.title.startswith("Wikipedia:Articles for deletion/Log/") \
-               and page.title != "Wikipedia:Articles for deletion/Log"):
-                (revisions_order, revisions) = processDeletionDiscussion(page)
+            shouldDeletionDiscussionsBeProcessed = condition == DumpFilter.isDeletionDiscussion
+            if condition(page):
+                (revisions_order, revisions) = PageProcessing.process(page, shouldDeletionDiscussionsBeProcessed)
 
-                if (not revision or revision == 'all'):
+                if shouldDeletionDiscussionsBeProcessed:
                     writeAllRevisions(revisions_order, revisions, blocks)
                 else:
-                    try:
-                        writeRevision(revisions[int(revision)], blocks)
-                    except:
-                        pass
+                    assert title, '[E] The page title was empty.'
+                    writeAllRevisions(revisions_order, revisions, blocks, page.title)
 
 if __name__ == '__main__':
     import argparse
@@ -86,14 +82,16 @@ if __name__ == '__main__':
                         help='Path to the Wikipedia page(s) dump (XML, 7z, bz2…).')
     parser.add_argument('-b', dest='blockLog',  type=argparse.FileType('r'), required=True,
                         help='Path to the block log file produced wit 0nse/WikiParser (CSV).'),
-    parser.add_argument('-r', dest='revision', default='all', nargs='?',
-                        help='Use this parameter if you are only interested in a subset of revisions (revision ID must exist in data).')
+    parser.add_argument('-c', dest='condition', nargs='?',
+                        default='isDeletionDiscussion', type=str,
+                        help='Decide whether you want to process deletion discussions or user warnings. It must identify a boolean method returning True or False on a Page object. Available options are "isDeletionDiscussion" and "isRegisteredUser". The default is "isDeletionDiscussion".')
 
     args = parser.parse_args()
 
-    print("Loading blocked users and the associated blocking timestamps into memory.", end=' ')
+    print("[I] Loading blocked users and the associated blocking timestamps into memory.", end=' ')
     import BlockTimeCalculation
     blocks = BlockTimeCalculation.createBlockedUsersDict(args.blockLog)
     print("Done.")
 
-    analyseDumpsAndOutputWriteToDisk(args.pageDumpPath, args.revision, blocks)
+    condition = DumpFilter.parseCondition(args.condition)
+    analyseDumpsAndOutputWriteToDisk(args.pageDumpPath, blocks, condition)
