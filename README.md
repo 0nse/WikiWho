@@ -2,7 +2,7 @@
 An algorithm for extracting posts on Wikipedia page deletion discussions.
 
 ## Installation Requirements
-WikiWho has been tested on Arch Linux running Python 3.4.3.
+WikiWho has been tested on Arch Linux running Python 3.4.3 and Ubuntu 12.04 running Python 3.2.3.
 
 WikiWho utilizes the MediaWiki Utilities library to process the revisioned content extracted from Wikipedia.
 These functions can be downloaded from the official MediaWiki Utilities repository (under the MIT license) at the
@@ -18,7 +18,7 @@ This file is the core of this project. Per default, it is used to extract deleti
 * `-i [source_file_name or directory]` (complete history dump of articles, either as XML, bzip2, gzip, LZMA or 7zip. Alternatively, if a directory is specified, all files residing in it, matching one of the supported file types, will be processed.)
 * `-b [block log]` (the block log constructed from the Wikipedia data dumps' logging dump through [0nse/WikiParser](https://github.com/0nse/wikiparser).)
 * `-r [<revid> | all]` (what revision to show. revID or "all". If this parameter is missing, `-r all` will be assumed.)
-* `-c [<condition>] (optional. It can be `isDeletionDiscussion` for AfD or `isRegisteredUserTalk` for user talk. The default is `isDeletionDiscussion`.
+* `-c [<condition>]` (optional. It can be `isDeletionDiscussion` for AfD or `isRegisteredUserTalk` for user talk. The default is `isDeletionDiscussion`.
 
 #### Example
 * `python WikiwhoRelationships.py -i randomArticle.xml -b blockLog.csv -r 5`
