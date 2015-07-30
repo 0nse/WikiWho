@@ -101,7 +101,15 @@ def filterDumps(path, condition=Conditions.isDeletionDiscussion):
     condition is a method that returns a boolean value and analyses a Page
     object.
     """
-    for fileName in WikiWho.extractFileNamesFromPath(path):
+    dumps = WikiWho.extractFileNamesFromPath(path)
+
+    # Filter out dumps that have been created by filterDumps:
+    import re
+    nonDumpRe = re.compile('(?i)_(user(Talk)?s|afd).xml$')
+    isDump = lambda f: not nonDumpRe.search(f)
+    dumps = list(filter(isDump, dumps))
+
+    for fileName in dumps:
         print('[I] Now processing the file "%s".' % fileName)
 
         fileSuffix = 'filtered'
