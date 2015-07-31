@@ -37,16 +37,19 @@ def generateOutputFile(fileName, fileSuffix):
 
     return open('%s_%s.xml' % (outputFileName, fileSuffix), 'ab')
 
+@profile
 def writePage(pageObj, outputFile):
     """ Write the pageObj into outputFile as XML. """
-    page = ET.Element('page')
-    createSubElement(page, 'title', pageObj)
-    createSubElement(page, 'ns', pageObj, 'namespace')
-    createSubElement(page, 'id', pageObj)
+    pageOT = createOpenTag('page', ('title', pageObj.title),
+                                   ('ns', pageObj.namespace),
+                                   ('id', pageObj.id))
+    outputFile.write(encode(pageOT))
+
+    print("[I] Writing revisions of page %s to disk." % pageObj.title)
 
     sortedRevisions = sortRevisions(pageObj)
     for revisionObj in sortedRevisions:
-        revision = createSubElement(page, 'revision', pageObj)
+        revision = ET.Element('revision')
         createSubElement(revision, 'comment', revisionObj)
         createSubElement(revision, 'format', revisionObj)
         createSubElement(revision, 'id', revisionObj)
@@ -63,9 +66,20 @@ def writePage(pageObj, outputFile):
             createSubElement(contributor, 'id', contributorObj)
             createSubElement(contributor, 'username', contributorObj, 'user_text')
 
-    tree = ET.ElementTree(page)
-    print("[I] Writing page %s to disk." % pageObj.title)
-    tree.write(outputFile, encoding="UTF-8")
+        tree = ET.ElementTree(revision)
+        tree.write(outputFile, encoding="UTF-8")
+
+    outputFile.write(encode('</page>'))
+
+def createOpenTag(elementName, *attributes):
+    """ Create an open tag of element elementName. Attributes must be tuples
+    with the first value being the XML attribute name and the second being its
+    value. """
+    tag = '<%s' % elementName
+    for attr in attributes:
+        tag += '%s="%s"' % attr
+    tag += '>'
+    return tag
 
 def createSubElement(parent, elementName, obj=None, objAttrName=None):
     """ Add a new child to parent with elementName as its name. If obj is set,
