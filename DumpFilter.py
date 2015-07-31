@@ -37,7 +37,6 @@ def generateOutputFile(fileName, fileSuffix):
 
     return open('%s_%s.xml' % (outputFileName, fileSuffix), 'ab')
 
-@profile
 def writePage(pageObj, outputFile):
     """ Write the pageObj into outputFile as XML. """
     pageOT = createOpenTag('page', ('title', pageObj.title),
@@ -77,7 +76,7 @@ def createOpenTag(elementName, *attributes):
     value. """
     tag = '<%s' % elementName
     for attr in attributes:
-        tag += '%s="%s"' % attr
+        tag += ' %s="%s"' % attr
     tag += '>'
     return tag
 
