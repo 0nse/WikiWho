@@ -117,7 +117,7 @@ def filterDumps(path, condition=Conditions.isDeletionDiscussion):
     dumps = WikiWho.extractFileNamesFromPath(path)
 
     # Filter out dumps that have been created by filterDumps:
-    import re
+    import re, gc
     nonDumpRe = re.compile('(?i)_(user(Talk)?s|afd).xml$')
     isDump = lambda f: not nonDumpRe.search(f)
     dumps = list(filter(isDump, dumps))
@@ -145,6 +145,8 @@ def filterDumps(path, condition=Conditions.isDeletionDiscussion):
 
         outputFile.write(encode('</mediawiki>'))
         outputFile.close()
+        # Force garbage collection to prevent memory exhaustion:
+        gc.collect()
 
 def copyXMLDumpHeadToFile(fileName, outputFile):
     """ Copies the XML dump's head into the new file. If the XML file was
