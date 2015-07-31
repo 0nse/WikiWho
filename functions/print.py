@@ -73,8 +73,7 @@ templatesRe = WarningTemplates.mergeTemplatesRe(WarningTemplates.vandalism,
                                                 WarningTemplates.disruptive,
                                                 WarningTemplates.agf,
                                                 WarningTemplates.harass,
-                                                WarningTemplates.npa,
-                                                WarningTemplates.tempabuse)
+                                                WarningTemplates.npa)
 def writeUserWarning(text, revision, pageName):
     """ Writes user warnings in a block log format into 'userWarnings.csv'. The
     columns look as follows:
