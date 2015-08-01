@@ -122,16 +122,16 @@ def filterDumps(path, condition=Conditions.isDeletionDiscussion):
     isDump = lambda f: not nonDumpRe.search(f)
     dumps = list(filter(isDump, dumps))
 
+    fileSuffix = 'filtered'
+    if condition == Conditions.isDeletionDiscussion:
+        fileSuffix = 'afd'
+    elif condition == Conditions.isRegisteredUser:
+        fileSuffix = 'users'
+    elif condition == Conditions.isRegisteredUserTalk:
+        fileSuffix = 'userTalks'
+
     for fileName in dumps:
         print('[I] Now processing the file "%s".' % fileName)
-
-        fileSuffix = 'filtered'
-        if condition == Conditions.isDeletionDiscussion:
-            fileSuffix = 'afd'
-        elif condition == Conditions.isRegisteredUser:
-            fileSuffix = 'users'
-        elif condition == Conditions.isRegisteredUserTalk:
-            fileSuffix = 'userTalks'
 
         outputFile = generateOutputFile(fileName, fileSuffix)
         copyXMLDumpHeadToFile(fileName, outputFile)
