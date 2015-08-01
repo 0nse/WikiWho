@@ -46,8 +46,8 @@ def writePage(pageObj, outputFile):
 
     print("[I] Writing revisions of page %s to disk." % pageObj.title)
 
-    sortedRevisions = sortRevisions(pageObj)
-    for revisionObj in sortedRevisions:
+    assert areRevisionsSorted(pageObj), '[E] Revisions of "%s" were not sorted ascendingly.' % pageObj.title
+    for revisionObj in pageObj:
         revision = ET.Element('revision')
         createSubElement(revision, 'comment', revisionObj)
         createSubElement(revision, 'format', revisionObj)

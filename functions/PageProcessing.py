@@ -35,10 +35,10 @@ def process(page, isDeletionDiscussion=True):
     revisions_order = []
     revisions = {}
 
+    assert areRevisionsSorted(page), '[E] Revisions of "%s" were not sorted ascendingly.' % pageObj.title
     print('[I] Now processing the page "%s".' % page.title)
     # Iterate over revisions of the article.
-    sortedRevisions = sortRevisions(page)
-    for revision in sortedRevisions:
+    for revision in page:
         vandalism = False
 
         # Update the information about the previous revision.
@@ -117,6 +117,8 @@ def sortRevisions(page):
     Wikipedia dumps should have them already sorted in the first place. However,
     I stumbled upon one (rare?) export where this was not the case. As the order
     is crucial to the WikiWho algorithm, we are better safe than sorry.
+    With many long revisions, this method will leak memory. Only use it, when
+    needed.
     """
     sortedRevisions = []
     for revision in page:
@@ -124,6 +126,17 @@ def sortRevisions(page):
     sortedRevisions.sort(key = lambda x: x.id)
 
     return sortedRevisions
+
+def areRevisionsSorted(page):
+    """ Return True if the IDs of the revisions in page are sorted ascendingly.
+    """
+    oldId = -1
+    for revision in page:
+        if oldId > revision.id:
+            print('[I] %s was greater than %s.' % (oldId, revision.id))
+            return False
+        oldId = revision.id
+    return True
 
 def useEnDashForParentheticalExpression(text):
     """ structures.Text.splitIntoWords(text) will split regular dashes into a
