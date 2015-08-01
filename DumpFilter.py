@@ -10,7 +10,7 @@ from mw.xml_dump import Iterator as mwIterator
 from mw.xml_dump.functions import EXTENSIONS as mwExtensions
 from mw.xml_dump.functions import open_file
 
-from functions.PageProcessing import sortRevisions
+from functions.PageProcessing import areRevisionsSorted
 import functions.DumpConditions as Conditions
 
 import WikiWho
