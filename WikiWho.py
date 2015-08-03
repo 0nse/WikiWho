@@ -73,6 +73,7 @@ def analyseDumpsAndOutputWriteToDisk(path, blockLog, condition):
                 (revisions_order, revisions) = PageProcessing.process(page, shouldDeletionDiscussionsBeProcessed)
 
                 if shouldDeletionDiscussionsBeProcessed:
+                    assert blocks, '[E] Blocks was empty.'
                     writeAllRevisions(revisions_order, revisions, blocks)
                 else:
                     assert page.title, '[E] The page title was empty.'

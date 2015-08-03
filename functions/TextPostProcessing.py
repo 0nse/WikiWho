@@ -8,7 +8,7 @@ Created on Jun 18, 2015
 import re
 from sys import path
 
-path.append('../WikiCodeCleaner')
+path.append('./WikiCodeCleaner')
 from WikiCodeCleaner.clean import clean as cleanWikiCode
 
 def clean(text, userName):

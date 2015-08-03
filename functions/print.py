@@ -17,7 +17,7 @@ def writeAllRevisions(order, revisions, blocks, pageName = None):
     """ Writes the revisions to disk. Don't pass a pageName if you want to
     process deletion discussions. The pageName is used for user warnings to
     determine the admonished user. """
-    assert (not pageName) ^ (not blocks), '[E] Illegal configuration. Either no pageName is provided or no blocks.'
+    assert (not pageName) ^ (not blocks), '[E] Illegal configuration. Both parameters pageName and blocks are set. One must be empty.'
     for (revisionId, vandalism) in order:
         if not(vandalism):
             revision = revisions[revisionId]

@@ -11,6 +11,8 @@ from functions.determineAuthorship import determineAuthorship
 
 from structures.Revision import Revision
 
+import itertools
+
 # Spam detection variables.
 CHANGE_PERCENTAGE = -0.40
 PREVIOUS_LENGTH = 1000
@@ -35,10 +37,11 @@ def process(page, isDeletionDiscussion=True):
     revisions_order = []
     revisions = {}
 
-    assert areRevisionsSorted(page), '[E] Revisions of "%s" were not sorted ascendingly.' % pageObj.title
+    pageObj, pageCopy = itertools.tee(page)
+    assert areRevisionsSorted(pageCopy), '[E] Revisions of "%s" were not sorted ascendingly.' % pageObj.title
     print('[I] Now processing the page "%s".' % page.title)
     # Iterate over revisions of the article.
-    for revision in page:
+    for revision in pageObj:
         vandalism = False
 
         # Update the information about the previous revision.
@@ -209,7 +212,7 @@ try:
     from WikiCodeCleaner.links import wgUrlProtocols
 except:
     from sys import path
-    path.append('../WikiCodeCleaner')
+    path.append('./WikiCodeCleaner')
     from WikiCodeCleaner.links import wgUrlProtocols
 
 try:

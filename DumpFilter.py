@@ -41,9 +41,13 @@ def generateOutputFile(fileName, fileSuffix):
 
 def writePage(pageObj, outputFile):
     """ Write the pageObj into outputFile as XML. """
-    pageOT = createOpenTag('page', ('title', pageObj.title),
-                                   ('ns', pageObj.namespace),
-                                   ('id', pageObj.id))
+    # Write page and its first-level subelements (excl. revision) to shrink the
+    # XML tree that then only needs to be built per revision instead of per
+    # page:
+    pageOT = '<page>'
+    pageOT += createSuccessiveElements(('title', pageObj.title),
+                                       ('ns', pageObj.namespace),
+                                       ('id', pageObj.id))
     outputFile.write(encode(pageOT))
 
     print("[I] Writing revisions of page %s to disk." % pageObj.title)
@@ -57,7 +61,7 @@ def writePage(pageObj, outputFile):
         createSubElement(revision, 'id', revisionObj)
         createSubElement(revision, 'minor', revisionObj)
         createSubElement(revision, 'model', revisionObj)
-        createSubElement(revision, 'parentid', revisionObj)
+        createSubElement(revision, 'parentid', revisionObj, 'parent_id')
         createSubElement(revision, 'sha1', revisionObj)
         createSubElement(revision, 'text', revisionObj)
         createSubElement(revision, 'timestamp', revisionObj)
@@ -73,15 +77,13 @@ def writePage(pageObj, outputFile):
 
     outputFile.write(encode('</page>'))
 
-def createOpenTag(elementName, *attributes):
-    """ Create an open tag of element elementName. Attributes must be tuples
-    with the first value being the XML attribute name and the second being its
-    value. """
-    tag = '<%s' % elementName
-    for attr in attributes:
-        tag += ' %s="%s"' % attr
-    tag += '>'
-    return tag
+def createSuccessiveElements(*elements):
+    """ Create successive elements as string. Attributes must be tuples with the
+    first value being the XML element name and the second being its value. """
+    result = ''
+    for (name, value) in elements:
+        result += '<%s>%s</%s>' % (name, value, name)
+    return result
 
 def createSubElement(parent, elementName, obj=None, objAttrName=None):
     """ Add a new child to parent with elementName as its name. If obj is set,
@@ -96,18 +98,26 @@ def createSubElement(parent, elementName, obj=None, objAttrName=None):
     if not objAttrName:
         objAttrName = elementName
 
-    if objAttrName == 'minor':
-        isMinor = getattr(obj, objAttrName)
-        if isMinor:
-            return ET.SubElement(parent, elementName)
-        else:
-            return None
-
-    element = ET.SubElement(parent, elementName)
     try:
-        element.text = (str(getattr(obj, objAttrName)))
+        value = getattr(obj, objAttrName)
     except AttributeError: # write an empty element:
-        pass
+        value = None
+
+    element = None
+    if elementName in ('minor', 'parentid'):
+        if value:
+            element = ET.SubElement(parent, elementName)
+            # parentid may not be an empty element, yet
+            # minor must be an empty element:
+            if elementName == 'parentid':
+                assert int(value), '[E] parentid must be an integer!'
+                # Store it as string, because the XML writer cannot write ints:
+                element.text = str(value)
+    else:
+        element = ET.SubElement(parent, elementName)
+        if value:
+            element.text = str(value)
+    # Element can still be None for parentid and minor w/o a value:
     return element
 
 def filterDumps(path, condition=Conditions.isDeletionDiscussion):
@@ -139,9 +149,9 @@ def filterDumps(path, condition=Conditions.isDeletionDiscussion):
         outputFile = generateOutputFile(fileName, fileSuffix)
         copyXMLDumpHeadToFile(fileName, outputFile)
 
-        # Access the file.
+        # Access the file:
         dumpIterator = mwIterator.from_file(open_file(fileName))
-        # Iterate over the pages.
+        # Iterate over the pages:
         for page in dumpIterator:
             if condition(page):
                 writePage(page, outputFile)
