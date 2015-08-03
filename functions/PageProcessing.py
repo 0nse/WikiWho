@@ -129,6 +129,8 @@ def sortRevisions(page):
 
 def areRevisionsSorted(page):
     """ Return True if the IDs of the revisions in page are sorted ascendingly.
+    You will want to pass a copy of the Page object as this method consumes the
+    generator.
     """
     oldId = -1
     for revision in page:

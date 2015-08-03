@@ -21,6 +21,8 @@ from codecs import encode, decode
 
 from sys import argv
 
+import itertools
+
 def generateOutputFile(fileName, fileSuffix):
     """ Generate an output file name by replacing fileName's extension with
     'xml' or appending '.xml' if no known was found. The fileSuffix is
@@ -46,7 +48,8 @@ def writePage(pageObj, outputFile):
 
     print("[I] Writing revisions of page %s to disk." % pageObj.title)
 
-    assert areRevisionsSorted(pageObj), '[E] Revisions of "%s" were not sorted ascendingly.' % pageObj.title
+    pageObj, pageObjCopy = itertools.tee(pageObj)
+    assert areRevisionsSorted(pageObjCopy), '[E] Revisions of "%s" were not sorted ascendingly.' % pageObj.title
     for revisionObj in pageObj:
         revision = ET.Element('revision')
         createSubElement(revision, 'comment', revisionObj)
