@@ -84,7 +84,8 @@ def createSuccessiveElements(*elements):
     SAX-utils library is used to escape the value. """
     result = ''
     for (name, value) in elements:
-        result += '<%s>%s</%s>' % (name, saxutils.escape(value), name)
+        value = saxutils.escape(str(value))
+        result += '<%s>%s</%s>' % (name, value, name)
     return result
 
 def createSubElement(parent, elementName, obj=None, objAttrName=None):
