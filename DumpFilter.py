@@ -15,11 +15,14 @@ import functions.DumpConditions as Conditions
 
 import WikiWho
 
-import xml.etree.cElementTree as ET
-
 from codecs import encode, decode
 
 from sys import argv
+
+# Escape XML in createSuccessiveElements:
+import xml.sax.saxutils as saxutils
+# Build XML trees:
+import xml.etree.cElementTree as ET
 
 def generateOutputFile(fileName, fileSuffix):
     """ Generate an output file name by replacing fileName's extension with
@@ -78,10 +81,11 @@ def writePage(pageObj, outputFile):
 
 def createSuccessiveElements(*elements):
     """ Create successive elements as string. Attributes must be tuples with the
-    first value being the XML element name and the second being its value. """
+    first value being the XML element name and the second being its value. A
+    SAX-utils library is used to escape the value. """
     result = ''
     for (name, value) in elements:
-        result += '<%s>%s</%s>' % (name, value, name)
+        result += '<%s>%s</%s>' % (name, saxutils.escape(value), name)
     return result
 
 def createSubElement(parent, elementName, obj=None, objAttrName=None):
