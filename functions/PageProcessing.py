@@ -115,36 +115,6 @@ def process(page, isDeletionDiscussion=True):
 
     return (revisions_order, revisions)
 
-def sortRevisions(page):
-    """ Iterates over all page revisions and sorts them ascendingly by their ID.
-    Wikipedia dumps should have them already sorted in the first place. However,
-    I stumbled upon one (rare?) export where this was not the case. As the order
-    is crucial to the WikiWho algorithm, we are better safe than sorry.
-    With many long revisions, this method will leak memory. Only use it, when
-    needed.
-    """
-    sortedRevisions = []
-    for revision in page:
-        sortedRevisions.append(revision)
-    sortedRevisions.sort(key = lambda x: x.id)
-
-    return sortedRevisions
-
-def areRevisionsSorted(page):
-    """ Return True if the IDs of the revisions in page are sorted ascendingly.
-    As this method consumes the generator, it will have to make a copy.
-    """
-    import itertools
-    page, pageCopy = itertools.tee(page)
-
-    oldId = -1
-    for revision in pageCopy:
-        if oldId > revision.id:
-            print('[I] %s was greater than %s.' % (oldId, revision.id))
-            return False
-        oldId = revision.id
-    return True
-
 def useEnDashForParentheticalExpression(text):
     """ structures.Text.splitIntoWords(text) will split regular dashes into a
     separate word. Thus a sentence "I like - dare I say love - you" would be
