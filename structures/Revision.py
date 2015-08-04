@@ -14,9 +14,8 @@ class Revision(object):
     def __init__(self):
         self.id = 0                  # Fake sequential id. Starts in 0.
         self.wikipedia_id = 0        # Wikipedia revision id.
-        self.contributor_id = 0;     # Id of the contributor who performed the revision.
-        self.contributor_name = ''   # Name of the contributor who performed the revision.
-        self.contributor_ip = ''     # Name of the contributor who performed the revision.
+        self.contributor_id = 0;     # Id of the registered contributor who authored the revision.
+        self.contributor_name = None # User name of the registered contributor or IP address of the anonymous user who authored the revision.
         self.paragraphs = {}         # Dictionary of paragraphs. It is of the form {paragraph_hash : [Paragraph]}.
         self.ordered_paragraphs = [] # Ordered paragraph hash.
         self.length = 0              # Content length (bytes).

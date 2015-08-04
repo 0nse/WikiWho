@@ -51,10 +51,15 @@ def writeDeletionDiscussion(text, revision, blocks):
     access. The CSV will have the following columns:
     timestamp | contrib ID | contrib name | rev ID | text | seconds to block
     Seconds to block is the time in seconds until the user who is author of this
-    revision got blocked. """
+    revision got blocked.
+    Revisions of anonymous users will be ignored as IP addresses are not unique.
+    """
+    if not revision.contributor_id: # we will not process anonymous users:
+        return
+
     text = TextPostProcessing.clean(text, revision.contributor_name)
 
-    # only print a line when this revision introduced new text
+    # only print a line when this revision introduced new text:
     if text.strip():
         secondsToBlock = BlockTimeCalculation.calculateSecondsUntilNextBlock(blocks, revision.contributor_name, revision.timestamp)
         print("[I] Writing authorhship for revision %s to disk." % revision.wikipedia_id)
