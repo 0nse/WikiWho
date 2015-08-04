@@ -65,8 +65,11 @@ def writePage(pageObj, outputFile):
         contributor = createSubElement(revision, 'contributor')
         contributorObj = revisionObj.contributor
         if contributorObj is not None:
-            createSubElement(contributor, 'id', contributorObj)
-            createSubElement(contributor, 'username', contributorObj, 'user_text')
+            if contributorObj.id == None: # anonymous user:
+                createSubElement(contributor, 'ip', contributorObj)
+            else: # registered user:
+                createSubElement(contributor, 'id', contributorObj)
+                createSubElement(contributor, 'username', contributorObj, 'user_text')
 
         tree = ET.ElementTree(revision)
         tree.write(outputFile, encoding="UTF-8")
