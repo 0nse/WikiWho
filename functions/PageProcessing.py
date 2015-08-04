@@ -35,9 +35,13 @@ def process(page, isDeletionDiscussion=True):
     revisions_order = []
     revisions = {}
 
+    oldId = -1
     print('[I] Now processing the page "%s".' % page.title)
     # Iterate over revisions of the article.
     for revision in page:
+        assert revision.id > oldId, '[E] Revisions of "%s" were not sorted ascendingly.' % page.title
+        oldid = revision.id
+
         vandalism = False
 
         # Update the information about the previous revision.
