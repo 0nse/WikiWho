@@ -8,8 +8,8 @@
 import csv
 
 import functions.TextPostProcessing as TextPostProcessing
+import functions.WarningTemplates as WarningTemplates
 import BlockTimeCalculation
-import WarningTemplates
 
 from datetime import datetime
 

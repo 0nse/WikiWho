@@ -11,8 +11,6 @@ from functions.determineAuthorship import determineAuthorship
 
 from structures.Revision import Revision
 
-import itertools
-
 # Spam detection variables.
 CHANGE_PERCENTAGE = -0.40
 PREVIOUS_LENGTH = 1000
@@ -37,11 +35,9 @@ def process(page, isDeletionDiscussion=True):
     revisions_order = []
     revisions = {}
 
-    pageObj, pageCopy = itertools.tee(page)
-    assert areRevisionsSorted(pageCopy), '[E] Revisions of "%s" were not sorted ascendingly.' % pageObj.title
     print('[I] Now processing the page "%s".' % page.title)
     # Iterate over revisions of the article.
-    for revision in pageObj:
+    for revision in page:
         vandalism = False
 
         # Update the information about the previous revision.
@@ -132,11 +128,13 @@ def sortRevisions(page):
 
 def areRevisionsSorted(page):
     """ Return True if the IDs of the revisions in page are sorted ascendingly.
-    You will want to pass a copy of the Page object as this method consumes the
-    generator.
+    As this method consumes the generator, it will have to make a copy.
     """
+    import itertools
+    page, pageCopy = itertools.tee(page)
+
     oldId = -1
-    for revision in page:
+    for revision in pageCopy:
         if oldId > revision.id:
             print('[I] %s was greater than %s.' % (oldId, revision.id))
             return False
