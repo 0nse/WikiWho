@@ -67,9 +67,9 @@ def isDeletionDiscussion(page):
        and page.title != 'Wikipedia:Articles for deletion/Old' \
        # Log collects discussions by including them through a template:
        and not page.title.startswith('Wikipedia:Articles for deletion/Log/') \
-       and page.title != 'Wikipedia:Articles for deletion/Log') \
+       and page.title != 'Wikipedia:Articles for deletion/Log' \
        # Another meta page, see e.g. Wikipedia:Articles for deletion/Esoteric programming language related/Detail:
-       and not page.title.endswith('/Detail'):
+       and not page.title.endswith('/Detail')):
         return True
 
     return False

@@ -108,7 +108,7 @@ def createSubElement(parent, elementName, obj=None, objAttrName=None):
 
     element = None
     if elementName in ('minor', 'parentid'):
-        if value:
+        if value is not None:
             element = ET.SubElement(parent, elementName)
             # parentid may not be an empty element, yet
             # minor must be an empty element:
@@ -118,7 +118,7 @@ def createSubElement(parent, elementName, obj=None, objAttrName=None):
                 element.text = str(value)
     else:
         element = ET.SubElement(parent, elementName)
-        if value:
+        if value is not None:
             element.text = str(value)
     # Element can still be None for parentid and minor w/o a value:
     return element
