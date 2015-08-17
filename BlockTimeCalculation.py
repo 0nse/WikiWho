@@ -59,7 +59,6 @@ def labelRevisions(blocks, inputFile, outputFile):
     with inputFile:
         for [timestamp, userId, userName, revisionId, text] in revisionReader:
 
-            import pdb; pdb.set_trace()
             secondsToBlock = calculateSecondsUntilNextBlock(blocks, userName, timestamp)
 
             revisionWriter.writerow([timestamp,
