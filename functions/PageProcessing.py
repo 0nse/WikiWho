@@ -84,7 +84,7 @@ def process(page, isDeletionDiscussion=True):
             # Content within the revision.
             text_curr = revision.text
             if isDeletionDiscussion:
-                text_curr = removeAfDText(text_curr)
+                text_curr = removeAfDText(text_curr, revision.timestamp)
                 text_curr = preprocessAbbreviations(text_curr)
                 text_curr = useEnDashForParentheticalExpression(text_curr)
                 text_curr = removeStandaloneLinks(text_curr)
@@ -133,16 +133,19 @@ def useEnDashForParentheticalExpression(text):
 #===============================================================================
 afdTemplates = AfDTemplates.extractTemplateRevisions('xmls/afd_templates.xml')
 
-def removeAfDText(text):
+def removeAfDText(text, timestamp):
     """ Although AfD headers and footers are obviously templates, the dumps do
     not contain them as marked up template but as the text from them being
     resolved. Thus, the text has to be manually removed in a preprocessing step.
     """
-    for template in afdTemplates:
-        for revisionRe in afdTemplates[template]:
-            if revisionRe.search(text):
-                import pdb; pdb.set_trace()
-            text = revisionRe.sub("", text)
+    for templateTitle in afdTemplates:
+        for (templateTimestamp, templateRe) in afdTemplates[templateTitle]:
+            # with the templateTimestamps sorted descendingly, the template
+            # revision younger than but closest to the timestamp will be the
+            # only template that a subst: could have used.
+            if timestamp > templateTimestamp:
+                text = templateRe.sub("", text)
+                break
 
     return text
 

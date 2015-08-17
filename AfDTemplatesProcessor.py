@@ -134,8 +134,12 @@ def extractTemplateRevisions(fileName):
             text = text.replace(TemplateProcessor.regexSubstitutionPlaceholderString, '.*?')
 
             textRe = re.compile(text)
-            revisions.append(textRe)
+            revisionTuple = (revision.timestamp, textRe)
 
+            revisions.append(revisionTuple)
+
+        # Sort descendingly so that the newest revision is the first:
+        revisions.sort(reverse=True)
         templates[template.title] = revisions
 
     return templates
