@@ -115,8 +115,10 @@ def extractTemplateRevisions(fileName):
             text = TemplateProcessor.dropNested(text, r'{{', r'}}', TemplateProcessor.replaceSpansWithRePattern)
 
             # If there is no alphabetical letter in the text there are also no
-            # words and we better skip:
-            if not re.compile('[A-Z,a-z]+').search(text):
+            # words and we better skip. Ignore our placeholder as it allows any
+            # text:
+            textPlaceholderFree = text.replace(TemplateProcessor.regexSubstitutionPlaceholderString, '')
+            if not re.compile('[A-Z,a-z]+').search(textPlaceholderFree):
                 continue
 
             text = re.escape(text.strip())
