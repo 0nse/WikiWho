@@ -8,6 +8,7 @@
 import re
 
 from functions.determineAuthorship import determineAuthorship
+import AfDTemplatesProcessor as AfDTemplates
 
 from structures.Revision import Revision
 
@@ -130,18 +131,18 @@ def useEnDashForParentheticalExpression(text):
 # The following methods use regular expressions. These expressions are compiled
 # before the method definition so that they are only compiled once:
 #===============================================================================
-afdHeader = """:\'\'The following discussion is an archived debate of the proposed deletion of the article below. <span style="color:red">\'\'\'Please do not modify it.\'\'\'</span>  Subsequent comments should be made on the appropriate discussion page (such as the article\'s [[Help:Using talk pages|talk page]] or in a [[Wikipedia:Deletion review|deletion review]]).  No further edits should be made to this page.\'\'"""
-afdFooter = """:\'\'The above discussion is preserved as an archive of the debate.  <span style="color:red">\'\'\'Please do not modify it.\'\'\'</span> Subsequent comments should be made on the appropriate discussion page (such as the article\'s [[Help:Using talk pages|talk page]] or in a [[Wikipedia:Deletion review|deletion review]]). No further edits should be made to this page."""
-resultRe = re.compile("The result was '''[^']+'''.")
+afdTemplates = AfDTemplates.extractTemplateRevisions('xmls/afd_templates.xml')
 
 def removeAfDText(text):
     """ Although AfD headers and footers are obviously templates, the dumps do
     not contain them as marked up template but as the text from them being
     resolved. Thus, the text has to be manually removed in a preprocessing step.
     """
-    text = text.replace(afdHeader, "")
-    text = text.replace(afdFooter, "")
-    text = resultRe.sub("", text)
+    for template in afdTemplates:
+        for revisionRe in afdTemplates[template]:
+            if revisionRe.search(text):
+                import pdb; pdb.set_trace()
+            text = revisionRe.sub("", text)
 
     return text
 
