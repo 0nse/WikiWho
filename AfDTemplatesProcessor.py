@@ -19,7 +19,7 @@ removableTagsRe = re.compile('(?i)</?(includeonly)|(nowiki)>', re.DOTALL)
 noIncludeRe = re.compile('(?i)<noinclude>.*?</noinclude>', re.DOTALL)
 #                         \__/           \_/
 #                 case insensitive     non-greedy
-boxBeginningRe = re.compile('(?i)(.*?){{[a-z]*box[ \n]*\|.*?(small)?text *=(.*)', re.DOTALL)
+boxBeginningRe = re.compile('(?i){{[a-z]*box[ \n]*\|.*?(small)?text *=(.*)', re.DOTALL)
 #                            \__/        \___/   \____/
 #            case insensitive_/        mbox etc.   spaces or newlines
 templateValuesRe = re.compile('.*?}}(.*)')
@@ -29,15 +29,19 @@ signature = '%s %s' % (Signature.userRe.pattern, Signature.timestampRe.pattern)
 
 def extractMessageBoxText(text):
     ''' Extract the text given in the (small)text attribute of a message box
-    template: https://en.wikipedia.org/wiki/Module:Message_box '''
+    template: https://en.wikipedia.org/wiki/Module:Message_box
+    Naïvely, we assume that there is no relevant context outside the box. This
+    is a simplification which can easily lead to an incomplete representation of
+    the template's content. However, it is the only option without to also
+    processing the box template and substituting it with the text.
+    If no message box is found in text, text is returned as is. '''
     boxBeginning = boxBeginningRe.search(text)
-    while boxBeginning:
+
+    if boxBeginning:
+        assert boxBeginning.group(2), '[E] There was no text following the box template.'
+
         # extract the actual text:
-        if boxBeginning.group(1):
-            text = boxBeginning.group(1)
-        if boxBeginning.group(3):
-            text += boxBeginning.group(3)
-        assert boxBeginning.group(3), '[E] There was no text following the box template.'
+        text = boxBeginning.group(2)
 
         previousSymbol = None
         nestingLevel = 2
@@ -58,15 +62,11 @@ def extractMessageBoxText(text):
                 break
 
         if previousSymbol == '|':
-            appendedText = templateValuesRe.search(text).group(1)
             # -2 due to '|'
-            text = text[:position - 1] + appendedText
+            text = text[:position - 1]
         else:
             # -2 due to '}}'
-            text = text[:position - 2] + text[position:]
-
-        # are there any more boxes?
-        boxBeginning = boxBeginningRe.search(text)
+            text = text[:position - 2]
 
     return text
 
@@ -99,6 +99,8 @@ def extractTemplateRevisions(fileName):
             if not text:
                 continue
 
+            # If a message box was used (which happens frequently) extract its
+            # text:
             text = extractMessageBoxText(text)
 
             # remove includeonly tags because they will be left out in subst and
@@ -135,6 +137,7 @@ def extractTemplateRevisions(fileName):
             revisions.append(textRe)
 
         templates[template.title] = revisions
+
     return templates
 
 if __name__ == '__main__':
