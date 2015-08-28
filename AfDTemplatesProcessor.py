@@ -10,66 +10,8 @@ import re
 from mw.xml_dump import Iterator as mwIterator
 from mw.xml_dump.functions import open_file
 
-import WikiCodeCleaner.signature as Signature
+import WikiCodeCleaner.clean as Cleaner
 import WikiCodeCleaner.dropNested as TemplateProcessor
-
-removableTagsRe = re.compile('(?i)</?(includeonly)|(nowiki)>', re.DOTALL)
-#                           \__/
-#                    case insensitive
-noIncludeRe = re.compile('(?i)<noinclude>.*?</noinclude>', re.DOTALL)
-#                         \__/           \_/
-#                 case insensitive     non-greedy
-boxBeginningRe = re.compile('(?i){{[a-z]*box[ \n]*\|.*?(small)?text *=(.*)', re.DOTALL)
-#                            \__/        \___/   \____/
-#            case insensitive_/        mbox etc.   spaces or newlines
-templateValuesRe = re.compile('.*?}}(.*)')
-#                              \_/   \/
-#     any text before template end   any text after the template
-signature = '%s %s' % (Signature.userRe.pattern, Signature.timestampRe.pattern)
-
-def extractMessageBoxText(text):
-    ''' Extract the text given in the (small)text attribute of a message box
-    template: https://en.wikipedia.org/wiki/Module:Message_box
-    Naïvely, we assume that there is no relevant context outside the box. This
-    is a simplification which can easily lead to an incomplete representation of
-    the template's content. However, it is the only option without to also
-    processing the box template and substituting it with the text.
-    If no message box is found in text, text is returned as is. '''
-    boxBeginning = boxBeginningRe.search(text)
-
-    if boxBeginning:
-        assert boxBeginning.group(2), '[E] There was no text following the box template.'
-
-        # extract the actual text:
-        text = boxBeginning.group(2)
-
-        previousSymbol = None
-        nestingLevel = 2
-        position = 0
-
-        for symbol in text:
-            if symbol == '{':
-                nestingLevel += 1
-            elif symbol == '}':
-                nestingLevel -= 1
-
-            # update the values:
-            previousSymbol = symbol
-            position += 1
-
-            if (nestingLevel == 0 or
-                (nestingLevel == 2 and symbol == '|')):
-                break
-
-        if previousSymbol == '|':
-            # -2 due to '|'
-            text = text[:position - 1]
-        else:
-            # -2 due to '}}'
-            text = text[:position - 2]
-
-    return text
-
 
 def extractTemplateRevisions(fileName):
     ''' Used to build regular expressions of a set of templates as given via an
@@ -96,23 +38,10 @@ def extractTemplateRevisions(fileName):
         for revision in template:
             text = revision.text
 
-            if not text:
-                continue
-
-            # If a message box was used (which happens frequently) extract its
-            # text:
-            text = extractMessageBoxText(text)
-
-            # remove includeonly tags because they will be left out in subst and
-            # nowiki. See https://en.wikipedia.org/wiki/Template:Nowiki
-            # https://en.wikipedia.org/wiki/Template:Includeonly:
-            text = removableTagsRe.sub('', text)
-
-            # remove noinclude parts:
-            text = noIncludeRe.sub('', text)
-
-            # replace templates for later optional characters:
+            # mark templates for later wildcard replacement:
             text = TemplateProcessor.dropNested(text, r'{{', r'}}', TemplateProcessor.replaceSpansWithRePattern)
+
+            text = Cleaner.clean(text)
 
             # If there is no alphabetical letter in the text there are also no
             # words and we better skip. Ignore our placeholder as it allows any
@@ -122,9 +51,10 @@ def extractTemplateRevisions(fileName):
                 continue
 
             text = re.escape(text.strip())
-
-            # substitute signatures:
-            text = text.replace('\\~'*4, signature)
+            # If text hardly contains any words, we better ignore it as being
+            # too generic:
+            if text.count(' ') < 4:
+                continue
 
             # if we have a wildcard in the beginning or the end, we must mark
             # beginning and end to not match too much:

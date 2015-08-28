@@ -8,7 +8,6 @@
 import re
 
 from functions.determineAuthorship import determineAuthorship
-import AfDTemplatesProcessor as AfDTemplates
 
 from structures.Revision import Revision
 
@@ -22,7 +21,7 @@ def process(page, isDeletionDiscussion=True):
     """ Processes the page to associate every word of every revision with the
     revision it was created in. If isDeletionDiscussion is True, AfD
     preprocessing will be applied so that the later cleaning of text will not
-    destroy abbreviations and also so that expanded AfD templates are removed.
+    destroy abbreviations.
     """
     # Hash table.
     spam = []
@@ -84,7 +83,6 @@ def process(page, isDeletionDiscussion=True):
             # Content within the revision.
             text_curr = revision.text
             if isDeletionDiscussion:
-                text_curr = removeAfDText(text_curr, revision.timestamp)
                 text_curr = preprocessAbbreviations(text_curr)
                 text_curr = useEnDashForParentheticalExpression(text_curr)
                 text_curr = removeStandaloneLinks(text_curr)
@@ -130,26 +128,6 @@ def useEnDashForParentheticalExpression(text):
 #===============================================================================
 # The following methods use regular expressions. These expressions are compiled
 # before the method definition so that they are only compiled once:
-#===============================================================================
-afdTemplates = AfDTemplates.extractTemplateRevisions('xmls/afd_templates.xml')
-
-def removeAfDText(text, timestamp):
-    """ Although AfD headers and footers are obviously templates, the dumps do
-    not contain them as marked up template but as the text from them being
-    resolved. Thus, the text has to be manually removed in a preprocessing step.
-    """
-    for templateTitle in afdTemplates:
-        for (templateTimestamp, templateRe) in afdTemplates[templateTitle]:
-            # with the templateTimestamps sorted descendingly, the template
-            # revision younger than but closest to the timestamp will be the
-            # only template that a subst: could have used.
-            if timestamp > templateTimestamp:
-                text = templateRe.sub("", text)
-                break
-
-    return text
-
-
 #===============================================================================
 # %s may be surrounded by symbols and probably ends with a dot. However, it
 # cannot be extracted in a re if no symbol separates it from an alphabetic

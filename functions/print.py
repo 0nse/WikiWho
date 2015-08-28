@@ -11,6 +11,8 @@ import functions.TextPostProcessing as TextPostProcessing
 import functions.WarningTemplates as WarningTemplates
 import BlockTimeCalculation
 
+import AfDTemplatesProcessor as AfDTemplates
+
 from datetime import datetime
 
 def writeAllRevisions(order, revisions, blocks, pageName = None):
@@ -59,6 +61,8 @@ def writeDeletionDiscussion(text, revision, blocks):
 
     text = TextPostProcessing.clean(text, revision.contributor_name)
 
+    text = removeAfDText(text, revision.timestamp)
+
     # only print a line when this revision introduced new text:
     if text.strip():
         secondsToBlock = BlockTimeCalculation.calculateSecondsUntilNextBlock(blocks, revision.contributor_name, revision.timestamp)
@@ -102,3 +106,25 @@ def writeUserWarning(text, revision, pageName):
                                      revision.contributor_id,
                                      revision.contributor_name])
             break
+
+#===============================================================================
+# The following method uses regular expressions. The expression is compiled
+# before the method definition so that it is only compiled once:
+#===============================================================================
+afdTemplates = AfDTemplates.extractTemplateRevisions('xmls/afd_templates.xml')
+
+def removeAfDText(text, timestamp):
+    """ Although AfD headers and footers are obviously templates, the dumps do
+    not contain them as marked up template but as the text from them being
+    resolved. Thus, the text has to be manually removed in a preprocessing step.
+    """
+    for templateTitle in afdTemplates:
+        for (templateTimestamp, templateRe) in afdTemplates[templateTitle]:
+            # with the templateTimestamps sorted descendingly, the template
+            # revision younger than but closest to the timestamp will be the
+            # only template that a subst: could have used.
+            if timestamp > templateTimestamp:
+                text = templateRe.sub("", text)
+                break
+
+    return text
