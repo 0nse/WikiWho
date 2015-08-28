@@ -51,5 +51,5 @@ def merge(textList):
 
 def doesWordContainSymbols(word):
     # this is string.punctuation without ' and " and `:
-    punctuation = '!#$%&()*+,-./:;<=>?@[\\]^_{|}~'
+    punctuation = '!#$%&()*+,-./:;<=>?@[\\]^_{|}~§'
     return any(c in word for c in punctuation)
