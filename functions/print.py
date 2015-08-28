@@ -55,8 +55,15 @@ def writeDeletionDiscussion(text, revision, blocks):
     Seconds to block is the time in seconds until the user who is author of this
     revision got blocked.
     Revisions of anonymous users will be ignored as IP addresses are not unique.
-    """
-    if not revision.contributor_id: # we will not process anonymous users:
+    Likewise, bots will be ignored as we are interested in human communication.
+
+    The list of bots can be retrieved from running WikiWho w/o the Bot removal
+    and executing the bash command (replacing the space delimiter with a tab):
+    grep 'Bot	' deletionRevisions.csv | cut -f 3 -d '	' | sort | uniq
+    For our dump, we detected 55 bots with SineBot being the most active. """
+    # we will not process anonymous users or bots:
+    if not revision.contributor_id or \
+      revision.contributor_name.endswith('Bot'):
         return
 
     text = TextPostProcessing.clean(text, revision.contributor_name)
