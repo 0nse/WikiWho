@@ -6,12 +6,11 @@
 @author: Michael Ruster
 '''
 import csv
+import re
 
 import functions.TextPostProcessing as TextPostProcessing
 import functions.WarningTemplates as WarningTemplates
 import BlockTimeCalculation
-
-import AfDTemplatesProcessor as AfDTemplates
 
 from datetime import datetime
 
@@ -68,7 +67,7 @@ def writeDeletionDiscussion(text, revision, blocks):
 
     text = TextPostProcessing.clean(text, revision.contributor_name)
 
-    text = removeAfDText(text, revision.timestamp)
+    text = removeAfDText(text)
 
     # only print a line when this revision introduced new text:
     if text.strip():
@@ -115,23 +114,35 @@ def writeUserWarning(text, revision, pageName):
             break
 
 #===============================================================================
-# The following method uses regular expressions. The expression is compiled
-# before the method definition so that it is only compiled once:
+# The following method uses regular expressions. The expressions are compiled
+# before the method definition so that they are only compiled once:
 #===============================================================================
-afdTemplates = AfDTemplates.extractTemplateRevisions('xmls/afd_templates.xml')
+# The following list of regular expressions has been compiled by analysing the
+# most frequently made posts in AfDs.
+afdTemplates = [ re.compile('(wikipediadeletionprocess )?(relistingdiscussions )?((wp)?relist )?(this afd is being )?relisted to generate a (clearer consensus|more thorough discussion so (a clearer |that )?(consensus|a decision) may (usefully )?be reached)( br| emsp| please add new discussion below this notice thanks)?'),
+                 re.compile('(was proposed for deletion )?this page is an archive of (the discussion (about |surrounding ))?the proposed deletion (of the (article below|page entitled( \w)*) )?this page is (no longer live|kept as an historic record)'),
+                 re.compile('this page is now preserved as an archive of the debate and like (some )?other (delete |vfd )?(sub)?pages is no longer live subsequent comments on the issue the deletion or (on )?the decisionmaking process should be placed on the relevant live pages please do not edit this page'),
+                 re.compile('this page is an archive of the proposed deletion of the article below further comments should be made on the (appropriate discussion page such as the )?articles talk page (if it exists )?or (on a votes for undeletion nomination|after the end of this archived section)'),
+                 re.compile('note this debate has been added to the .*?deletion list of .*?deletions( ron)?'),
+                 re.compile('preceding wikipediasignatures (unsigned|undated)? comment (was )?added( at ?)?( by)?'),
+                 re.compile('remove this template when closing this afd'),
+                 re.compile('this afd nomination was incomplete (missing step )?it is listed now'),
+                 re.compile('this afd nomination was wikipediaarticlesfordeletion howtolistpagesfordeletion orphaned listing now'),
+                 re.compile('further comments should be made on the articles talk page rather than here so that this page is preserved as an historic record (br )?'),
+                 re.compile('no further edits should be made to (this )?page'),
+                 re.compile('the result( of the debate)? was'),
+                 re.compile('(the (above discussion|following discussion)|this page) is ((now )?preserved as an archive of the debate( and (like other delete pages )?is no longer live)?|an archived debate of the proposed deletion of the article( below)?)'),
+                 re.compile('(please do not modify it )?subsequent comments (on the issue the deletion or on the decisionmaking process )?should be (made|placed) on the (appropriate|relevant) (discussion|live) page(s)?( such as the articles talk page or (o|i)n an?)?') ]
+spacesRe = re.compile(r' {2,}')
 
-def removeAfDText(text, timestamp):
+def removeAfDText(text):
     """ Although AfD headers and footers are obviously templates, the dumps do
     not contain them as marked up template but as the text from them being
     resolved. Thus, the text has to be manually removed in a preprocessing step.
     """
-    for templateTitle in afdTemplates:
-        for (templateTimestamp, templateRe) in afdTemplates[templateTitle]:
-            # with the templateTimestamps sorted descendingly, the template
-            # revision younger than but closest to the timestamp will be the
-            # only template that a subst: could have used.
-            if timestamp > templateTimestamp:
-                text = templateRe.sub("", text)
-                break
+    for templateRe in afdTemplates:
+        text = templateRe.sub("", text)
 
+    # Remove leftover consecutive spaces that could appear after applying res:
+    text = spacesRe.sub(' ', text)
     return text
