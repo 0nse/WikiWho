@@ -84,3 +84,9 @@ target/
 venv/
 *.xml
 *.csv
+screenlog*
+screen_*.log
+scripts/blocked/
+scripts/notBlocked/
+*.txt
+processed/
