@@ -51,11 +51,10 @@ function kFoldXValidation {
     done
 
     wordsAmount=`wc -w ${name}/${name}_${i}.txt | cut -d ' ' -f1`
-    perplexity=`python -c "import math; fraction = -${sum} / ${wordsAmount}.; print(math.pow(math.e, fraction))"` # Python 2/3 floating point division
+    perplexity=`python -c "import math; fraction = -${globalSum} / ${wordsAmount}.; print(math.pow(math.e, fraction))"` # Python 2/3 floating point division
     globalPerplexity=`python -c "print(${globalPerplexity} + ${perplexity})"`
 
-    echo "Perplexity for ${name}_${i}: " ${perplexity} "  Sum: " ${sum} " Word amount: " ${wordsAmount} | tee -a ${logFile}
-    python -c "print(-$globalSum / $wordsAmount.)"
+    echo "Perplexity for ${name}_${i}: " ${perplexity} "  Sum: " ${globalSum} " Word amount: " ${wordsAmount} | tee -a ${logFile}
 
     # remove training data from this evaluation
     rm ${trainingFile}

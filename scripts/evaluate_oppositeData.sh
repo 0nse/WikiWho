@@ -57,11 +57,10 @@ function testAgainstOppositeData {
     done
 
     wordsAmount=`wc -w ${testName}/${testName}_${i}.txt | cut -d ' ' -f1`
-    perplexity=`python -c "import math; fraction = -${sum} / ${wordsAmount}.; print(math.pow(math.e, fraction))"` # Python 2/3 floating point division
+    perplexity=`python -c "import math; fraction = -${globalSum} / ${wordsAmount}.; print(math.pow(math.e, fraction))"` # Python 2/3 floating point division
     globalPerplexity=`python -c "print(${globalPerplexity} + ${perplexity})"`
 
-    echo "Perplexity for ${testName}_${i} (opposite type): " ${perplexity} "  Sum: " ${sum} " Word amount: " ${wordsAmount} | tee -a ${logFile}
-    python -c "print(-$globalSum / $wordsAmount.)"
+    echo "Perplexity for ${testName}_${i} (opposite type): " ${perplexity} "  Sum: " ${globalSum} " Word amount: " ${wordsAmount} | tee -a ${logFile}
 
     # remove training data from this evaluation
     rm ${trainingFile}
