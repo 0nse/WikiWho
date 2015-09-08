@@ -33,7 +33,6 @@ function kFoldXValidation {
     python GLMTKPreprocessor.py ${name}/${name}_${i}.txt
 
     globalSum=0
-    wordsAmount=0
     # test on all ngrams and sum up their logarithmic results:
     for ((j=1; j < 5; j++)); do
       echo "Testing ${name}_${i}." | tee -a ${logFile}

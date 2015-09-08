@@ -39,7 +39,6 @@ function testAgainstOppositeData {
     python GLMTKPreprocessor.py ${testName}/${testName}_${i}.txt
 
     globalSum=0
-    wordsAmount=0
     # test on all ngrams and sum up their logarithmic results:
     for ((j=1; j < 5; j++)); do
       echo "Testing ${testName}_${i} against model of opposite type." | tee -a ${logFile}
