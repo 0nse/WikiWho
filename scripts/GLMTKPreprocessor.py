@@ -12,7 +12,7 @@ def split(inputFile):
        open('ngram-4', 'w') as ffour:
     for line in inputFile:
         wordList = line.rstrip('\n').split(' ')
-        index = 1
+        index = 0
 
         funi.write( mergeWordsToLine(wordList, index) )
         index += 1
