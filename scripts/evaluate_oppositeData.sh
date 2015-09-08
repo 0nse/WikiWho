@@ -31,7 +31,7 @@ function testAgainstOppositeData {
   done
   # train on ${output}:
   echo "Training." | tee -a ${logFile}
-  ${glmtk} ${trainingFile} -n 4 -e MKN | tee -a ${logFile}
+  ${glmtk} ${trainingFile} -n 4 -e MKN
 
   for ((i=0; i < ${k}; i++)); do
     # create ngram files:
@@ -43,7 +43,7 @@ function testAgainstOppositeData {
     # test on all ngrams and sum up their logarithmic results:
     for ((j=1; j < 5; j++)); do
       echo "Testing ${testName}_${i} against model of opposite type." | tee -a ${logFile}
-      ${glmtk} ${trainingFile}.glmtk -n ${j} -e MKN -q cond${j} ngram-${j} | tee -a ${logFile}
+      ${glmtk} ${trainingFile}.glmtk -n ${j} -e MKN -q cond${j} ngram-${j}
 
       # the sed command extracts the filename of the last modified file:
       resultFile=`ls -rtl ${queriesPath} | tail -n 1 | sed -E 's/.*[0-9]{1,2} [0-9]{2}:[0-9]{2} (.*)$/\1/'`
