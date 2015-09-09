@@ -65,17 +65,18 @@ function test {
   testName=$3
 
   trainingFile=${name}/merged_${name}.txt
-  testFile=${testName}/${testName}_${i}.txt
   perplexityFile=perplexityByPost_${name}_${testName}.txt
 
-  wordsAmount=`wc -w ${testName} | cut -d ' ' -f1`
-  # create ngrams for current sentence:
-  python GLMTKPreprocessor.py ${testFile}
+  while read post; do
+    wordsAmount=`echo ${post} | wc -w`
+    # create ngrams for current sentence:
+    python GLMTKPreprocessor.py --post "${post}"
 
-  testNGrams ${trainingFile} ${perplexityFile} ${wordsAmount}
+    testNGrams ${trainingFile} ${perplexityFile} ${wordsAmount}
 
-  # remove ngram files from this iteration:
-  rm ngram-*
+    # remove ngram files from this iteration:
+    rm ngram-*
+  done < ${testName}/${testName}_${i}.txt
 }
 
 function testNGrams {
@@ -84,17 +85,18 @@ function testNGrams {
   wordsAmount=$3
   queriesPath=${trainingFile}.glmtk/queries/
 
+  grams=$([ "${wordsAmount}" < 4] && echo "${wordsAmount}" || echo "4")
   # sum of log values returned by glmtk for all ngrams:
   globalSum=0
   # test on all ngrams and sum up their logarithmic results:
-  for ((j=1; j < 5; j++)); do
+  for ((j=1; j <= ${grams}; j++)); do
     echo "Testing ${name}_${i}." | tee -a ${logFile}
     ${glmtk} ${trainingFile}.glmtk -n ${j} -e MKN -q cond${j} ngram-${j}
 
     # the sed command extracts the filename of the last modified file:
     resultFile=`ls -rtl ${queriesPath} | tail -n 1 | sed -E 's/.*[0-9]{1,2} [0-9]{2}:[0-9]{2} (.*)$/\1/'`
     # take the natural logarithm of the result or return 0 if the value was <= 0:
-    sum=`head -n -5 "${queriesPath}${resultFile}" | awk '{ ($NF > 0) ? sum+=log($NF) : sum=0; }
+    sum=`head -n -5 "${queriesPath}${resultFile}" | awk '{ ($NF > 0) ? sum=log($NF) : sum=0; }
                                                          END { print sum }'`
     globalSum=`python -c "print(${globalSum} + ${sum})"`
   done
