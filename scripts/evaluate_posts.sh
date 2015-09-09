@@ -41,10 +41,19 @@ function kFoldXValidation {
     echo "[${i}] Testing"
     # create ngram files for every post and test on them:
                           # trained      testing
-    test ${b}  ${i} ${b}  # blocked    + blocked
-    test ${b}  ${i} ${nb} # blocked    + notBlocked
-    test ${nb} ${i} ${nb} # notBlocked + blocked
-    test ${nb} ${i} ${b}  # notBlocked + notBlocked
+    test ${b}  ${i} ${b}  # blocked    + blocked    = true
+    test ${nb} ${i} ${b}  # notBlocked + blocked    = false
+    python GLMTKPostprocessor.py "${bQueriesPath}" "${nbQueriesPath}"
+    truePositive=`grep  ^True output.csv | wc -l`
+    falseNegative=`grep ^False output.csv | wc -l`
+    echo "[${i}-Training:b] true positives: ${truePositive} false negatives: ${falseNegative}" | tee -a ${logFile}
+
+    test ${nb} ${i} ${nb} # notBlocked + notBlocked = true
+    test ${b}  ${i} ${nb} # blocked    + notBlocked = false
+    python GLMTKPostprocessor.py "${nbQueriesPath}" "${bQueriesPath}"
+    truePositive=`grep  ^True output.csv | wc -l`
+    falseNegative=`grep ^False output.csv | wc -l`
+    echo "[${i}-Training:nb] true positives: ${truePositive} false negatives: ${falseNegative}" | tee -a ${logFile}
 
     # remove training data from this evaluation
     rm ${bTrainingFile}
@@ -60,49 +69,20 @@ function test {
   #
   # This method will create the needed n-grams and initiates tests on a per post
   # basis. Actual testing is done in testNGrams.
-  name=$1
+  trainingFile=$1/merged_$1.txt
   i=$2
-  testName=$3
+  testFile=$3/$3_${i}.txt
 
-  trainingFile=${name}/merged_${name}.txt
-  perplexityFile=perplexityByPost_${name}_${testName}.txt
+  # create ngrams for current sentence:
+  python GLMTKPreprocessor.py ${testFile}
 
-  while read post; do
-    wordsAmount=`echo ${post} | wc -w`
-    # create ngrams for current sentence:
-    python GLMTKPreprocessor.py --post "${post}"
-
-    testNGrams ${trainingFile} ${perplexityFile} ${wordsAmount}
-
-    # remove ngram files from this iteration:
-    rm ngram-*
-  done < ${testName}/${testName}_${i}.txt
-}
-
-function testNGrams {
-  trainingFile=$1
-  perplexityFile=$2
-  wordsAmount=$3
-  queriesPath=${trainingFile}.glmtk/queries/
-
-  grams=$([ "${wordsAmount}" < 4] && echo "${wordsAmount}" || echo "4")
-  # sum of log values returned by glmtk for all ngrams:
-  globalSum=0
-  # test on all ngrams and sum up their logarithmic results:
-  for ((j=1; j <= ${grams}; j++)); do
-    echo "Testing ${name}_${i}." | tee -a ${logFile}
+  echo "Testing ${testFile}" | tee -a ${logFile}
+  for ((j=1; j <= 4; j++)); do
     ${glmtk} ${trainingFile}.glmtk -n ${j} -e MKN -q cond${j} ngram-${j}
-
-    # the sed command extracts the filename of the last modified file:
-    resultFile=`ls -rtl ${queriesPath} | tail -n 1 | sed -E 's/.*[0-9]{1,2} [0-9]{2}:[0-9]{2} (.*)$/\1/'`
-    # take the natural logarithm of the result or return 0 if the value was <= 0:
-    sum=`head -n -5 "${queriesPath}${resultFile}" | awk '{ ($NF > 0) ? sum=log($NF) : sum=0; }
-                                                         END { print sum }'`
-    globalSum=`python -c "print(${globalSum} + ${sum})"`
   done
-  perplexity=`python -c "import math; fraction = -${globalSum} / ${wordsAmount}.; print(math.pow(math.e, fraction))"` # Python 2/3 floating point division
 
-  echo ${perplexity} ${line} >> ${perplexityFile}
+  # remove ngram files from this iteration:
+  rm ngram-*
 }
 #################################################################################
 
