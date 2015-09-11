@@ -42,7 +42,7 @@ rm -r blocked notBlocked
 
 # blocked:
 awk -F $'\t' '{ seconds=int($6);
-                if (seconds > -1 && seconds <= "'"$secondsToBlock"'") {
+                if (seconds > -1 && seconds < "'"$secondsToBlock"'") {
                   gsub(/^ +| +$/, "", $5); # trim string
                   print "<BOP> " $5 " <EOP>"
                 }
@@ -50,12 +50,10 @@ awk -F $'\t' '{ seconds=int($6);
 echo "Wrote blocked to disk, now splitting."
 lines=`splitKFold "blocked" 10`
 echo "Split. Continuing with not blocked."
-echo $lines
-
 
 # not blocked:
 awk -F $'\t' '{ seconds=int($6);
-                if (seconds < 0 || seconds > "'"$secondsToBlock"'") {
+                if (seconds < 0 || seconds >= "'"$secondsToBlock"'") {
                   gsub(/^ +| +$/, "", $5); # trim string
                   print "<BOP> " $5 " <EOP>"
                 }
