@@ -45,17 +45,17 @@ function kFoldXValidation {
     test ${b}  ${i} ${b}  # blocked    + blocked    = true
     test ${nb} ${i} ${b}  # notBlocked + blocked    = false
     ../venv/bin/python3 GLMTKPostprocessor.py "${bQueriesPath}" "${nbQueriesPath}"
-    truePositive=`grep ^True output.csv | wc -l`
-    falseNegative=`grep ^False output.csv | wc -l`
-    echo "[${i}-Training:b]  true positives: ${truePositive} false negatives: ${falseNegative}" | tee -a ${logFile}
+    truePositives=`grep ^True output.csv | wc -l`
+    falseNegatives=`grep ^False output.csv | wc -l`
+    echo "[${i}-Training:b]  true positives: ${truePositives} false negatives: ${falseNegatives}" | tee -a ${logFile}
     rm output.csv
                           # trained      testing
     test ${nb} ${i} ${nb} # notBlocked + notBlocked = true
     test ${b}  ${i} ${nb} # blocked    + notBlocked = false
     ../venv/bin/python3 GLMTKPostprocessor.py "${nbQueriesPath}" "${bQueriesPath}"
     trueNegatives=`grep ^True output.csv | wc -l`
-    falseNegatives=`grep ^False output.csv | wc -l`
-    echo "[${i}-Training:nb] true negatives: ${truePositive} false positives: ${falseNegative}" | tee -a ${logFile}
+    falsePositives=`grep ^False output.csv | wc -l`
+    echo "[${i}-Training:nb] true negatives: ${trueNegatives} false positives: ${falsePositives}" | tee -a ${logFile}
 
     # remove training data from this evaluation
     rm ${bTrainingFile}
