@@ -39,28 +39,26 @@ function kFoldXValidation {
     ${glmtk} ${nbTrainingFile} -n 4 -e MKN
 
     echo "[${i}] Testing"
-    rm output.csv
     # create ngram files for every post and test on them:
                           # trained      testing
     test ${b}  ${i} ${b}  # blocked    + blocked    = true
     test ${nb} ${i} ${b}  # notBlocked + blocked    = false
-    ../venv/bin/python3 GLMTKPostprocessor.py "${bQueriesPath}" "${nbQueriesPath}"
-    truePositives=`grep ^True output.csv | wc -l`
-    falseNegatives=`grep ^False output.csv | wc -l`
-    echo "[${i}-Training:b]  true positives: ${truePositives} false negatives: ${falseNegatives}" | tee -a ${logFile}
-    rm output.csv
+    ../venv/bin/python3 GLMTKPostprocessor.py "${bQueriesPath}" "${nbQueriesPath}" "b"
                           # trained      testing
     test ${nb} ${i} ${nb} # notBlocked + notBlocked = true
     test ${b}  ${i} ${nb} # blocked    + notBlocked = false
-    ../venv/bin/python3 GLMTKPostprocessor.py "${nbQueriesPath}" "${bQueriesPath}"
-    trueNegatives=`grep ^True output.csv | wc -l`
-    falsePositives=`grep ^False output.csv | wc -l`
-    echo "[${i}-Training:nb] true negatives: ${trueNegatives} false positives: ${falsePositives}" | tee -a ${logFile}
+    ../venv/bin/python3 GLMTKPostprocessor.py "${nbQueriesPath}" "${bQueriesPath}" "nb"
 
     # remove training data from this evaluation
     rm ${bTrainingFile}
     rm ${nbTrainingFile}
   done
+  truePositives=`grep ^[0-9] output_b.csv | wc -l`
+  falseNegatives=`grep ^- output_b.csv | wc -l`
+  echo "[${i}-Training:b]  true positives: ${truePositives} false negatives: ${falseNegatives}" | tee -a ${logFile}
+  trueNegatives=`grep ^[0-9] output_nb.csv | wc -l`
+  falsePositives=`grep ^- output_nb.csv | wc -l`
+  echo "[${i}-Training:nb] true negatives: ${trueNegatives} false positives: ${falsePositives}" | tee -a ${logFile}
 }
 
 function test {

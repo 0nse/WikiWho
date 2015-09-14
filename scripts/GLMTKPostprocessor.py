@@ -53,8 +53,23 @@ def step(iterator):
 
   return newWord == '<EOP>'
 
-def calculatePerplexities(positivePath, negativePath):
+def calculatePerplexities(positivePath, negativePath, fileNameSuffix=None):
+  """ Calculates the actual perplexities. No checks are done on fileNameSuffix.
+  Thus, you can most likely break this code.
+  All output is appended to a file. Therefore, you might want to remove files
+  from any prior runs.
+  The file is created as follows: difference	pos. perpl.	neg. perpl.	post
+  The difference is calculated as the positive minus the negative perplexity. As
+  absolute value, it can be seen as a confidence measurement in the implicit
+  classification. Said classification is encoded in the difference being positive
+  or negative. A positive difference value means that the classification predicted
+  the correct class. """
   global post
+
+  if fileNameSuffix:
+    fileName = 'output_%s.csv' % fileNameSuffix
+  else:
+    fileName = 'output.csv'
 
   positiveNGrams = retrieveLatestFiles(positivePath)
   negativeNGrams = retrieveLatestFiles(negativePath)
@@ -67,18 +82,20 @@ def calculatePerplexities(positivePath, negativePath):
        open(negativeNGrams[1], 'r') as nbBi,   \
        open(negativeNGrams[2], 'r') as nbTri,  \
        open(negativeNGrams[3], 'r') as nbFour, \
-       open('output.csv', 'w') as output:
+       open(fileName, 'a') as output:
     while True:
       try:
         pPerplexity = calculatePerplexityForNextPost(bUni, bBi, bTri, bFour)
         nPerplexity = calculatePerplexityForNextPost(nbUni, nbBi, nbTri, nbFour)
       except StopIteration:
-        # the file end has been reached. As negative should have been created
-        # on the same file, we can already break.
+        # the file end has been reached. As the negative data  should have
+        # originated from the same file (thus it should have the same length), we
+        # can already break.
         break
 
-      wasCorrectlyPredicted = pPerplexity < nPerplexity
-      output.write('%s	%f	%f	%s\n' % (wasCorrectlyPredicted,
+      # if this value is negative, the predicted class is wrong:
+      difference = nPerplexity - pPerplexity
+      output.write('%f	%f	%f	%s\n' % (difference,
                                          pPerplexity,
                                          nPerplexity,
                                          ' '.join(post)))
@@ -92,6 +109,8 @@ if __name__ == '__main__':
                       help='The path to the queries folder of the positive training data.')
   parser.add_argument('negativePath', type=str,
                       help='The path to the queries folder of the not positive training data.')
+  parser.add_argument('fileNameSuffix', type=str, nargs='?',
+                      help='An option file name suffix.')
   args = parser.parse_args()
 
-  calculatePerplexities(args.positivePath, args.negativePath)
+  calculatePerplexities(args.positivePath, args.negativePath, args.fileNameSuffix)
