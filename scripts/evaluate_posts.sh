@@ -22,8 +22,10 @@ function kFoldXValidation {
 
   # better safe than sorry: remove earlier training and ngram files:
   rm ngram-*                  > /dev/null 2>&1
-  rm ${trainingFile}          > /dev/null 2>&1
-  rm perplexityByPost_*_*.txt > /dev/null 2>&1
+  rm ${bTrainingFile}         > /dev/null 2>&1
+  rm ${nbTrainingFile}        > /dev/null 2>&1
+  rm -r ${bQueriesPath}       > /dev/null 2>&1
+  rm -r ${nbQueriesPath}      > /dev/null 2>&1
 
   for ((i=0; i < ${k}; i++)); do
     for ((j=0; j < ${k}; j++)); do
@@ -55,10 +57,10 @@ function kFoldXValidation {
   done
   truePositives=`grep ^[0-9] output_b.csv | wc -l`
   falseNegatives=`grep ^- output_b.csv | wc -l`
-  echo "[${i}-Training:b]  true positives: ${truePositives} false negatives: ${falseNegatives}" | tee -a ${logFile}
+  echo "[Training:b]  true positives: ${truePositives} false negatives: ${falseNegatives}" | tee -a ${logFile}
   trueNegatives=`grep ^[0-9] output_nb.csv | wc -l`
   falsePositives=`grep ^- output_nb.csv | wc -l`
-  echo "[${i}-Training:nb] true negatives: ${trueNegatives} false positives: ${falsePositives}" | tee -a ${logFile}
+  echo "[Training:nb] true negatives: ${trueNegatives} false positives: ${falsePositives}" | tee -a ${logFile}
 }
 
 function test {
