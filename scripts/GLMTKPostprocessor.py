@@ -110,7 +110,7 @@ if __name__ == '__main__':
   parser.add_argument('negativePath', type=str,
                       help='The path to the queries folder of the not positive training data.')
   parser.add_argument('fileNameSuffix', type=str, nargs='?',
-                      help='An option file name suffix.')
+                      help='An optional file name suffix.')
   args = parser.parse_args()
 
   calculatePerplexities(args.positivePath, args.negativePath, args.fileNameSuffix)
