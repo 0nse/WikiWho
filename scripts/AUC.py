@@ -23,7 +23,10 @@ def calculateAUC(outputDirectory='.', positiveFile='output_b.csv', negativeFile=
         # confidence value:
         values.append( (difference * -1, False) )
   fp = len(values) - tp
-  print('True positives:\t%i\nFalse positives\t%i\nRatio:\t%f' % (tp, fp, tp / fp))
+  if not fp:
+    import pdb; pdb.set_trace()
+
+  print('True positives:\t%i\nFalse positives:\t%i\nRatio:\t%f' % (tp, fp, tp / fp))
 
   values.sort(reverse=True)
   y = [0]
@@ -41,7 +44,7 @@ def calculateAUC(outputDirectory='.', positiveFile='output_b.csv', negativeFile=
 
   import numpy
   area = numpy.trapz(y, dx=dx)
-  print(area)
+  print('AUC:\t%f' % area)
 
   from matplotlib import pyplot as plt
   fig = plt.figure()

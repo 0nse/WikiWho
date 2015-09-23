@@ -1,13 +1,10 @@
 #!/bin/bash
-# Launch this script with the first parameter being the number of words to
-# respect and the second being the output folder. WARNING: The folder will be
-# deleted with all its contents!
-# The amounts of words is used to filter for a minimum amount of words a post
-# must contain.
+# WARNING: The "shortened" folder will be deleted with all its contents!
 #
-# Usage: ./filterEvaluationResultsMin WORDS_AMOUNT <ANYTHING>
-# WORDS_AMOUNT is the limit of number of words. If ANYTHING is set, WORDS_AMOUNT
-# will be the maximum post length. Else, it will be the minimum length.
+# Usage: ./filterEvaluationResultsMin <ANYTHING>
+# If ANYTHING is set, AUCs will be calculated respecting 1 to 100 words per
+# post maximum Else, AUCs for posts minimum containing 1 to 100 words per
+# post are considered.
 function filterEvaluationResultsMin {
   fileName=$1
   wordsAmount=$2
@@ -18,8 +15,9 @@ function filterEvaluationResultsMin {
     split($NF, words, " ");
     for (w in words) {
       count++;
-      if ( count == "'"$wordsAmount"'" ) {
+      if ( count == int("'"$wordsAmount"'") ) {
         print $0;
+        break;
       }
     }
   }' ${fileName} > ${outputDir}/${fileName}
@@ -35,30 +33,38 @@ function filterEvaluationResultsMax {
     split($NF, words, " ");
     for (w in words) {
       count++;
-      if ( count > "'"$wordsAmount"'" ) {
+      if ( count > int("'"$wordsAmount"'") ) {
         break;
       }
     }
-    if ( count <= "'"$wordsAmount"'") {
+    if ( count <= int("'"$wordsAmount"'") ) {
       print $0;
     }
   }' ${fileName} > ${outputDir}/${fileName}
 }
 #################################################################################
 
+if [[ -z $1 ]]; then
+  echo "Filtering for minimum post length"
+else
+  echo "Filtering for maximum post length"
+fi
 
-wordsAmount=$1
 outputDir="shortened"
 
 rm -r ${outputDir}
 mkdir ${outputDir}
 
-if [[ -z $2 ]]; then
-  filterEvaluationResultsMin output_b.csv  ${wordsAmount} ${outputDir}
-  filterEvaluationResultsMin output_nb.csv ${wordsAmount} ${outputDir}
-else
-  filterEvaluationResultsMax output_b.csv  ${wordsAmount} ${outputDir}
-  filterEvaluationResultsMax output_nb.csv ${wordsAmount} ${outputDir}
-fi
+for ((i=2; i < 500; i++)); do
+  if [[ -z $1 ]]; then
+    filterEvaluationResultsMin output_b.csv  ${i} ${outputDir}
+    filterEvaluationResultsMin output_nb.csv ${i} ${outputDir}
+  else
+    filterEvaluationResultsMax output_b.csv  ${i} ${outputDir}
+    filterEvaluationResultsMax output_nb.csv ${i} ${outputDir}
+  fi
 
-../venv/bin/python3 AUC.py --dir ${outputDir} --positive ${outputDir}/output_b.csv --negative ${outputDir}/output_nb.csv
+  ../venv/bin/python3 AUC.py --dir ${outputDir} --positive ${outputDir}/output_b.csv --negative ${outputDir}/output_nb.csv | tee -a ${outputDir}/AUC.log
+done
+
+../venv/bin/python3 filterResultsPlotter.py ${outputDir}/AUC.log
