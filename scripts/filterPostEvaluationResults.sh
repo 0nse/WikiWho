@@ -2,9 +2,10 @@
 # WARNING: The "shortened" folder will be deleted with all its contents!
 #
 # Usage: ./filterEvaluationResultsMin <ANYTHING>
-# If ANYTHING is set, AUCs will be calculated respecting 1 to 100 words per
-# post maximum Else, AUCs for posts minimum containing 1 to 100 words per
+# If ANYTHING is set, AUCs will be calculated respecting 2 to 500 words per
+# post maximum Else, AUCs for posts minimum containing 2 to 500 words per
 # post are considered.
+# We start with 2, because an empty post would still contain "<EOP>".
 function filterEvaluationResultsMin {
   fileName=$1
   wordsAmount=$2
@@ -59,9 +60,11 @@ for ((i=2; i < 500; i++)); do
   if [[ -z $1 ]]; then
     filterEvaluationResultsMin output_b.csv  ${i} ${outputDir}
     filterEvaluationResultsMin output_nb.csv ${i} ${outputDir}
+    echo "[At least ${i} words]" | tee -a ${outputDir}/AUC.log
   else
     filterEvaluationResultsMax output_b.csv  ${i} ${outputDir}
     filterEvaluationResultsMax output_nb.csv ${i} ${outputDir}
+    echo "[At most ${i} words]" | tee -a ${outputDir}/AUC.log
   fi
 
   ../venv/bin/python3 AUC.py --dir ${outputDir} --positive ${outputDir}/output_b.csv --negative ${outputDir}/output_nb.csv | tee -a ${outputDir}/AUC.log

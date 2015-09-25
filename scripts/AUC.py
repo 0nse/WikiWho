@@ -23,10 +23,10 @@ def calculateAUC(outputDirectory='.', positiveFile='output_b.csv', negativeFile=
         # confidence value:
         values.append( (difference * -1, False) )
   fp = len(values) - tp
-  if not fp:
-    import pdb; pdb.set_trace()
 
-  print('True positives:\t%i\nFalse positives:\t%i\nRatio:\t%f' % (tp, fp, tp / fp))
+  # ratio except for when the denominator is zero; then just zero:
+  ratio = 0 if not fp else tp / fp
+  print('True positives:\t%i\nFalse positives:\t%i\nRatio:\t%f' % (tp, fp, ratio))
 
   values.sort(reverse=True)
   y = [0]
