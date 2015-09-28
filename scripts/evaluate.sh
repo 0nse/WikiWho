@@ -18,8 +18,8 @@ function kFoldXValidation {
   rm ngram-* > /dev/null 2>&1
   rm ${trainingFile} > /dev/null 2>&1
 
-  for ((i=0; i < ${k}; i++)); do
-    for ((j=0; j < ${k}; j++)); do
+  for ((i=1; i <= ${k}; i++)); do
+    for ((j=1; j <= ${k}; j++)); do
       if [[ ${j} == ${i} ]]; then # this will be used for testing
         continue
       fi

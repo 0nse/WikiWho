@@ -14,10 +14,9 @@ function splitKFold {
   name=$1
   fileName=$1.txt
   k=$2
-  echo $3
   if [ -z $3 ]; then # $3 is unset
     lines=`wc -l ${fileName} | cut -f1 -d ' '`
-    linesByK=$((${lines} / $k)) # floor
+    linesByK=$((lines / k)) # floor
   else
     linesByK=$3
   fi
@@ -25,11 +24,14 @@ function splitKFold {
   mkdir ${name}
   currentLine=1
 
-  for ((i=0; i < $k; i++)); do
-    sed -n ${currentLine},$((${linesByK}+${currentLine}))p ${fileName} > ${name}/${name}_${i}.txt
-    currentLine=$((${linesByK} + ${currentLine}))
+  for ((i=1; i <= ${k}; i++)); do
+    lastLine=$((linesByK + currentLine - 1))
+    sed -n ${currentLine},${lastLine}p ${fileName} > ${name}/${name}_${i}.txt
+    currentLine=$((lastLine + 1))
   done
 
+  # return the used amount of lines:
+  echo $3
   echo ${linesByK}
 }
 #################################################################################
