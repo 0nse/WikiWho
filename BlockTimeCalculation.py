@@ -6,6 +6,7 @@ Created on Jul 08, 2015
 @author: Michael Ruster
 '''
 from datetime import datetime
+from mw.types.timestamp import Timestamp as mwTimestamp
 
 def createBlockedUsersDict(inputFile):
     """ Reads a block log CSV, cleans the comment, reorders the output and
@@ -22,13 +23,17 @@ def createBlockedUsersDict(inputFile):
         blockLogReader = csv.reader(inputFile, delimiter='\t', quotechar='"')
 
         for [timestamp, blockedUserName, _, _, _] in blockLogReader:
-            try:
-                timestamp = datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%SZ')
-            except: # missing seconds:
-                timestamp = datetime.strptime(timestamp, '%Y-%m-%dT%H:%MZ')
-            # Here, we are lacking TZ data. As this is similar to WikiParser's
-            # knowledge, we remove it to be able to compare both timestamps:
-            timestamp = timestamp.replace(tzinfo = None)
+            try: # missing seconds:
+                datetime.strptime(timestamp, '%Y-%m-%dT%H:%MZ')
+                # add missing seconds, needed for mwTimestamp:
+                timestamp = timestamp.replace('Z', ':00Z')
+            except:
+                # seconds exist, conversion to timestamp is possible
+                pass
+            # We use mwTimestamp because our dump iterator uses them as well.
+            # This way, we can ensure that both use the correct timezone (which
+            # adds two hours to the provided timestamp.
+            timestamp = mwTimestamp(timestamp)
             try: # exists:
                 timestamps = blocks[blockedUserName]
                 timestamps.append(timestamp)
@@ -68,7 +73,7 @@ def labelRevisions(blocks, inputFile, outputFile):
                                 text,
                                 secondsToBlock])
 
-def calculateSecondsUntilNextBlock(blocks, userName, timestamp):
+def calculateSecondsUntilNextBlock(blocks, userName, revisionTimestamp):
     """
     Determine when the next block of a user happened after her/his post,
     which happened at timestamp.
@@ -76,31 +81,22 @@ def calculateSecondsUntilNextBlock(blocks, userName, timestamp):
     than the current revision, the value will be -1.
     Important: [timestamps, userName] = blocks, blocks' timestamps must be
     sorted in ascending order (oldest timestamp first).
+    Also, provided timestamp MUST be of type mw.types.timestamp.Timestamp!
     """
-    timeDifferenceInSeconds = -1
+    deltaInSeconds = -1
 
     if userName in blocks:
         blockTimestamps = blocks[userName]
-
-        try:
-            revisionTimestamp = datetime.strptime(timestamp, '%Y%m%d%H%M%S')
-        except TypeError:
-            # MediaWiki utilities will provide a Timestamp
-            # object.
-            revisionTimestamp = datetime.fromtimestamp(timestamp)
 
         # Find the timestamp closest to the user posting time
         # with the blockTimestamp being more recent than the
         # revision's timestamp.
         for blockTimestamp in blockTimestamps:
             if blockTimestamp > revisionTimestamp:
-                timedelta = blockTimestamp - revisionTimestamp
-
-                # convert timedelta to seconds:
-                timeDifferenceInSeconds = int(timedelta.total_seconds())
+                deltaInSeconds = blockTimestamp - revisionTimestamp
                 break
 
-    return timeDifferenceInSeconds
+    return deltaInSeconds
 
 if __name__ == "__main__":
     import argparse
