@@ -1,5 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+""" Calculate the AUC drawn from output_b.csv and output_nb.csv (or whatever is
+passed to calculateAUC(). An AUC plot is being saved into a given output
+directory as AUC.png. """
 
 def calculateAUC(outputDirectory='.', positiveFile='output_b.csv', negativeFile='output_nb.csv'):
   # true positives:  output_b: True
