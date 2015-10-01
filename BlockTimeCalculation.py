@@ -9,9 +9,7 @@ from datetime import datetime
 
 def createBlockedUsersDict(inputFile):
     """ Reads a block log CSV, cleans the comment, reorders the output and
-    writes it to disk according to outputFile. Please be aware that, if
-    writing permissions are given for outputFile, it will blindly overwrite
-    everything you love.
+    writes it to disk according to outputFile.
     This method naïvely parses the date in ISO 8601 format. It refrains from
     using python-dateutil. However, this has no impact on the data processing
     as the time differences between block and revision timestamps do not
@@ -48,6 +46,8 @@ def labelRevisions(blocks, inputFile, outputFile):
     """ Writes outputFile with an additional column, which contains a time
     difference in seconds between when this revision was created and when the
     author was next blocked.
+    Please be aware that, if writing permissions are given for outputFile, it
+    will blindly overwrite everything you love.
 
     @see calculateSecondsUntilNextBlock(blocks, userName, timestamp) """
     import csv
