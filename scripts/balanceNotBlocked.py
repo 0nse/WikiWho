@@ -4,8 +4,8 @@
 import random
 import subprocess
 
-with open('run7/notBlocked.txt', 'r') as notBlocked, \
-     open('run7/blocked.txt', 'r') as blocked, \
+with open('notBlocked.txt', 'r') as notBlocked, \
+     open('blocked.txt', 'r') as blocked, \
      open('notBlocked_randomlyBalanced.txt', 'a') as output:
   length = sum(1 for line in blocked)
   lines = notBlocked.readlines() # make sure you have the available memory
