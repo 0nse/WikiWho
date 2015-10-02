@@ -26,6 +26,8 @@ function kFoldXValidation {
   rm ${nbTrainingFile}        > /dev/null 2>&1
   rm -r ${bQueriesPath}       > /dev/null 2>&1
   rm -r ${nbQueriesPath}      > /dev/null 2>&1
+  # as well as output files:
+  rm output_{nb,b}.csv        > /dev/null 2>&1
 
   for ((i=1; i <= ${k}; i++)); do
     for ((j=1; j <= ${k}; j++)); do
@@ -57,10 +59,11 @@ function kFoldXValidation {
   done
   truePositives=`grep ^[0-9] output_b.csv | wc -l`
   falseNegatives=`grep ^- output_b.csv | wc -l`
-  echo "[Training:b]  true positives: ${truePositives} false negatives: ${falseNegatives}" | tee -a ${logFile}
   trueNegatives=`grep ^[0-9] output_nb.csv | wc -l`
   falsePositives=`grep ^- output_nb.csv | wc -l`
-  echo "[Training:nb] true negatives: ${trueNegatives} false positives: ${falsePositives}" | tee -a ${logFile}
+
+  echo "true negatives: ${trueNegatives} false negatives: ${falseNegatives}" | tee -a ${logFile}
+  echo "false positives: ${falsePositives} true positives: ${truePositives}" | tee -a ${logFile}
 }
 
 function test {
