@@ -38,6 +38,7 @@ function splitKFold {
 
 
 fileName=$1
+# 172800 are two days:
 secondsToBlock=$2
 
 rm -r blocked notBlocked
