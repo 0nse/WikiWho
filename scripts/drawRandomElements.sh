@@ -53,6 +53,8 @@ function extractRandomSamples {
   rm ${tmpFileName}
 }
 
+# @deprecated
+# this is very slow, use balanceNotBlocked.py instead
 function createRandomNotBlockedFile {
   # Create a notBlocked file which contains as many entries as blocked.txt.
   # Thus, the result is a balanced, randomly sampled notBlocked file.
