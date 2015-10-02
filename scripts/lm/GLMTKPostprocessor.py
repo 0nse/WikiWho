@@ -67,9 +67,9 @@ def calculatePerplexities(positivePath, negativePath, fileNameSuffix=None):
   global post
 
   if fileNameSuffix:
-    fileName = 'output_%s.csv' % fileNameSuffix
+    fileName = '../data/output_%s.csv' % fileNameSuffix
   else:
-    fileName = 'output.csv'
+    fileName = '../data/output.csv'
 
   positiveNGrams = retrieveLatestFiles(positivePath)
   negativeNGrams = retrieveLatestFiles(negativePath)

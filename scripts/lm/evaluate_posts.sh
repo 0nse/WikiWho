@@ -12,30 +12,32 @@ function kFoldXValidation {
   b="blocked"
   nb="notBlocked"
 
-  bTrainingFile=${b}/merged_${b}.txt
-  nbTrainingFile=$nb/merged_${nb}.txt
+  bTrainingFile=../data/${b}/merged_${b}.txt
+  nbTrainingFile=../data/$nb/merged_${nb}.txt
 
-  bQueriesPath=${bTrainingFile}.glmtk/queries/
-  nbQueriesPath=${nbTrainingFile}.glmtk/queries/
+  bQueriesPath=../data/${bTrainingFile}.glmtk/queries/
+  nbQueriesPath=../data/${nbTrainingFile}.glmtk/queries/
 
   logFile=evaluation.log
 
   # better safe than sorry: remove earlier training and ngram files:
-  rm ngram-*                  > /dev/null 2>&1
-  rm ${bTrainingFile}         > /dev/null 2>&1
-  rm ${nbTrainingFile}        > /dev/null 2>&1
-  rm -r ${bQueriesPath}       > /dev/null 2>&1
-  rm -r ${nbQueriesPath}      > /dev/null 2>&1
+  rm ngram-*                    > /dev/null 2>&1
+  rm ${bTrainingFile}           > /dev/null 2>&1
+  rm ${nbTrainingFile}          > /dev/null 2>&1
+  rm -r ${bQueriesPath}         > /dev/null 2>&1
+  rm -r ${nbQueriesPath}        > /dev/null 2>&1
   # as well as output files:
-  rm output_{nb,b}.csv        > /dev/null 2>&1
+  rm ../data/output_{nb,b}.csv  > /dev/null 2>&1
+  # and logs:
+  rm ${logFile}                 > /dev/null 2>&1
 
   for ((i=1; i <= ${k}; i++)); do
     for ((j=1; j <= ${k}; j++)); do
       if [[ ${j} == ${i} ]]; then # this will be used for testing
         continue
       fi
-      cat ${b}/${b}_${j}.txt   >> ${bTrainingFile}
-      cat ${nb}/${nb}_${j}.txt >> ${nbTrainingFile}
+      cat ../data/${b}/${b}_${j}.txt   >> ${bTrainingFile}
+      cat ../data/${nb}/${nb}_${j}.txt >> ${nbTrainingFile}
     done
     # train:
     echo "[${i}] Training."
@@ -47,20 +49,20 @@ function kFoldXValidation {
                           # trained      testing
     test ${b}  ${i} ${b}  # blocked    + blocked    = true
     test ${nb} ${i} ${b}  # notBlocked + blocked    = false
-    ../venv/bin/python3 GLMTKPostprocessor.py "${bQueriesPath}" "${nbQueriesPath}" "b"
+    ../../venv/bin/python3 GLMTKPostprocessor.py "${bQueriesPath}" "${nbQueriesPath}" "b"
                           # trained      testing
     test ${nb} ${i} ${nb} # notBlocked + notBlocked = true
     test ${b}  ${i} ${nb} # blocked    + notBlocked = false
-    ../venv/bin/python3 GLMTKPostprocessor.py "${nbQueriesPath}" "${bQueriesPath}" "nb"
+    ../../venv/bin/python3 GLMTKPostprocessor.py "${nbQueriesPath}" "${bQueriesPath}" "nb"
 
     # remove training data from this evaluation
     rm ${bTrainingFile}
     rm ${nbTrainingFile}
   done
-  truePositives=`grep ^[0-9] output_b.csv | wc -l`
-  falseNegatives=`grep ^- output_b.csv | wc -l`
-  trueNegatives=`grep ^[0-9] output_nb.csv | wc -l`
-  falsePositives=`grep ^- output_nb.csv | wc -l`
+  truePositives=`grep ^[0-9] ../data/output_b.csv | wc -l`
+  falseNegatives=`grep ^-    ../data/output_b.csv | wc -l`
+  trueNegatives=`grep ^[0-9] ../data/output_nb.csv | wc -l`
+  falsePositives=`grep ^-    ../data/output_nb.csv | wc -l`
 
   echo "true negatives: ${trueNegatives} false negatives: ${falseNegatives}" | tee -a ${logFile}
   echo "false positives: ${falsePositives} true positives: ${truePositives}" | tee -a ${logFile}
@@ -74,9 +76,9 @@ function test {
   #
   # This method will create the needed n-grams and initiates tests on a per post
   # basis. Actual testing is done in testNGrams.
-  trainingFile=$1/merged_$1.txt
+  trainingFile=../data/$1/merged_$1.txt
   i=$2
-  testFile=$3/$3_${i}.txt
+  testFile=../data/$3/$3_${i}.txt
 
   # create ngrams for current sentence:
   python GLMTKPreprocessor.py ${testFile}

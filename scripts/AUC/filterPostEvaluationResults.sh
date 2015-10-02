@@ -7,10 +7,9 @@
 # post are considered.
 # We start with 2, because an empty post would still contain "<EOP>".
 function filterEvaluationResultsMin {
-  fileName=$1
+  fileName=../data/$1
   wordsAmount=$2
-  output=${3}/${fileName/..\//}
-  echo $output
+  output=$3/$1
 
   awk -F $'\t' '
   { count = 0;
@@ -26,9 +25,9 @@ function filterEvaluationResultsMin {
 }
 
 function filterEvaluationResultsMax {
-  fileName=$1
+  fileName=../data/$1
   wordsAmount=$2
-  output=${3}/${fileName/..\//}
+  output=$3/$1
 
   awk -F $'\t' '
   { count = 0;
@@ -52,7 +51,7 @@ else
   echo "Filtering for maximum post length"
 fi
 
-outputDir=shortened
+outputDir=../data/shortened
 b=output_b.csv
 nb=output_nb.csv
 log=${outputDir}/AUC.log
@@ -62,12 +61,12 @@ mkdir ${outputDir}
 
 for ((i=2; i < 500; i++)); do
   if [[ -z $1 ]]; then
-    filterEvaluationResultsMin ../${b}  ${i} ${outputDir}
-    filterEvaluationResultsMin ../${nb} ${i} ${outputDir}
+    filterEvaluationResultsMin ${b}  ${i} ${outputDir}
+    filterEvaluationResultsMin ${nb} ${i} ${outputDir}
     echo "[At least ${i} words]" | tee -a ${log}
   else
-    filterEvaluationResultsMax ../${b}  ${i} ${outputDir}
-    filterEvaluationResultsMax ../${nb} ${i} ${outputDir}
+    filterEvaluationResultsMax ${b}  ${i} ${outputDir}
+    filterEvaluationResultsMax ${nb} ${i} ${outputDir}
     echo "[At most ${i} words]" | tee -a ${log}
   fi
 

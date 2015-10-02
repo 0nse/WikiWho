@@ -12,7 +12,7 @@
 # Returns the number of lines of the file divided by k rounded down.
 function splitKFold {
   name=$1
-  fileName=$1.txt
+  fileName=../data/$1.txt
   k=$2
   if [ -z $3 ]; then # $3 is unset
     lines=`wc -l ${fileName} | cut -f1 -d ' '`
@@ -49,7 +49,7 @@ awk -F $'\t' '{ seconds=int($6);
                   gsub(/^ +| +$/, "", $5); # trim string
                   print "<BOP> " $5 " <EOP>"
                 }
-              }' $fileName > blocked.txt
+              }' $fileName > ../data/blocked.txt
 echo "Wrote blocked to disk, now splitting."
 lines=`splitKFold "blocked" 10`
 echo "Split. Continuing with not blocked."
@@ -60,5 +60,5 @@ awk -F $'\t' '{ seconds=int($6);
                   gsub(/^ +| +$/, "", $5); # trim string
                   print "<BOP> " $5 " <EOP>"
                 }
-              }' $fileName > notBlocked.txt
+              }' $fileName > ../data/notBlocked.txt
 splitKFold "notBlocked" 10 ${lines}
