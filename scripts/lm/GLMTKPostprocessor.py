@@ -94,7 +94,9 @@ def calculatePerplexities(positivePath, negativePath, fileNameSuffix=None):
         break
 
       # if this value is negative, the predicted class is wrong:
-      difference = nPerplexity - pPerplexity
+      squaredDifference = math.pow(nPerplexity, 2) - math.pow(pPerplexity, 2)
+      sign = -1 if squaredDifference < 0 else 1
+      difference = sign * math.sqrt(sign * squaredDifference)
       output.write('%f	%f	%f	%s\n' % (difference,
                                          pPerplexity,
                                          nPerplexity,
