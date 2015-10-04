@@ -21,12 +21,13 @@ function splitKFold {
     linesByK=$3
   fi
 
-  mkdir ${name}
+  directory=../data/${name}
+  mkdir ${directory}
   currentLine=1
 
   for ((i=1; i <= ${k}; i++)); do
     lastLine=$((linesByK + currentLine - 1))
-    sed -n ${currentLine},${lastLine}p ${fileName} > ${name}/${name}_${i}.txt
+    sed -n ${currentLine},${lastLine}p ${fileName} > ${directory}/${name}_${i}.txt
     currentLine=$((lastLine + 1))
   done
 
@@ -41,7 +42,7 @@ fileName=$1
 # 172800 are two days:
 secondsToBlock=$2
 
-rm -r blocked notBlocked
+rm -r ../data/blocked ../data/notBlocked
 
 # blocked:
 awk -F $'\t' '{ seconds=int($6);

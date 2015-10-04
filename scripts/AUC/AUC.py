@@ -4,7 +4,14 @@
 passed to calculateAUC(). An AUC plot is being saved into a given output
 directory as AUC.png. """
 
-def calculateAUC(outputDirectory='.', positiveFile='output_b.csv', negativeFile='output_nb.csv'):
+def calculateAUC(outputDirectory=None, positiveFile=None, negativeFile=None):
+  if not outputDirectory:
+    outputDirectory = '.'
+  if not positiveFile:
+    positiveFile = 'output_b.csv'
+  if not negativeFile:
+    negativeFile = 'output_nb.csv'
+
   # true positives:  output_b: True
   #                  tested on blocked, predicted as blocks
   # false positives: output_nb: False
@@ -66,23 +73,4 @@ if __name__ == '__main__':
                       help='The path to the CSV data of the evaluation results on post-level tested on not blocked entries.')
   args = parser.parse_args()
 
-  # “There has to be an easier way!” — sure but this was quicker for now:
-  if args.outputDirectory:
-    if args.positiveFile:
-      if args.negativeFile:
-        calculateAUC(args.outputDirectory, args.positiveFile, args.negativeFile)
-      else:
-        calculateAUC(args.outputDirectory, args.positiveFile)
-    elif args.negativeFile:
-      calculateAUC(args.outputDirectory, args.negativeFile)
-    else:
-      calculateAUC(args.outputDirectory)
-  elif args.positiveFile:
-    if args.negativeFile:
-      calculateAUC(args.positiveFile, args.negativeFile)
-    else:
-      calculateAUC(args.positiveFile)
-  elif args.negativeFile:
-    calculateAUC(args.negativeFile)
-  else:
-    calculateAUC()
+  calculateAUC(args.outputDirectory, args.positiveFile, args.negativeFile)
