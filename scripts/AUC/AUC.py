@@ -8,9 +8,9 @@ def calculateAUC(outputDirectory=None, positiveFile=None, negativeFile=None):
   if not outputDirectory:
     outputDirectory = '.'
   if not positiveFile:
-    positiveFile = 'output_b.csv'
+    positiveFile = '../data/output_b.csv'
   if not negativeFile:
-    negativeFile = 'output_nb.csv'
+    negativeFile = '../data/output_nb.csv'
 
   # true positives:  output_b: True
   #                  tested on blocked, predicted as blocks
