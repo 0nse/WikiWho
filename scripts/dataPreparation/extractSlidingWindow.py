@@ -102,7 +102,7 @@ def mergeSlidingWindow(reader, bFile, nbFile):
   window will be considered as blocked.
 
   Be aware that this function will create many posts: The files can easily grow
-  into hundreds of GB. '''
+  into many GB. '''
   import sys
   previousUser = None
   previousSecondsToBlock = 0
@@ -138,8 +138,8 @@ def mergeSlidingWindow(reader, bFile, nbFile):
 
             previousSecondsToBlock = secondsToBlock
 
-          # write all in BLOCK_TIME frame to disk:
-          write(recentPosts, smallestSecondsToBlock, bFile, nbFile)
+        # write all in BLOCK_TIME frame to disk:
+        write(recentPosts, smallestSecondsToBlock, bFile, nbFile)
         # drop oldest:
         postsData = postsData[1:]
       # add postData of different user:
