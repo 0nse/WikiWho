@@ -71,7 +71,7 @@ def splitIntoWords(text):
     p = p.replace('<', '||<||').replace('>', '||>||')
     p = p.replace('[||||[', '[[').replace(']||||]', ']]')
     p = p.replace('{||||{', '{{').replace('}||||}', '}}')
-    p = p.replace('||.||||.||||.||', '...').replace('/||||>', '/>').replace('<||||/', '</')
+    p = p.replace('||.||||.||||.||', '||...||').replace('/||||>', '/>').replace('<||||/', '</')
     p = p.replace('-||||-', '--')
 
     p = p.replace('<||||!||||--||', '||<!--||').replace('||--||||>', '||-->||')
