@@ -84,6 +84,7 @@ def process(page, isDeletionDiscussion=True):
             text_curr = revision.text
             if isDeletionDiscussion:
                 text_curr = preprocessAbbreviations(text_curr)
+                text_curr = removeUnresolvedEntities(text_curr)
                 text_curr = useEnDashForParentheticalExpression(text_curr)
                 text_curr = removeStandaloneLinks(text_curr)
             text_curr = text_curr.lower()
@@ -132,13 +133,13 @@ def useEnDashForParentheticalExpression(text):
 # %s may be surrounded by symbols and probably ends with a dot. However, it
 # cannot be extracted in a re if no symbol separates it from an alphabetic
 # letter. This is to prevent mismatches as part of real words.
-abbreviationNotPartOfAWord = r"(?i)[^a-z,A-Z](%s\.{0,1})[^a-z,A-Z]"
+abbreviationNotPartOfAWord = r"(?i)[^a-z,A-Z](%s\. {0,1}%s\.{0,1})[^a-z,A-Z]"
 # We allow a single space after the first dot because mobile phone keyboards
 # often add them (e.g. SwiftKey) automatically.
-ieRe = re.compile(abbreviationNotPartOfAWord % "i\. {0,1}e")
-egRe = re.compile(abbreviationNotPartOfAWord % "e\. {0,1}g")
-nbRe = re.compile(abbreviationNotPartOfAWord % "n\. {0,1}b")
-psRe = re.compile(abbreviationNotPartOfAWord % "p\. {0,1}s")
+ieRe = re.compile(abbreviationNotPartOfAWord % ("i", "e"))
+egRe = re.compile(abbreviationNotPartOfAWord % ("e", "g"))
+nbRe = re.compile(abbreviationNotPartOfAWord % ("n", "b"))
+psRe = re.compile(abbreviationNotPartOfAWord % ("p", "s"))
 
 def preprocessAbbreviations(text):
     """ This method replaces the commonly used abbreviations i.e., e.g., n.b.
@@ -156,6 +157,18 @@ def preprocessAbbreviations(text):
     text = psRe.sub(" p-s ", text)
 
     return text
+
+entitiesRe = re.compile(r"\&(mdash|ndash|nbsp|middot);")
+
+def removeUnresolvedEntities(text):
+    """ Some entities remain in the final output if they are not manually
+    removed. As the SVM weighs some of these quite heavily as a charateristic
+    for a post that did not lead to a blocking, it is best to remove these
+    entries. The assumption for the relevance of these symbols for the
+    prediction is that they probably belong to the signatures of frequent
+    posting, constructively contributing editors.
+    """
+    return entitiesRe.sub(" ", text)
 
 
 #===============================================================================
