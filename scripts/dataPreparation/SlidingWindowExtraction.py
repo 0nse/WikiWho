@@ -4,7 +4,7 @@
 '''
 This script requires a sorted input file. You can sort WikiWho's output
 deletionRevisions.csv using:
-sort -t$'\t' -k3 -k1 deletionRevisions.csv -o userSortedDeletionRevisions.csv
+sort -t$'\t' -k3,3 -k1,1n deletionRevisions.csv -o userSortedDeletionRevisions.csv
 The file is then sorted by username as first and post creation timestamp as second
 sort criterion.
 '''
@@ -13,7 +13,7 @@ import csv
 BLOCK_TIME = 172800
 blockedCount = notBlockedCount = 0
 
-def merge(shouldBeSlidingWindow=True, postsFile='../../processed/run8/userSortedDeletionRevisions.csv'):
+def merge(shouldBeSlidingWindow=True, postsFile='../../processed/run9/userSortedDeletionRevisions.csv'):
   with open(postsFile, 'r') as inputFile, \
        open('../data/blocked_sliding.txt', 'a') as bFile, \
        open('../data/notBlocked_sliding.txt', 'a') as nbFile:
@@ -124,7 +124,7 @@ def mergeSlidingWindow(reader, bFile, nbFile):
           # out of blocked timeframe or blocked happened between the two posts,
           # thus break out of loop to write to disk:
           if (secondsToBlock > previousSecondsToBlock \
-             or timeDelta > BLOCK_TIME):
+             or timeDelta > BLOCK_TIME): # or (previousSecondsToBlock != -1 and secondsToBlock == -1)
             assert len(recentPosts), '[E] 0 posts should be written to disk. This should never happen.'
             break
           # all within the timeframe given in BLOCK_TIME:
@@ -156,7 +156,7 @@ def write(recentPosts, secondsToBlock, bFile, nbFile):
   (bFile) or not blocked file (nbFile) is used. '''
   mergedPost = '<BOP> %s <EOP>\n' % ' '.join(recentPosts)
   if (secondsToBlock != -1 \
-     and  secondsToBlock < BLOCK_TIME):
+     and secondsToBlock < BLOCK_TIME):
     bFile.write(mergedPost)
 
     global blockedCount

@@ -54,7 +54,7 @@ function extractRandomSamples {
 }
 
 # @deprecated
-# this is very slow, use balanceNotBlocked.py instead
+# this is very slow, use NotBlockedBalancing.py instead
 function createRandomNotBlockedFile {
   # Create a notBlocked file which contains as many entries as blocked.txt.
   # Thus, the result is a balanced, randomly sampled notBlocked file.
