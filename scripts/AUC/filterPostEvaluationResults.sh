@@ -1,11 +1,15 @@
 #!/bin/bash
-# WARNING: The "shortened" folder will be deleted with all its contents!
 #
-# Usage: ./filterEvaluationResultsMin <ANYTHING>
+# Usage: ./filterPostEvaluationResults
+#        ./filterEvaluationResultsMin <ANYTHING>
+#
 # If ANYTHING is set, AUCs will be calculated respecting 2 to 500 words per
 # post maximum Else, AUCs for posts minimum containing 2 to 500 words per
 # post are considered.
 # We start with 2, because an empty post would still contain "<EOP>".
+#
+# WARNING: The "shortened" folder will be deleted with all its contents!
+
 function filterEvaluationResultsMin {
   fileName=../data/$1
   wordsAmount=$2
@@ -73,7 +77,7 @@ for ((i=2; i < 500; i++)); do
   ../../venv/bin/python3 AUC.py --dir ${outputDir} --positive ${outputDir}/${b} --negative ${outputDir}/${nb} | tee -a ${log}
 done
 
-../../venv/bin/python3 filterResultsPlotter.py ${log}
+../../venv/bin/python3 FilterResultsPlotting.py ${log}
 
 # delete temporary files:
 rm ${outputDir}/${b}

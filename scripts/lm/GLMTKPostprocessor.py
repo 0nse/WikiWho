@@ -1,6 +1,15 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+'''
+Usage: python GLTMKPostprocessor.py TrainingQueryPath TestingQueryPath Switch
+
+Notes: Usually, this script will only be called by evaluate_posts.sh.
+
+The switch indicates whether the lm was tested with blocked ("b") or not blocked
+("nb") data. See the argparser help for more information.
+'''
+
 import os
 import math
 
@@ -8,8 +17,8 @@ ngramSum = 0
 post = []
 
 def retrieveLatestFiles(path):
-  """ Given a path, the paths to the four latest files is returned. This is
-  determined by last modification time."""
+  ''' Given a path, the paths to the four latest files is returned. This is
+  determined by last modification time. '''
   files = [os.path.join(path, name) for name in os.listdir(path)]
   # sort by modification time:
   files.sort(key=os.path.getmtime)
@@ -31,10 +40,10 @@ def calculatePerplexityForNextPost(unigrams, bigrams, trigrams, fourgrams):
   return math.pow(math.e, -(ngramSum / len(post)))
 
 def step(iterator):
-  """ Return a boolean value expressing whether this line marked the end of a
+  ''' Return a boolean value expressing whether this line marked the end of a
   post. Updates the ngramSum and adds the current word to post.
   Next() will be called on the iterator. Thus, a StopIteration exception may be
-  raised. """
+  raised. '''
   global ngramSum, post
 
   line = next(iterator)
@@ -54,7 +63,7 @@ def step(iterator):
   return newWord == '<EOP>'
 
 def calculatePerplexities(positivePath, negativePath, fileNameSuffix=None):
-  """ Calculates the actual perplexities. No checks are done on fileNameSuffix.
+  ''' Calculates the actual perplexities. No checks are done on fileNameSuffix.
   Thus, you can most likely break this code.
   All output is appended to a file. Therefore, you might want to remove files
   from any prior runs.
@@ -63,7 +72,7 @@ def calculatePerplexities(positivePath, negativePath, fileNameSuffix=None):
   absolute value, it can be seen as a confidence measurement in the implicit
   classification. Said classification is encoded in the difference being positive
   or negative. A positive difference value means that the classification predicted
-  the correct class. """
+  the correct class. '''
   global post
 
   if fileNameSuffix:

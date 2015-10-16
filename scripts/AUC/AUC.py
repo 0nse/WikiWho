@@ -1,8 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-""" Calculate the AUC drawn from output_b.csv and output_nb.csv (or whatever is
+'''
+Usage: python AUC.py
+       python AUC.py --dir='.' --positive='b.csv' --negative='nb.csv'
+
+Requirements: Matplotlib, Numpy
+
+Calculate the AUC drawn from output_b.csv and output_nb.csv (or whatever is
 passed to calculateAUC(). An AUC plot is being saved into a given output
-directory as AUC.png. """
+directory as AUC.png.
+
+See the argparse help texts for more information. '''
 
 def calculateAUC(outputDirectory=None, positiveFile=None, negativeFile=None):
   if not outputDirectory:
@@ -52,8 +60,8 @@ def calculateAUC(outputDirectory=None, positiveFile=None, negativeFile=None):
   dx = 1 / len(y)
   x = [dx * i for i in range(len(y))]
 
-  import numpy
-  area = numpy.trapz(y, dx=dx)
+  import numpy as np
+  area = np.trapz(y, dx=dx)
   print('AUC:\t%f' % area)
 
   from matplotlib import pyplot as plt
@@ -66,11 +74,11 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Calculates and plots the AUC from the data provided through the variables positiveFile and negativeFile.',
                                    epilog='GLMTKPostprocessor comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions. For more information, see the LICENSE and README.md files this program should have been distributed with.')
   parser.add_argument('--dir', dest='outputDirectory', type=str, nargs='?',
-                      help='The directory under which the plotted graph should be saved as auc.png.')
+                      help='The directory under which the plotted graph should be saved as auc.png. Default is the current directory.')
   parser.add_argument('--positive', dest='positiveFile', type=str, nargs='?',
-                      help='The path to the CSV data of the evaluation results on post-level tested on blocked entries.')
+                      help='The path to the CSV data of the evaluation results on post-level tested on blocked entries. Default is ../data/output_b.csv.')
   parser.add_argument('--negative', dest='negativeFile', type=str, nargs='?',
-                      help='The path to the CSV data of the evaluation results on post-level tested on not blocked entries.')
+                      help='The path to the CSV data of the evaluation results on post-level tested on not blocked entries. Default is ../data/output_nb.csv.')
   args = parser.parse_args()
 
   calculateAUC(args.outputDirectory, args.positiveFile, args.negativeFile)

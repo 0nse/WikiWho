@@ -1,11 +1,17 @@
 #!/bin/bash
+#
+# Usage: ./evaluate_posts.sh
+#
+# Notes: This process runs for a longer time due to multiple lm runs.
+#
 # This script will do k-fold cross validation on blocked/not blocked data on
 # post=level.
 # High perplexity would indicate similarities in the language used for blocked/
 # not blocked data respectively.
 
 # Adapt the path to the GLMTK binary according to your setup:
-glmtk=~/glmt/glmtk
+glmtk=~/glmtk/glmtk
+
 function kFoldXValidation {
   k=$1
 

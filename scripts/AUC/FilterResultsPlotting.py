@@ -1,8 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-""" Plots AUC and tp/fp ratio for a given AUC.log. The files are stored as
+'''
+Usage: python FilterResultsPlotting.py PathToLogFile
+
+Requirements: Matplotlib, execute after AUC.py
+
+Notes: Usually, you would not call this script but filterPostEvaluationResults.sh
+       instead.
+
+Plots AUC and tp/fp ratio for a given AUC.log. The files are stored as
 ratio_development.png and auc_development.png.
-This script is usually called by filterPostEvaluationResults.sh. """
+This script is usually called by filterPostEvaluationResults.sh. '''
 
 def plot(logFile):
   import os
