@@ -2,6 +2,10 @@
 # -*- coding: utf-8 -*-
 
 '''
+Usage: python TimeframeCalculations.py
+
+Numpy and Matplotlib must be installed.
+
 This script requires a sorted input file. You can sort WikiWho's output
 deletionRevisions.csv using:
 sort -t$'\t' -k3,3 -k1,1n deletionRevisions.csv -o userSortedDeletionRevisions.csv

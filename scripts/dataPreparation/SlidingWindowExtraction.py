@@ -2,6 +2,12 @@
 # -*- coding: utf-8 -*-
 
 '''
+Usage: python SlidingWindowExtraction.py
+       or manually call merge(Bool, PathAsString)
+
+The relevant entry point method is merge(). Currently, BLOCK_TIME is hardcoded.
+Add an argparser if you need to.
+
 This script requires a sorted input file. You can sort WikiWho's output
 deletionRevisions.csv using:
 sort -t$'\t' -k3,3 -k1,1n deletionRevisions.csv -o userSortedDeletionRevisions.csv
@@ -10,10 +16,15 @@ sort criterion.
 '''
 
 import csv
+# Time between a contribution and a later blocking of the author in which the
+# contribution is assumed to have led to the blocking:
 BLOCK_TIME = 172800
 blockedCount = notBlockedCount = 0
 
 def merge(shouldBeSlidingWindow=True, postsFile='../../processed/run9/userSortedDeletionRevisions.csv'):
+  ''' This is the entry point method for mergeRecentPostsOfSameUser and
+  mergeSlidingWindow. See their documentation for information in how they
+  differ. '''
   with open(postsFile, 'r') as inputFile, \
        open('../data/blocked_sliding.txt', 'a') as bFile, \
        open('../data/notBlocked_sliding.txt', 'a') as nbFile:

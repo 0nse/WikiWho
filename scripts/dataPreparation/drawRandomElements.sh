@@ -1,4 +1,9 @@
 #!/bin/bash
+#
+# Usage: ./drawRandomElements.sh sample
+#        ./drawRandomElements.sh balance
+#
+# See extractRandomSamples and createRandomNotBlockedFile for more details.
 
 function pick {
   fileName=$1
