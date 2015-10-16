@@ -79,13 +79,16 @@ def countDeltaDistribution(deltas):
   valuesY = [keyValue[1] for keyValue in counter]
   valuesY = np.cumsum(valuesY)
 
-  fig = plt.figure()
+  fig = plt.figure(figsize=(30,10))
   plt.scatter(valuesY, valuesX, marker='x')
+
   plt.xlabel('Time in seconds')
-  plt.ylabel('Number of posts assumed to having led to a blocking')
-  plt.savefig('../data/deltasDistribution.png', dpi=350)
+  plt.ylabel('Number of posts')
+  plt.title('Posts in time range before a blocking of their author')
+
+  plt.savefig('../data/deltasDistribution.png', dpi=300)
   plt.gca().set_yscale('log')
-  plt.savefig('../data/deltasDistribution_logy.png', dpi=350)
+  plt.savefig('../data/deltasDistribution_logy.png', dpi=300)
 
 if __name__ == '__main__':
   deltas = extractLastPostToBlockDeltas()
