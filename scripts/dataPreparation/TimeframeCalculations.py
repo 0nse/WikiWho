@@ -9,12 +9,11 @@ The file is then sorted by username as first and post creation timestamp as seco
 sort criterion.
 '''
 
-import csv
-
 def extractLastPostToBlockDeltas(postsFile='../../processed/run9/userSortedDeletionRevisions.csv'):
   ''' Extracts the time between the last post by a user and its (probably)
   corresponding blocking. If a user was blocked several times, multiple values
   will be returned for her. '''
+  import csv
   with open(postsFile, 'r') as inputFile, \
        open('../data/smallestDeltas.txt', 'a') as output:
     blockLogReader = csv.reader(inputFile, delimiter='\t', quotechar='"')
@@ -64,8 +63,30 @@ def extractLastPostToBlockDeltas(postsFile='../../processed/run9/userSortedDelet
        output.write('%i\n' % previousSecondsToBlock)
        deltas.append(previousSecondsToBlock)
 
-
     return deltas
 
+def countDeltaDistribution(deltas):
+  ''' Scatter plot the deltas to see how more and more posts are affected when
+  the time between a blocking and what is considered a blocked post is increased.
+  '''
+  from matplotlib import pyplot as plt
+  from collections import Counter
+  import numpy as np
+
+  counter = Counter(deltas)
+  counter = sorted(counter.items())
+  valuesX = [keyValue[0] for keyValue in counter]
+  valuesY = [keyValue[1] for keyValue in counter]
+  valuesY = np.cumsum(valuesY)
+
+  fig = plt.figure()
+  plt.scatter(valuesY, valuesX, marker='x')
+  plt.xlabel('Time in seconds')
+  plt.ylabel('Number of posts assumed to having led to a blocking')
+  plt.savefig('../data/deltasDistribution.png', dpi=350)
+  plt.gca().set_yscale('log')
+  plt.savefig('../data/deltasDistribution_logy.png', dpi=350)
+
 if __name__ == '__main__':
-  extractLastPostToBlockDeltas()
+  deltas = extractLastPostToBlockDeltas()
+  countDeltaDistribution(deltas)
