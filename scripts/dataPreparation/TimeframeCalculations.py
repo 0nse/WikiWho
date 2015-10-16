@@ -81,7 +81,7 @@ def countDeltaDistribution(deltas):
   valuesY = np.cumsum(valuesY)
 
   fig = plt.figure(figsize=(30,10))
-  plt.scatter(valuesY, valuesX, marker='x')
+  plt.scatter(valuesX, valuesY, marker='x')
 
   plt.xlabel('Time in seconds')
   plt.ylabel('Number of last posts prior to blocking')
