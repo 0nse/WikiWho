@@ -9,12 +9,11 @@ from datetime import datetime
 from mw.types.timestamp import Timestamp as mwTimestamp
 
 def createBlockedUsersDict(inputFile):
-    """ Reads a block log CSV, cleans the comment, reorders the output and
-    writes it to disk according to outputFile.
+    """ Reads a block log CSV, cleans the comment, reorders the output and writes
+    it to disk according to outputFile.
     This method naïvely parses the date in ISO 8601 format. It refrains from
-    using python-dateutil. However, this has no impact on the data processing
-    as the time differences between block and revision timestamps do not
-    change.
+    using python-dateutil. However, this has no impact on the data processing as
+    the time differences between block and revision timestamps do not change.
     """
     import csv
 
@@ -74,11 +73,10 @@ def labelRevisions(blocks, inputFile, outputFile):
                                 secondsToBlock])
 
 def calculateSecondsUntilNextBlock(blocks, userName, revisionTimestamp):
-    """
-    Determine when the next block of a user happened after her/his post,
+    """ Determine when the next block of a user happened after her/his post,
     which happened at timestamp.
-    If the author has not been blocked at all (or only at times earlier
-    than the current revision, the value will be -1.
+    If the author has not been blocked at all (or only at times earlier than the
+    current revision, the value will be -1.
     Important: [timestamps, userName] = blocks, blocks' timestamps must be
     sorted in ascending order (oldest timestamp first).
     Also, provided timestamp MUST be of type mw.types.timestamp.Timestamp!
