@@ -34,10 +34,7 @@ def extractLastPostToBlockDeltas(postsFile='../../processed/run9/userSortedDelet
 
       timeDelta = timestamp - previousTimestamp
       # timeDelta can be 0 if the timestamps are incomplete and missing seconds:
-      try:
-        assert areDifferentUsers or (timeDelta >= 0), '[E] Time delta for one user can never be less than zero. Is the list sorted?'
-      except:
-        import pdb; pdb.set_trace()
+      assert areDifferentUsers or (timeDelta >= 0), '[E] Time delta for one user can never be less than zero. Is the list sorted?'
 
       secondsToBlockDelta = previousSecondsToBlock - secondsToBlock
       wasLastBlock = (previousSecondsToBlock > -1) and (secondsToBlock == -1)
@@ -70,8 +67,8 @@ def extractLastPostToBlockDeltas(postsFile='../../processed/run9/userSortedDelet
     return deltas
 
 def countDeltaDistribution(deltas):
-  ''' Scatter plot the deltas to see how more and more posts are affected when
-  the time between a blocking and what is considered a blocked post is increased.
+  ''' Scatter plot of the time passed (in seconds) after the last post before a
+  blocking until the actual blocking was issued.
   '''
   from matplotlib import pyplot as plt
   from collections import Counter
@@ -87,8 +84,8 @@ def countDeltaDistribution(deltas):
   plt.scatter(valuesY, valuesX, marker='x')
 
   plt.xlabel('Time in seconds')
-  plt.ylabel('Number of posts')
-  plt.title('Posts in time range before a blocking of their author')
+  plt.ylabel('Number of last posts prior to blocking')
+  plt.title('Number of last posts before their author was blocked in time frame')
 
   plt.savefig('../data/deltasDistribution.png', dpi=300)
   plt.gca().set_yscale('log')
