@@ -67,29 +67,39 @@ def extractLastPostToBlockDeltas(postsFile='../../processed/run9/userSortedDelet
     return deltas
 
 def countDeltaDistribution(deltas):
-  ''' Scatter plot of the time passed (in seconds) after the last post before a
+  ''' Scatter plot of the time passed (in days) after the last post before a
   blocking until the actual blocking was issued.
   '''
-  from matplotlib import pyplot as plt
   from collections import Counter
   import numpy as np
 
   counter = Counter(deltas)
   counter = sorted(counter.items())
-  valuesX = [keyValue[0] for keyValue in counter]
+  valuesX = [keyValue[0]/60/60/24 for keyValue in counter]
   valuesY = [keyValue[1] for keyValue in counter]
   valuesY = np.cumsum(valuesY)
 
-  fig = plt.figure(figsize=(30,10))
-  plt.scatter(valuesX, valuesY, marker='x')
+  fig = plot(valuesX, valuesY, 'full')
+  fig = plot(valuesX[:100000], valuesY[:100000], '100k')
+  fig = plot(valuesX[:50000],  valuesY[:50000],  '50k')
 
-  plt.xlabel('Time in seconds')
-  plt.ylabel('Number of last posts prior to blocking')
+def plot(x, y, suffix):
+  from matplotlib import pyplot as plt
+
+  fig = plt.figure()
+
   plt.title('Number of last posts before their author was blocked in time frame')
+  plt.xlabel('Time in days')
+  plt.ylabel('Number of last posts prior to blocking')
 
-  plt.savefig('../data/deltasDistribution.png', dpi=300)
-  plt.gca().set_yscale('log')
-  plt.savefig('../data/deltasDistribution_logy.png', dpi=300)
+  plt.scatter(x, y, marker='+')
+
+  # Start the plot at (0.0) and end it at the highest x-value. These calls must
+  # be made AFTER plt.scatter.
+  plt.axes().set_xlim(0, x[-1])
+  plt.axes().set_ylim(0)
+
+  plt.savefig('../data/deltasDistribution_%s.png' % suffix, dpi=300)
 
 if __name__ == '__main__':
   deltas = extractLastPostToBlockDeltas()
