@@ -74,14 +74,14 @@ def writeDeletionDiscussion(text, revision, blocks):
         secondsToBlock = BlockTimeCalculation.calculateSecondsUntilNextBlock(blocks, revision.contributor_name, revision.timestamp)
         print("[I] Writing authorship for revision %s to disk." % revision.wikipedia_id)
         with open('deletionRevisions.csv', 'a', newline='') as csvFile:
-            spamwriter = csv.writer(csvFile, delimiter='\t',
+            writer = csv.writer(csvFile, delimiter='\t',
                                     quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            spamwriter.writerow([revision.timestamp,
-                                 revision.contributor_id,
-                                 revision.contributor_name,
-                                 revision.wikipedia_id,
-                                 text,
-                                 secondsToBlock])
+            writer.writerow([revision.timestamp,
+                             revision.contributor_id,
+                             revision.contributor_name,
+                             revision.wikipedia_id,
+                             text,
+                             secondsToBlock])
 
 # calculate the templates once:
 templatesRe = WarningTemplates.mergeTemplatesRe(WarningTemplates.vandalism,
@@ -102,23 +102,23 @@ def writeUserWarning(text, revision, pageName):
             matchedWarning = matchedTemplate.group(1)
             print('[I] Writing admonished user "%s" with warning "%s" to disk.' % (blockedUserName, matchedWarning))
             with open('userWarnings.csv', 'a', newline='') as csvFile:
-                spamwriter = csv.writer(csvFile, delimiter='\t',
+                writer = csv.writer(csvFile, delimiter='\t',
                                         quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
-                spamwriter.writerow([revision.timestamp,
-                                     blockedUserName,
-                                     revision.wikipedia_id,
-                                     matchedWarning,
-                                     revision.contributor_id,
-                                     revision.contributor_name])
+                writer.writerow([revision.timestamp,
+                                 blockedUserName,
+                                 revision.wikipedia_id,
+                                 matchedWarning,
+                                 revision.contributor_id,
+                                 revision.contributor_name])
             break
 
 #===============================================================================
 # The following method uses regular expressions. The expressions are compiled
-# before the method definition so that they are only compiled once:
+# before the method definition so that they are compiled only once:
 #===============================================================================
-# The following list of regular expressions has been compiled by analysing the
-# most frequently made posts in AfDs.
+# The following list of regular expressions has been build by analysing the most
+# frequently made posts in AfDs.
 afdTemplates = [ re.compile('(wikipediadeletionprocess )?(relistingdiscussions )?((wp)?relist )?(this afd is being )?relisted to generate a (clearer consensus|more thorough discussion so (a clearer |that )?(consensus|a decision) may (usefully )?be reached)( br| emsp| please add new discussion below this notice thanks)?'),
                  re.compile('(was proposed for deletion )?this page is an archive of (the discussion (about |surrounding ))?the proposed deletion (of the (article below|page entitled( \w)*) )?this page is (no longer live|kept as an historic record)'),
                  re.compile('this page is now preserved as an archive of the debate and like (some )?other (delete |vfd )?(sub)?pages is no longer live subsequent comments on the issue the deletion or (on )?the decisionmaking process should be placed on the relevant live pages please do not edit this page'),
@@ -136,9 +136,11 @@ afdTemplates = [ re.compile('(wikipediadeletionprocess )?(relistingdiscussions )
 spacesRe = re.compile(r' {2,}')
 
 def removeAfDText(text):
-    """ Although AfD headers and footers are obviously templates, the dumps do
-    not contain them as marked up template but as the text from them being
-    resolved. Thus, the text has to be manually removed in a preprocessing step.
+    """ Although templates can be put into text without them expanding, it is
+    advised against doing so. Therefore, templates are not marked as such but
+    instead the dumps contain the templates text next to actual content. We try
+    our best to remove the most frequently used templates using regular
+    expressions. These were build after sorting the AfD posts by frequency.
     """
     for templateRe in afdTemplates:
         text = templateRe.sub("", text)

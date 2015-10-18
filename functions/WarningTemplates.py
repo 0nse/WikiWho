@@ -7,7 +7,8 @@ Created on Jul 28, 2015
 
 This file contains lists of template names that are used to issue warnings on
 user pages. It was compiled from:
-    https://en.wikipedia.org/w/index.php?title=Wikipedia:Template_messages/User_talk_namespace&oldid=671520213
+https://en.wikipedia.org/w/index.php?title=Wikipedia:Template_messages/User_talk_namespace&oldid=671520213
+
 The templates are used as follows:
  - {{subst:uw-TemplateName}} or
  - {{subst:uw-TemplateName|ReferenceToArticle}} or
@@ -17,8 +18,9 @@ However, an untrained editor might forget about the substitution fuction. Thus
  - {{uw-TemplateName|ReferenceToArticle}}
  - {{uw-TemplateName|ReferenceToArticle|Additional text}}
 should also be taken into consideration.
-Some warning templates are used multiple times. Thus, list addition should be
-followed by duplicate removal.
+Some warning templates are used in multiple template categories. Thus, list
+addition is followed by duplicate removal when using mergeTemplatesSimplified()
+or mergeTemplatesRe().
 '''
 
 # Blatant vandalism
@@ -117,7 +119,7 @@ def mergeTemplatesSimplified(*lists):
     """ Merges all provides lists into a set so that it is duplicate free. This
     method does not return regular expressions. It instead simplifies the
     problem at hand by assuming that e.g. '{{uw-TemplateName|' is unique enough
-    for tasks such as determining whether  a template is contained in a text.
+    for tasks such as determining whether a template is contained in a text.
     """
     mergedSet = set()
     for l in lists:
