@@ -13,13 +13,16 @@ The file is then sorted by username as first and post creation timestamp as seco
 sort criterion.
 '''
 
-def extractLastPostToBlockDeltas(postsFile='../../processed/run9/userSortedDeletionRevisions.csv'):
+def extractLastPostToBlockDeltas(postsFile='../../processed/run9/userSortedDeletionRevisions.csv', outputFile=None):
   ''' Extracts the time between the last post by a user and its (probably)
   corresponding blocking. If a user was blocked several times, multiple values
-  will be returned for her. '''
+  will be returned for her.
+  If outputFile is set, a file will be created at the given path. If the file
+  exists, contents will be appended. The written time deltas are sorted from
+  smallest to highest seconds until a blocking. The path may not lead to a
+  non-existent (parent-) directory. '''
   import csv
-  with open(postsFile, 'r') as inputFile, \
-       open('../data/smallestDeltas.txt', 'a') as output:
+  with open(postsFile, 'r') as inputFile:
     blockLogReader = csv.reader(inputFile, delimiter='\t', quotechar='"')
     deltas = []
 
@@ -50,7 +53,6 @@ def extractLastPostToBlockDeltas(postsFile='../../processed/run9/userSortedDelet
            or wasLastBlock \
            or areDifferentUsers) \
          ):
-           output.write('%i\n' % previousSecondsToBlock)
            deltas.append(previousSecondsToBlock)
 
       # we expect the input data to be sorted chronologically (oldest to newest
@@ -61,10 +63,15 @@ def extractLastPostToBlockDeltas(postsFile='../../processed/run9/userSortedDelet
 
     # last block, if any:
     if previousSecondsToBlock != -1:
-       output.write('%i\n' % previousSecondsToBlock)
        deltas.append(previousSecondsToBlock)
 
-    return deltas
+  if outputFile:
+    deltas.sort()
+    with open(outputFile, 'a') as output:
+      for delta in deltas:
+         output.write('%i\n' % delta)
+
+  return deltas
 
 def countDeltaDistribution(deltas):
   ''' Scatter plot of the time passed (in days) after the last post before a
@@ -75,6 +82,7 @@ def countDeltaDistribution(deltas):
 
   counter = Counter(deltas)
   counter = sorted(counter.items())
+  # convert from seconds to days:
   valuesX = [keyValue[0]/60/60/24 for keyValue in counter]
   valuesY = [keyValue[1] for keyValue in counter]
   valuesY = np.cumsum(valuesY)
@@ -88,7 +96,9 @@ def plot(x, y, suffix):
 
   fig = plt.figure()
 
-  plt.title('Number of last posts before their author was blocked in time frame')
+  # Add a title if you need one. I've disabled it, because the image will be
+  # embedded into a figure with a caption.
+  # plt.title('Number of last posts before their author was blocked in timeframe')
   plt.xlabel('Time in days')
   plt.ylabel('Number of last posts prior to blocking')
 
