@@ -13,7 +13,7 @@ The file is then sorted by username as first and post creation timestamp as seco
 sort criterion.
 '''
 
-def extractLastPostToBlockDeltas(postsFile='../../processed/run9/userSortedDeletionRevisions.csv', outputFile=None, usersOutputFile=None):
+def extractLastPostToBlockDeltas(postsFile='../../processed/run9/userSortedDeletionRevisions.csv', outputFile=None, usersOutputFile='test.pkl'):
   ''' Extracts the time between the last post by a user and its (probably)
   corresponding blocking. If a user was blocked several times, multiple values
   will be returned for her.
@@ -46,21 +46,26 @@ def extractLastPostToBlockDeltas(postsFile='../../processed/run9/userSortedDelet
       assert areDifferentUsers or (timeDelta >= 0), '[E] Time delta for one user can never be less than zero. Is the list sorted?'
 
       secondsToBlockDelta = previousSecondsToBlock - secondsToBlock
-      wasLastBlock = (previousSecondsToBlock > -1) and (secondsToBlock == -1)
-      # Determine whether the current post was blocked later than former and
-      # thus belongs to another blocking. We use some tolerance of two minutes
-      # assuming that no block would ever be this short.
+
+      # Determine whether the current post was blocked later than the former
+      # post and thus belongs to another blocking. We use some tolerance of two
+      # minutes assuming that no block would ever be this short.
       if (previousSecondsToBlock != -1 \
-         and ( \
-           secondsToBlockDelta < 0 \
-           # the difference between blocks was small but the two posts are a long
-           # time apart. Thus, these must be two different blockings:
-           or (timeDelta - secondsToBlockDelta) > 120 \
-           or wasLastBlock \
+         # same users and the last post had some time up to the block
+         and ( not areDifferentUsers
+           and (
+             # If the same user's new block time is geq 0, there was a block in between:
+             secondsToBlockDelta <= 0 \
+             # the difference between blocks was small but the two posts are a long
+             # time apart. Thus, these must be two different blockings:
+             or (timeDelta - secondsToBlockDelta) > 120 \
+             # This user was blocked in the last iteration and then never again:
+             or secondsToBlock == -1 \
+           )
            or areDifferentUsers) \
          ):
            deltas.append(previousSecondsToBlock)
-           users.add(user)
+           users.add(previousUser)
 
       # we expect the input data to be sorted chronologically (oldest to newest
       # post by same author):
@@ -70,7 +75,7 @@ def extractLastPostToBlockDeltas(postsFile='../../processed/run9/userSortedDelet
 
     # last block, if any:
     if previousSecondsToBlock != -1:
-       deltas.append(previousSecondsToBlock)
+       deltas.append(secondsToBlock)
        users.add(user)
 
   if outputFile:
