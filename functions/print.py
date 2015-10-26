@@ -75,7 +75,7 @@ def writeDeletionDiscussion(text, revision, blocks):
         print("[I] Writing authorship for revision %s to disk." % revision.wikipedia_id)
         with open('deletionRevisions.csv', 'a', newline='') as csvFile:
             writer = csv.writer(csvFile, delimiter='\t',
-                                    quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
             writer.writerow([revision.timestamp,
                              revision.contributor_id,
                              revision.contributor_name,
@@ -103,7 +103,7 @@ def writeUserWarning(text, revision, pageName):
             print('[I] Writing admonished user "%s" with warning "%s" to disk.' % (blockedUserName, matchedWarning))
             with open('userWarnings.csv', 'a', newline='') as csvFile:
                 writer = csv.writer(csvFile, delimiter='\t',
-                                        quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                                    quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
                 writer.writerow([revision.timestamp,
                                  blockedUserName,

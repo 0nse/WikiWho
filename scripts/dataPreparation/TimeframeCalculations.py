@@ -13,18 +13,24 @@ The file is then sorted by username as first and post creation timestamp as seco
 sort criterion.
 '''
 
-def extractLastPostToBlockDeltas(postsFile='../../processed/run9/userSortedDeletionRevisions.csv', outputFile=None):
+def extractLastPostToBlockDeltas(postsFile='../../processed/run9/userSortedDeletionRevisions.csv', outputFile=None, usersOutputFile=None):
   ''' Extracts the time between the last post by a user and its (probably)
   corresponding blocking. If a user was blocked several times, multiple values
   will be returned for her.
+
   If outputFile is set, a file will be created at the given path. If the file
   exists, contents will be appended. The written time deltas are sorted from
   smallest to highest seconds until a blocking. The path may not lead to a
-  non-existent (parent-) directory. '''
+  non-existent (parent-) directory.
+
+  The same requirements hold for usersOutputFile. If it is set to a file via
+  a path, pickle will be used to dump a set of users, who were blocked at
+  least once and participated in an AfD at least once to disk.'''
   import csv
   with open(postsFile, 'r') as inputFile:
     blockLogReader = csv.reader(inputFile, delimiter='\t', quotechar='"')
     deltas = []
+    users = set()
 
     previousSecondsToBlock = -1
     previousTimestamp = 0
@@ -54,6 +60,7 @@ def extractLastPostToBlockDeltas(postsFile='../../processed/run9/userSortedDelet
            or areDifferentUsers) \
          ):
            deltas.append(previousSecondsToBlock)
+           users.add(user)
 
       # we expect the input data to be sorted chronologically (oldest to newest
       # post by same author):
@@ -64,12 +71,19 @@ def extractLastPostToBlockDeltas(postsFile='../../processed/run9/userSortedDelet
     # last block, if any:
     if previousSecondsToBlock != -1:
        deltas.append(previousSecondsToBlock)
+       users.add(user)
 
   if outputFile:
     deltas.sort()
     with open(outputFile, 'a') as output:
       for delta in deltas:
          output.write('%i\n' % delta)
+
+  # Dump user set to disk for later use with other python scripts:
+  if usersOutputFile:
+    with open(usersOutputFile, 'wb') as output:
+      import pickle
+      pickle.dump(users, output)
 
   return deltas
 
