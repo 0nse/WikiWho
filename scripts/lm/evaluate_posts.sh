@@ -11,6 +11,8 @@
 
 # Adapt the path to the GLMTK binary according to your setup:
 glmtk=~/glmtk/glmtk
+# set this directory as current working directory:
+cd "$(dirname "$0")"
 
 function kFoldXValidation {
   k=$1
@@ -72,6 +74,9 @@ function kFoldXValidation {
 
   echo "true negatives: ${trueNegatives} false negatives: ${falseNegatives}" | tee -a ${logFile}
   echo "false positives: ${falsePositives} true positives: ${truePositives}" | tee -a ${logFile}
+
+  # Generate LaTeX tables #
+  ../postprocessing/confusionMatrix.sh ${trueNegatives} ${falseNegatives} ${falsePositives} ${truePositives}
 }
 
 function test {
