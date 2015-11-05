@@ -10,6 +10,9 @@
 #
 # WARNING: The "shortened" folder will be deleted with all its contents!
 
+# set this directory as current working directory:
+cd "$(dirname "$0")"
+
 function filterEvaluationResultsMin {
   fileName=../data/$1
   wordsAmount=$2

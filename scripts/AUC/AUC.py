@@ -1,14 +1,15 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 '''
-Usage: python AUC.py
-       python AUC.py --dir='.' --positive='b.csv' --negative='nb.csv'
+Usage: python AUC.py [AUC, optimistic, pessimistic]
+       python AUC.py AUC --dir='.' --positive='b.csv' --negative='nb.csv'
 
 Requirements: Matplotlib, Numpy
 
 Calculate the AUC drawn from output_b.csv and output_nb.csv (or whatever is
 passed to calculateAUC(). An AUC plot is being saved into a given output
-directory as AUC.png.
+directory as AUC.png for the average AUC, else AUC_optimistic.png or
+AUC_pessimistic.png.
 
 See the argparse help texts for more information.
 
@@ -73,7 +74,11 @@ def calculateAUC(variation, outputDirectory=None, positiveFile=None, negativeFil
   from matplotlib import pyplot as plt
   fig = plt.figure()
   plt.plot(x, y)
-  plt.savefig('%s/auc.png' % outputDirectory)
+
+  suffix = ''
+  if variation != 'AUC':
+    suffix = '_' + variation
+  plt.savefig('%s/auc%s.png' % (outputDirectory, suffix))
 
 def sort(values, order):
   values.sort(reverse=True)
