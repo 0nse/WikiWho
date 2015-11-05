@@ -4,7 +4,7 @@ function process {
   path=processed/run9/${seconds}
   mkdir -p ${path}/{lm,svm,nb}
 
-  dataPreparation/separate.sh ../processed/run9/deletionRevisions.csv ${seconds}
+  dataPreparation/separate.sh ../../processed/run9/deletionRevisions.csv ${seconds}
   # start language model on data:
   lm/evaluate_posts.sh
   # move data files:
@@ -20,20 +20,20 @@ function process {
 }
 
 # 13h
-process(46800)
+process 46800
 # 1)
-process(86400)
+process 86400
 # 1.5)
-process(129600)
+process 129600
 # 2)
-process(172800)
+process 172800
 # 2.5)
-process(216000)
+process 216000
 # 3)
-process(259200)
+process 259200
 # 4)
-process(345600)
+process 345600
 # 5)
-process(432000)
+process 432000
 # 6)
-process(518400)
+process 518400

@@ -24,6 +24,11 @@ function createLaTeXTable {
 
   accuracy=`calc "(${trueNegatives}. + ${truePositives}) / (${trueNegatives} + ${falseNegatives} + ${falsePositives} + ${truePositives})"`
 
+  # We use 0.02 as calc will multiply by 100, assuming it is not already a
+  # percentage:
+  positiveF1=`calc "0.02 * (${positivePrecision} * ${positiveRecall}) / (${positivePrecision} + ${positiveRecall})"`
+  negativeF1=`calc "0.02 * (${negativePrecision} * ${negativeRecall}) / (${negativePrecision} + ${negativeRecall})"`
+
   auc_opt=`processAUCOutput optimistic`
   auc_pess=`processAUCOutput pessimistic`
   auc=`processAUCOutput AUC`
@@ -31,11 +36,12 @@ function createLaTeXTable {
   echo "\begin{tabular}
   \begin{table}{ | c | c  c  c |}
     \hline
-    & \textbf{True negative} & \textbf{True positive} & \textbf{Precision (\%)}
+    & \textbf{True positive} & \textbf{True negative} & \textbf{Precision (\%)}
     \\\\\hline
-    \textbf{Predicted negative}  & ${trueNegatives} & ${falseNegatives} & \multicolumn{1}{|c}{${negativePrecision}}\\\\
-    \textbf{Predicted positive}  & ${falsePositives} & ${truePositives} & \multicolumn{1}{|c}{${positivePrecision}} \\\\\hline
-    \textbf{Recall (\%)}         & ${negativeRecall} & ${positiveRecall} & \\\\
+    \textbf{Predicted positive}  & ${truePositives} & ${falsePositives} & \multicolumn{1}{|c}{${positivePrecision}}\\\\
+    \textbf{Predicted negative}  & ${falseNegatives} & ${trueNegatives} & \multicolumn{1}{|c}{${negativePrecision}} \\\\\hline
+    \textbf{Recall (\%)}         & ${positiveRecall} & ${negativeRecall} & \\\\
+    \textbf{F1 score}            & ${positiveF1} & ${negativeF1} & \\\\
     \textbf{Accuracy (\%)}       & ${accuracy} & & \\\\
     \textbf{AUC (optimistic)}    & ${auc_opt} & & \\\\
     \textbf{AUC}                 & ${auc} & & \\\\

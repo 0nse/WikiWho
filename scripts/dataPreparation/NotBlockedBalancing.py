@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 '''
-Execute this script without any parameters: python NotBlockedBalancing.py
+Usage: python NotBlockedBalancing.py
 '''
 
 import random
