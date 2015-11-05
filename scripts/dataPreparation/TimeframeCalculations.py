@@ -13,7 +13,7 @@ The file is then sorted by username as first and post creation timestamp as seco
 sort criterion.
 '''
 
-def extractLastPostToBlockDeltas(postsFile='../../processed/run9/userSortedDeletionRevisions.csv', outputFile=None, usersOutputFile='test.pkl'):
+def extractLastPostToBlockDeltas(postsFile='../../processed/run9/userSortedDeletionRevisions.csv', outputFile=None, usersOutputFile=None):
   ''' Extracts the time between the last post by a user and its (probably)
   corresponding blocking. If a user was blocked several times, multiple values
   will be returned for her.
