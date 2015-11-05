@@ -19,8 +19,8 @@ function process {
   mv AUC/auc*.png ${path}/lm/
 }
 
-# XXX
-process(172800)
+# 13h
+process(46800)
 # 1)
 process(86400)
 # 1.5)
@@ -35,3 +35,5 @@ process(259200)
 process(345600)
 # 5)
 process(432000)
+# 6)
+process(518400)
