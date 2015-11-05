@@ -18,6 +18,9 @@
 # existent from an earlier run and only random sampling and ten times splitting
 # will be done.
 
+# set this directory as current working directory:
+cd "$(dirname "$0")"
+
 #################################################################################
 # Expects a name like 'blocked' or 'notBlocked' for which there is a
 # 'blocked.txt' or 'notBlocked.txt' respectively in the same directory as this
