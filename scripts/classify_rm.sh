@@ -17,8 +17,8 @@ function process {
   ~/RapidMiner/scripts/rapidminer '//Local Repository/processes/timeframes/${seconds}/${classifier}'
 
   truePositives=`extractByLineNumber 52 ${classifier}`
-  falsePositives=`extractByLineNumber 53 ${classifier}`
-  falseNegatives=`extractByLineNumber 56 ${classifier}`
+  falseNegatives=`extractByLineNumber 53 ${classifier}`
+  falsePositives=`extractByLineNumber 56 ${classifier}`
   trueNegatives=`extractByLineNumber 57 ${classifier}`
 
   auc_opt=`extractByPattern "AUC (optimistic)" ${classifier}`
