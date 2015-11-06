@@ -76,7 +76,7 @@ function kFoldXValidation {
   echo "false positives: ${falsePositives} true positives: ${truePositives}" | tee -a ${logFile}
 
   # Generate LaTeX tables #
-  ../postprocessing/confusionMatrix.sh ${trueNegatives} ${falseNegatives} ${falsePositives} ${truePositives}
+  ../postprocessing/confusionMatrix.sh ${truePositives} ${falsePositives} ${falseNegatives} ${trueNegatives}
 }
 
 function test {

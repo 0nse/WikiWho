@@ -2,19 +2,28 @@
 #
 # Usage: ./confusionMatrix.sh 5000 3000 2000 9000
 #
-# with $1 being true negatives
-#      $2 false negatives
-#      $3 false positives
-#      $4 true negatives
+# with $1 being true positives
+#      $2 false positives
+#      $3 false negatives
+#      $4 true positives
+# optional parameters are
+#      $5 optimistic AUC
+#      $6 AUC
+#      $7 pessimistic AUC
+# If an optional parameter is provided, the calculation from the provided first
+# variables is skipped. This is important for classifiers other than the LM.
 
 # set this directory as current working directory:
 cd "$(dirname "$0")"
 
 function createLaTeXTable {
-  trueNegatives=$1
-  falseNegatives=$2
-  falsePositives=$3
-  truePositives=$4
+  truePositives=$1
+  falsePositives=$2
+  falseNegatives=$3
+  trueNegatives=$4
+  auc_opt=$5
+  auc=$6
+  auc_pess=$7
 
   negativePrecision=`calc "${trueNegatives}. / (${trueNegatives} + ${falseNegatives})"`
   positivePrecision=`calc "${truePositives}. / (${truePositives} + ${falsePositives})"`
@@ -29,9 +38,10 @@ function createLaTeXTable {
   positiveF1=`calc "0.02 * (${positivePrecision} * ${positiveRecall}) / (${positivePrecision} + ${positiveRecall})"`
   negativeF1=`calc "0.02 * (${negativePrecision} * ${negativeRecall}) / (${negativePrecision} + ${negativeRecall})"`
 
-  auc_opt=`processAUCOutput optimistic`
-  auc_pess=`processAUCOutput pessimistic`
-  auc=`processAUCOutput AUC`
+  # Calculate the AUC if not provided. Needed for LM:
+  if [ -z "${auc_opt}" ];  then auc_opt=`processAUCOutput optimistic`; fi
+  if [ -z "${auc}" ];      then auc=`processAUCOutput AUC`; fi
+  if [ -z "${auc_pess}" ]; then auc_pess=`processAUCOutput pessimistic`; fi
 
   echo "\begin{tabular}
   \begin{table}{ | c | c  c  c |}
