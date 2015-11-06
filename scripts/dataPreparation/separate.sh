@@ -59,7 +59,7 @@ fileName=$1
 # notBlocked_full.txt already exist. In this case, those are being split.
 secondsToBlock=$2
 
-rm -r ../data/blocked ../data/notBlocked
+rm -r ../data/blocked ../data/notBlocked > /dev/null 2>&1
 
 # blocked:
 if [ -n "${secondsToBlock}" ]; then
@@ -68,11 +68,9 @@ if [ -n "${secondsToBlock}" ]; then
                     gsub(/^ +| +$/, "", $5); # trim string
                     print "<BOP> " $5 " <EOP>"
                   }
-                }' ${fileName} > ../data/blocked.txt
+                }' ${fileName} > ../data/blocked_full.txt
 fi
-echo "Wrote blocked to disk, now splitting."
-lines=`splitKFold "blocked" 10`
-echo "Split. Continuing with not blocked."
+echo "Wrote blocked_full.txt to disk."
 
 # not blocked:
 if [ -n "${secondsToBlock}" ]; then
@@ -83,8 +81,28 @@ if [ -n "${secondsToBlock}" ]; then
                   }
                 }' ${fileName} > ../data/notBlocked_full.txt
 fi
-# This script will randomly draw posts from notBlocked_full.txt and create
-# notBlocked.txt. It will draw as many posts as there are in blocked.txt.
-python NotBlockedBalancing.py
+echo "Wrote notBlocked_full.txt to disk."
 
+# Assuming this script was called by classify_lm.sh, it starts with the lowest
+# timeframe and ends with the biggest. Thus, the amount of blocked contributions
+# will increase. To make the classifier results comparable, all have to be
+# trained on the same sample size. Hence, in the first run, all blocked
+# contributions are considered. The later will all use as many blocked
+# contributions as the first run, but randomly sampled.
+# If this script is called manually, the ${linesFile} can be removed.
+linesFile=../data/lines_temporary_file_DO_NOT_DELETE
+if [ -f "${linesFile}" ]; then
+  numberOfContributions=`head -n 1 ${linesFile}`
+  python Balancing.py --lines ${numberOfContributions}
+else
+  python Balancing.py > ${linesFile}
+  # In the first run, notBlocked.txt will be of the same length as
+  # blocked_full.txt. Therefore, no sampling is applied to the blocked posts and
+  # we can copy it fully to become blocked.txt:
+  cp ../data/blocked_full.txt ../data/blocked.txt
+fi
+
+lines=`splitKFold "blocked" 10`
+echo "Split blocked."
 splitKFold "notBlocked" 10 ${lines}
+echo "Split not blocked."
