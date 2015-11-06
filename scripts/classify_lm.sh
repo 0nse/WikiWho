@@ -1,4 +1,12 @@
 #!/bin/bash
+#
+# Executes the LM classifier on all timeframes. The classifier is set to work on
+# full text. A confusion matrix is built and moved to the designated folder. AUCs
+# are calculated and plotted. For the other classifiers using RapidMiner, see
+# classify_rm.sh.
+#
+# Usage: ./classify_lm.sh
+
 function process {
   seconds=$1
   classifier=$2
