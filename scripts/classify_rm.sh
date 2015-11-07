@@ -2,12 +2,14 @@
 #
 # Usage: ./classify_rm.sh
 #
-# Dependencies: Data and processes created by createRapidMinerFiles.sh
+# Requirements: Data and processes created by
+#               dataPreparation/createRapidMinerFiles.sh
 #
 # Executes the SVM and NB classifier on all timeframes. The classifiers are set
 # to work on full text. A confusion matrix is built and moved to the designated
 # folder. This is a separate script because the RapidMiner tasks still need some
-# data and configuration which can be created by running createRapidMinerFiles.sh
+# data and configuration which can be created by running
+# dataPreparation/createRapidMinerFiles.sh
 
 #!/bin/bash
 function process {
