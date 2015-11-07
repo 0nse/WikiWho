@@ -38,3 +38,5 @@ timeframes=(46800 86400 129600 172800 216000 259200 345600 432000 518400)
 for timeframe in "${timeframes[@]}"; do
   process ${timeframe} lm_all
 done
+
+rm data/lines_temporary_file_DO_NOT_DELETE > /dev/null 2>&1

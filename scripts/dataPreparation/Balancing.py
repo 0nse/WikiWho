@@ -14,9 +14,7 @@ import random
 import subprocess
 
 def balance(length=None):
-  files = ['blocked']
-  oppositeFiles = { 'blocked' : 'notBlocked',
-                    'notBlocked' : 'blocked' }
+  files = ['notBlocked']
 
   if not length:
     # assuming len(blocked) > len(notBlocked) and thus blocked needs to be
@@ -29,15 +27,16 @@ def balance(length=None):
       # a change in two separate files.
       print(length)
   else:
-    files.append('notBlocked')
+    files.append('blocked')
 
   for fileName in files:
-    fullFile = '../data/%s_full.txt' % fileName
-    outputFile = '../data/%s.txt' % oppositeFiles[fileName]
-    write(fullFile, outputFile, length)
+    write(fileName, length)
 
-def write(fullFile, outputFile, length):
+def write(fileName, length):
   ''' Randomly sample and write the file to disk. '''
+  fullFile = '../data/%s_full.txt' % fileName
+  outputFile = '../data/%s.txt' % fileName
+
   with open(fullFile, 'r') as fullInput:
     lines = fullInput.readlines() # make sure you have the available memory
 
@@ -53,7 +52,7 @@ if __name__ == '__main__':
                                    epilog='This program (Balancing) comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions. For more information, see the LICENSE and README.md files this program should have been distributed with.')
 
   parser.add_argument('--lines', type=int, nargs='?',
-                      help='The number of lines to extract. If none are given, it is assumed that notBlocked is the smaller file and blocked will be sampled to the same length.')
+                      help='The number of lines to extract. If none are given, it is assumed that blocked is the smaller file and notBlocked will be sampled to the same length.')
   args = parser.parse_args()
 
   balance(args.lines)
