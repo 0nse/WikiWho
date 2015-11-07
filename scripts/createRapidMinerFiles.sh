@@ -14,7 +14,7 @@
 
 repositoryPath=~/RapidMiner/repository
 storePath=${repositoryPath}/processes/store
-timeframePath=${repositoryPath}/processes/timeframe
+timeframePath=${repositoryPath}/processes/timeframes
 mkdir ${storePath}
 
 # Create the properties file:
