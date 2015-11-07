@@ -128,7 +128,7 @@ for timeframe in "${timeframes[@]}"; do
     <parameter key="parallelize_main_process" value="false"/>
     <process expanded="true">
       <operator activated="true" class="retrieve" compatibility="5.3.015" expanded="true" height="60" name="Retrieve blocked" width="90" x="45" y="345">
-        <parameter key="repository_entry" value="../../data/timeframes/'${timeframe}'/blocked"/>
+        <parameter key="repository_entry" value="../../../data/timeframes/'${timeframe}'/blocked"/>
       </operator>
       <operator activated="true" class="generate_attributes" compatibility="5.3.015" expanded="true" height="76" name="True=wasBlocked" width="90" x="179" y="345">
         <list key="function_descriptions">
@@ -138,7 +138,7 @@ for timeframe in "${timeframes[@]}"; do
         <parameter key="keep_all" value="true"/>
       </operator>
       <operator activated="true" class="retrieve" compatibility="5.3.015" expanded="true" height="60" name="Retrieve notBlocked" width="90" x="45" y="480">
-        <parameter key="repository_entry" value="../../data/timeframes/'${timeframe}'/notBlocked"/>
+        <parameter key="repository_entry" value="../../../data/timeframes/'${timeframe}'/notBlocked"/>
       </operator>
       <operator activated="true" class="generate_attributes" compatibility="5.3.015" expanded="true" height="76" name="False=wasBlocked" width="90" x="179" y="480">
         <list key="function_descriptions">
@@ -256,8 +256,7 @@ for timeframe in "${timeframes[@]}"; do
             <parameter key="estimate_performance" value="false"/>
           </operator>
           <connect from_port="training" to_op="SVM" to_port="training set"/>
-          <connect from_op="SVM" from_port="model" to_port="model"/>
-          </operator>' >> ${classifierPath}.rmp
+          <connect from_op="SVM" from_port="model" to_port="model"/>' >> ${classifierPath}.rmp
     fi
     ######################
     # Performance output #
