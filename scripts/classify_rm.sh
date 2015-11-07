@@ -12,7 +12,7 @@ function process {
   seconds=$1
   classifier=$2
   path=processed/run9/${seconds}
-  mkdir -p ${path}/{{lm,nb,svm}_{all,fw}}
+  mkdir -p ${path}/{lm,nb,svm}_{all,fw}
 
   ~/RapidMiner/scripts/rapidminer '//Local Repository/processes/timeframes/${seconds}/${classifier}'
 
@@ -50,8 +50,8 @@ function extractByPattern {
   echo ${value}
 }
 
-#             13h,    1d,   1.5d,     2d,   2.5d,     3d,     4d,     5d,     6d
-timeframes=(46800, 86400, 129600, 172800, 216000, 259200, 345600, 432000, 518400)
+#             13h,   1d,  1.5d,    2d,  2.5d,    3d,    4d,    5d,    6d
+timeframes=(46800 86400 129600 172800 216000 259200 345600 432000 518400)
 
 for timeframe in "${timeframes[@]}"; do
   process ${timeframe} svm_all
