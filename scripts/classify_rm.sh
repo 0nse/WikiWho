@@ -16,7 +16,7 @@ function process {
   path=processed/run9/${seconds}
   mkdir -p ${path}/{lm,nb,svm}_{all,fw}
 
-  ~/RapidMiner/scripts/rapidminer "//Local Repository/processes/timeframes/'${seconds}'/'${classifier}'"
+  ~/RapidMiner/scripts/rapidminer "//Local Repository/processes/timeframes/${seconds}/${classifier}"
 
   truePositives=`extractByLineNumber 52 ${classifier}`
   falseNegatives=`extractByLineNumber 53 ${classifier}`
