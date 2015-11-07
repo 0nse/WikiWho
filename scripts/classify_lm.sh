@@ -21,7 +21,7 @@ function process {
   # move LM output:
   mv data/output_{n,}b.csv ${path}/${classifier}/
   # move LM log:
-  mv dataPreparation/evaluation.log ${path}/${classifier}/
+  mv lm/evaluation.log ${path}/${classifier}/
   # move LM confusion matrix:
   mv postprocessing/confusionMatrix.tex ${path}/${classifier}/
   # move LM AUC data:
