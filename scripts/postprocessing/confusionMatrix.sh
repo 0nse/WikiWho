@@ -38,17 +38,20 @@ function createLaTeXTable {
   positiveF1=`calc "0.02 * (${positivePrecision} * ${positiveRecall}) / (${positivePrecision} + ${positiveRecall})"`
   negativeF1=`calc "0.02 * (${negativePrecision} * ${negativeRecall}) / (${negativePrecision} + ${negativeRecall})"`
 
-  # Calculate the AUC if not provided. Needed for LM:
+  # Calculate the AUC if not provided. Needed for LM. In any case, round:
   if [ -z "${auc_opt}" ];  then auc_opt=`processAUCOutput optimistic`; fi
+  auc_opt=`round3DecimalPlaces ${auc_opt}`
   if [ -z "${auc}" ];      then auc=`processAUCOutput AUC`; fi
+  auc=`round3DecimalPlaces ${auc}`
   if [ -z "${auc_pess}" ]; then auc_pess=`processAUCOutput pessimistic`; fi
+  auc_pess=`round3DecimalPlaces ${auc_pess}`
 
   echo "\begin{tabular}
   \begin{table}{ | c | c  c  c |}
     \hline
     & \textbf{True positive} & \textbf{True negative} & \textbf{Precision (\%)}
     \\\\\hline
-    \textbf{Predicted positive}  & ${truePositives} & ${falsePositives} & \multicolumn{1}{|c}{${positivePrecision}}\\\\
+    \textbf{Predicted positive}  & ${truePositives} & ${falsePositives} & \multicolumn{1}{|c}{${positivePrecision}} \\\\
     \textbf{Predicted negative}  & ${falseNegatives} & ${trueNegatives} & \multicolumn{1}{|c}{${negativePrecision}} \\\\\hline
     \textbf{Recall (\%)}         & ${positiveRecall} & ${negativeRecall} & \\\\
     \textbf{F1 score}            & ${positiveF1} & ${negativeF1} & \\\\
@@ -66,6 +69,10 @@ function calc {
   # Use python for calculations and round to 2 decimal places.
   # The multiplication with 100 is used for percentages.
   echo `python -c "print(round(${1} * 100, 2))"`
+}
+
+function round3DecimalPlaces {
+  echo `python -c "print(round(${1}, 3))"`
 }
 
 function processAUCOutput {
