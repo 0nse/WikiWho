@@ -7,3 +7,4 @@
 ./classify_lm.sh
 dataPreparation/createRapidMinerFiles.sh
 ./classify_rm.sh
+postprocessing/embedConfusionMatrices.sh

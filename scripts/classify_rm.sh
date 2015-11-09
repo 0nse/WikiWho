@@ -4,6 +4,7 @@
 #
 # Requirements: Data and processes created by
 #               dataPreparation/createRapidMinerFiles.sh
+#               at least Bash 4 for associative arrays
 #
 # Executes the SVM and NB classifier on all timeframes. The classifiers are set
 # to work on full text. A confusion matrix is built and moved to the designated
@@ -15,6 +16,7 @@
 function process {
   seconds=$1
   classifier=$2
+  timeframesMnemonic=$3
   path=processed/run9/${seconds}
   mkdir -p ${path}/{lm,nb,svm}_{all,fw}
 
@@ -29,8 +31,13 @@ function process {
   auc=`extractByPattern "AUC" ${classifier}`
   auc_pess=`extractByPattern "AUC (pessimistic)" ${classifier}`
 
+  if [ "${classifier}" == "nb_all" ]; then
+    classifierMnemonic="na\"{i}ve Bayes"
+  else
+    classifierMnemonic="SVM"
+  fi
   # create confusion matrix:
-  postprocessing/confusionMatrix.sh ${truePositives} ${falsePositives} ${falseNegatives} ${trueNegatives} ${auc_opt} ${auc} ${auc_pess}
+  postprocessing/confusionMatrix.sh ${timeframesMnemonic} ${classifierMnemonic} ${truePositives} ${falsePositives} ${falseNegatives} ${trueNegatives} ${auc_opt} ${auc} ${auc_pess}
 
   # move LM output:
   mv ~/${classifier}_{auc.per,model.mod,performance} ${path}/${classifier}/
@@ -54,10 +61,22 @@ function extractByPattern {
   echo ${value}
 }
 
-#             13h,   1d,  1.5d,    2d,  2.5d,    3d,    4d,    5d,    6d
+# timeframes is used to keep an order—it is important that 46800 is evaluated
+# first:
 timeframes=(46800 86400 129600 172800 216000 259200 345600 432000 518400)
+# associative arrays are hashed so iterating over the keys will result in some
+# (for us) unpredictable order:
+timeframesMnemonic=([46800]="13 hours"
+                    [86400]="1 day"
+                    [129600]="1.5 days"
+                    [172800]="2 days"
+                    [216000]="2.5 days"
+                    [259200]="3 days"
+                    [345600]="4 days"
+                    [432000]="5 days"
+                    [518400]="6 days")
 
 for timeframe in "${timeframes[@]}"; do
-  process ${timeframe} svm_all
-  process ${timeframe} nb_all
+  process ${timeframe} svm_all ${timeframesMnemonic[${timeframe}]}
+  process ${timeframe} nb_all ${timeframesMnemonic[${timeframe}]}
 done

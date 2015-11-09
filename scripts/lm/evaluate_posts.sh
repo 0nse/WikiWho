@@ -16,6 +16,7 @@ cd "$(dirname "$0")"
 
 function kFoldXValidation {
   k=$1
+  timeframeMnemonic=$2
 
   b="blocked"
   nb="notBlocked"
@@ -76,7 +77,7 @@ function kFoldXValidation {
   echo "false positives: ${falsePositives} true positives: ${truePositives}" | tee -a ${logFile}
 
   # Generate LaTeX tables #
-  ../postprocessing/confusionMatrix.sh ${truePositives} ${falsePositives} ${falseNegatives} ${trueNegatives}
+  ../postprocessing/confusionMatrix.sh ${timeframeMnemonic} "language model" ${truePositives} ${falsePositives} ${falseNegatives} ${trueNegatives}
 }
 
 function test {
@@ -104,5 +105,6 @@ function test {
 }
 #################################################################################
 
+timeframeMnemonic=$1
 echo "Starting 10-fold crossvalidation."
-kFoldXValidation 10
+kFoldXValidation 10 ${timeframeMnemonic}

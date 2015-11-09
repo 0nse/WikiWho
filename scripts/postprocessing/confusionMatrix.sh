@@ -1,15 +1,17 @@
 #!/bin/bash
 #
-# Usage: ./confusionMatrix.sh 5000 3000 2000 9000
+# Usage: ./confusionMatrix.sh "3 days" "SVM" 5000 3000 2000 9000
 #
-# with $1 being true positives
-#      $2 false positives
-#      $3 false negatives
-#      $4 true positives
+# with $1 being the timeframe in words for the LaTeX table caption
+#      $2 the classifier name for LaTeX table caption
+#      $3 true positives
+#      $4 false positives
+#      $5 false negatives
+#      $6 true positives
 # optional parameters are
-#      $5 optimistic AUC
-#      $6 AUC
-#      $7 pessimistic AUC
+#      $7 optimistic AUC
+#      $8 AUC
+#      $9 pessimistic AUC
 # If an optional parameter is provided, the calculation from the provided first
 # variables is skipped. This is important for classifiers other than the LM.
 
@@ -17,13 +19,15 @@
 cd "$(dirname "$0")"
 
 function createLaTeXTable {
-  truePositives=$1
-  falsePositives=$2
-  falseNegatives=$3
-  trueNegatives=$4
-  auc_opt=$5
-  auc=$6
-  auc_pess=$7
+  timeframeMnemonic=$1
+  classifier=$2
+  truePositives=$3
+  falsePositives=$4
+  falseNegatives=$5
+  trueNegatives=$6
+  auc_opt=$7
+  auc=$8
+  auc_pess=$9
 
   negativePrecision=`calc "${trueNegatives}. / (${trueNegatives} + ${falseNegatives})"`
   positivePrecision=`calc "${truePositives}. / (${truePositives} + ${falsePositives})"`
@@ -46,23 +50,23 @@ function createLaTeXTable {
   if [ -z "${auc_pess}" ]; then auc_pess=`processAUCOutput pessimistic`; fi
   auc_pess=`round3DecimalPlaces ${auc_pess}`
 
-  echo "\begin{tabular}
-  \begin{table}{ | c | c  c  c |}
-    \hline
-    & \textbf{True positive} & \textbf{True negative} & \textbf{Precision (\%)}
+  echo "\begin{table}
+  \begin{tabular}{c | c  c  c}
+    \cline{2-4}
+    & \textbf{True positive} & \textbf{True negative} & \multicolumn{1}{|c}{\textbf{Precision (\%)}}
     \\\\\hline
     \textbf{Predicted positive}  & ${truePositives} & ${falsePositives} & \multicolumn{1}{|c}{${positivePrecision}} \\\\
     \textbf{Predicted negative}  & ${falseNegatives} & ${trueNegatives} & \multicolumn{1}{|c}{${negativePrecision}} \\\\\hline
-    \textbf{Recall (\%)}         & ${positiveRecall} & ${negativeRecall} & \\\\
-    \textbf{F1 score}            & ${positiveF1} & ${negativeF1} & \\\\
+    \textbf{Recall (\%)}         & ${positiveRecall} & ${negativeRecall} & \multicolumn{1}{|c}{} \\\\
+    \textbf{F1 score (\%)}       & ${positiveF1} & ${negativeF1} & \multicolumn{1}{|c}{} \\\\\cline{1-3}
     \textbf{Accuracy (\%)}       & ${accuracy} & & \\\\
     \textbf{AUC (optimistic)}    & ${auc_opt} & & \\\\
     \textbf{AUC}                 & ${auc} & & \\\\
-    \textbf{AUC (pessimistic)}   & ${auc_pess} & & \\\\\hline
-  \end{table}
+    \textbf{AUC (pessimistic)}   & ${auc_pess} & &
+  \end{tabular}
   \label{t:confusionMatrix_${RANDOM}} % give it a meaningful name; we use a pseudorandom number to prevent naming clashes
-  \caption{The confusion matrix of the language model considering [all words|only function words]. Contributions made XXX days before a blocking was issued, were assumed to have been of disruptive nature.} % TODO choose between all or just function words and insert the days
-\end{tabular}" > confusionMatrix.tex
+  \caption{The confusion matrix built from the full text ${classifier} predictions. Contributions made ${timeframeMnemonic} before a blocking was issued, were assumed to have been of disruptive nature.}
+\end{table}" > confusionMatrix.tex
 }
 
 function calc {
