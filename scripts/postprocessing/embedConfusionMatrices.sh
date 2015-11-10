@@ -23,7 +23,7 @@ for timeframe in "${timeframes[@]}"; do
 
       # LaTeX will not place more than 18 tables (or floating environments in
       # general) without a \clearpage (e.g. triggered by a \chapter):
-      if [ "$((++i % 2))" -eq 0]; then
+      if [ "$((++i % 2))" -eq 0 ]; then
         echo "\clearpage" >> ${latex}
       fi
   done
