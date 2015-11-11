@@ -31,14 +31,15 @@ function splitKFold {
   fileName=../data/${name}.txt
   k=$2
   if [ -z $3 ]; then # $3 is unset
-    lines=`wc -l ${fileName} | cut -f1 -d ' '`
+    lines=`getLength "${fileName}"`
     linesByK=$((lines / k)) # floor
   else
     linesByK=$3
   fi
 
   directory=../data/${name}
-  mkdir ${directory}
+  rm -r "${directory}" > /dev/null 2>&1
+  mkdir "${directory}"
   currentLine=1
 
   for ((i=1; i <= ${k}; i++)); do
@@ -50,6 +51,13 @@ function splitKFold {
   # return the used amount of lines:
   echo ${linesByK}
 }
+
+function getLength {
+  # This method should not be called by splitKFold because both echo a return
+  # value.
+  fileName=$1
+  echo `wc -l "${fileName}" | cut -f1 -d ' '`
+}
 #################################################################################
 
 
@@ -57,8 +65,6 @@ fileName=$1
 # 172800 are two days. If it is unset, it will be assumed that blocked.txt and
 # notBlocked_full.txt already exist. In this case, those are being split.
 secondsToBlock=$2
-
-rm -r ../data/blocked ../data/notBlocked > /dev/null 2>&1
 
 # blocked:
 if [ -n "${secondsToBlock}" ]; then
@@ -69,7 +75,7 @@ if [ -n "${secondsToBlock}" ]; then
                   }
                 }' "${fileName}" > ../data/blocked_full.txt
 fi
-echo "Wrote blocked_full.txt to disk."
+echo "[I] Wrote blocked_full.txt to disk."
 
 # not blocked:
 if [ -n "${secondsToBlock}" ]; then
@@ -80,7 +86,7 @@ if [ -n "${secondsToBlock}" ]; then
                   }
                 }' "${fileName}" > ../data/notBlocked_full.txt
 fi
-echo "Wrote notBlocked_full.txt to disk."
+echo "[I] Wrote notBlocked_full.txt to disk."
 
 # Assuming this script was called by classify_lm.sh, it starts with the lowest
 # timeframe and ends with the biggest. Thus, the amount of blocked contributions
@@ -101,7 +107,16 @@ else
   cp ../data/blocked_full.txt ../data/blocked.txt
 fi
 
+# assert that both files are of same length:
+echo "[I] Asserting that the generated files are of same length."
+blockedLength=`getLength "../data/blocked.txt"`
+notBlockedLength=`getLength "../data/notBlocked.txt"`
+if [ "${blockedLength}" -ne "${notBlockedLength}" ]; then
+  echo "[E] The files are not of same length! Aborting."
+  exit 1
+fi
+
 lines=`splitKFold "blocked" 10`
-echo "Split blocked."
+echo "[I] Split blocked."
 splitKFold "notBlocked" 10 ${lines}
-echo "Split not blocked."
+echo "[I] Split not blocked."

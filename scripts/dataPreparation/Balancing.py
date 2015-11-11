@@ -12,6 +12,7 @@ in data/blocked_full.txt as used by dataPreparation/separate.sh.
 
 import random
 import subprocess
+import os
 
 def balance(length=None):
   files = ['notBlocked']
@@ -42,6 +43,7 @@ def write(fileName, length):
 
   sample = random.sample(lines, length)
 
+  os.remove(outputFile)
   with open(outputFile, 'a') as output:
     for post in sample:
       output.write(post)

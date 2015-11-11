@@ -17,6 +17,13 @@ function process {
   mkdir -p ${path}/{lm,nb,svm}_all
 
   dataPreparation/separate.sh ../../processed/run9/deletionRevisions.csv ${seconds}
+  if [ $? -ne 0 ]; then
+    # This will be 1 if the balancing did not work. set -e is not an option for
+    # this script, because, e.g. rm will return 1 when a file to delete does not
+    # exist.
+    rm data/lines_temporary_file_DO_NOT_DELETE > /dev/null 2>&1
+    exit 1
+  fi
   # start language model on data. The parameter is used for later LaTeX table
   # genration:
   lm/evaluate_posts.sh "${timeframeMnemonic}"
