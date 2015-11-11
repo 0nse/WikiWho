@@ -31,7 +31,8 @@ for timeframe in "${timeframes[@]}"; do
       echo "\input{content/appendix/timeframes/${timeframe}/${classifier}}" >> ${latex}
 
       # LaTeX will not place more than 18 tables (or floating environments in
-      # general) without a \clearpage (e.g. triggered by a \chapter):
+      # general). One can use a \clearpage or like we do in this case, a
+      # \FloatBarrier. The later is from the placeins package.
       if [ "$((++i % 3))" -eq 0 ]; then
         echo "\FloatBarrier" >> ${latex}
       fi
