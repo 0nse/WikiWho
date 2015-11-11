@@ -7,6 +7,7 @@
 path=processed/run9/
 
 echo "To start the classification process, all files in  ${path} will be deleted."
+echo "Moreover, the data and processes in RapidMiner's repository/{processes,data}/timeframes will be overwritten."
 read -p "Are you sure, you want to continue? [y/N] " -r
 
 if [[ $REPLY =~ ^[Yy]$ ]]
