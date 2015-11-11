@@ -18,7 +18,7 @@ function process {
   classifier=$2
   timeframesMnemonic=$3
   path=processed/run9/${seconds}
-  mkdir -p ${path}/{lm,nb,svm}_{all,fw}
+  mkdir -p ${path}/{lm,nb,svm}_all
 
   ~/RapidMiner/scripts/rapidminer "//Local Repository/processes/timeframes/${seconds}/${classifier}"
 
@@ -32,12 +32,12 @@ function process {
   auc_pess=`extractByPattern "AUC (pessimistic)" ${classifier}`
 
   if [ "${classifier}" == "nb_all" ]; then
-    classifierMnemonic="na\"{i}ve Bayes"
+    classifierMnemonic="na\\\"{i}ve Bayes"
   else
     classifierMnemonic="SVM"
   fi
   # create confusion matrix:
-  postprocessing/confusionMatrix.sh ${timeframesMnemonic} ${classifierMnemonic} ${truePositives} ${falsePositives} ${falseNegatives} ${trueNegatives} ${auc_opt} ${auc} ${auc_pess}
+  postprocessing/confusionMatrix.sh "${timeframesMnemonic}" "${classifierMnemonic}" ${truePositives} ${falsePositives} ${falseNegatives} ${trueNegatives} ${auc_opt} ${auc} ${auc_pess}
 
   # move LM output:
   mv ~/${classifier}_{auc.per,model.mod,performance} ${path}/${classifier}/
@@ -77,6 +77,6 @@ timeframesMnemonic=([46800]="13 hours"
                     [518400]="6 days")
 
 for timeframe in "${timeframes[@]}"; do
-  process ${timeframe} svm_all ${timeframesMnemonic[${timeframe}]}
-  process ${timeframe} nb_all ${timeframesMnemonic[${timeframe}]}
+  process ${timeframe} svm_all "${timeframesMnemonic[${timeframe}]}"
+  process ${timeframe} nb_all "${timeframesMnemonic[${timeframe}]}"
 done

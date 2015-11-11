@@ -14,12 +14,12 @@ function process {
   classifier=$2
   timeframeMnemonic=$3
   path=processed/run9/${seconds}
-  mkdir -p ${path}/{lm,nb,svm}_{all,fw}
+  mkdir -p ${path}/{lm,nb,svm}_all
 
   dataPreparation/separate.sh ../../processed/run9/deletionRevisions.csv ${seconds}
   # start language model on data. The parameter is used for later LaTeX table
   # genration:
-  lm/evaluate_posts.sh ${timeframeMnemonic}
+  lm/evaluate_posts.sh "${timeframeMnemonic}"
   # move data files:
   mv data/{blocked,notBlocked}{,_full}.txt ${path}/
   # move LM output:
@@ -52,7 +52,7 @@ timeframesMnemonic=([46800]="13 hours"
                     [518400]="6 days")
 
 for timeframe in "${timeframes[@]}"; do
-  process ${timeframe} lm_all ${timeframesMnemonic[${timeframe}]}
+  process ${timeframe} lm_all "${timeframesMnemonic[${timeframe}]}"
 done
 
 rm data/lines_temporary_file_DO_NOT_DELETE > /dev/null 2>&1

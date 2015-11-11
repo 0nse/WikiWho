@@ -6,6 +6,9 @@ tests featuring three classifiers. The output can be used as cells for a LaTeX
 table. '''
 
 import re
+import os
+fileDir = os.path.dirname(os.path.abspath(__file__)).split('/')
+parentDir = '/'.join(fileDir[:-1])
 
 #                13h,      1d,     1.5d,       2d,     2.5d,       3d,       4d,       5d,       6d
 timeframes = ('46800', '86400', '129600', '172800', '216000', '259200', '345600', '432000', '518400')
@@ -28,7 +31,7 @@ for key in order:
 for timeframe in timeframes:
   try:
     for classifier in classifiers:
-      with open('../processed/run9/%s/%s_all/confusionMatrix.tex' % (timeframe, classifier), 'r') as matrix:
+      with open('%s/processed/run9/%s/%s_all/confusionMatrix.tex' % (parentDir, timeframe, classifier), 'r') as matrix:
         for line in matrix:
           if 'Predicted positive' in line:
             value = retrieve(line, lastRe)
@@ -58,10 +61,11 @@ for timeframe in timeframes:
           elif 'AUC}' in line:
             value = retrieve(line, firstRe)
             values['AUC'].append(value)
-  except:
+  except IOError:
+    import pdb; pdb.set_trace()
     pass
 
-with open('../postprocessing/comparison.tex', 'a') as output:
+with open('%s/postprocessing/comparison.tex' % parentDir, 'a') as output:
   boldFont = '\\textbf{%s}'
   subscript = '$_{%s}$'
 

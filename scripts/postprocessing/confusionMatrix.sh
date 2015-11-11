@@ -50,7 +50,11 @@ function createLaTeXTable {
   if [ -z "${auc_pess}" ]; then auc_pess=`processAUCOutput pessimistic`; fi
   auc_pess=`round3DecimalPlaces ${auc_pess}`
 
-  echo "\begin{table}
+  # using !htbp may seem a bit harsh but otherwise you either have the choice of
+  # all sections appearing after each other and then all floats or two floats on
+  # one page, one float on the next page, a single section on an otherwise empty
+  # page and then floats again.
+  echo "\begin{table}[!htbp]
   \begin{tabular}{c | c  c  c}
     \cline{2-4}
     & \textbf{True positive} & \textbf{True negative} & \multicolumn{1}{|c}{\textbf{Precision (\%)}}
@@ -87,4 +91,4 @@ function processAUCOutput {
 }
 
 # Run LaTeX table creation function with all arguments passed:
-createLaTeXTable $@
+createLaTeXTable "$@"
