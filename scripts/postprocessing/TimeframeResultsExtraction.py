@@ -72,7 +72,7 @@ with open('%s/postprocessing/comparison.tex' % parentDir, 'a') as output:
   # create head:
   output.write('\\begin{tabular}{' + ' c '*(len(order)+1) + '}\n')
   output.write('\\hline\n')
-  output.write(boldFont % 'timeframe')
+  output.write(boldFont % 'time' + separator)
   for key in order:
     key = key.replace('Plus', subscript % '+')
     key = key.replace('Minus', subscript % '-')
