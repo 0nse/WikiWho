@@ -27,8 +27,8 @@ cd "$(dirname "$0")"
 # script.
 # Returns the number of lines of the file divided by k rounded down.
 function splitKFold {
-  name=$1
-  fileName=../data/$1.txt
+  name="$1"
+  fileName=../data/${name}.txt
   k=$2
   if [ -z $3 ]; then # $3 is unset
     lines=`wc -l ${fileName} | cut -f1 -d ' '`
@@ -43,12 +43,11 @@ function splitKFold {
 
   for ((i=1; i <= ${k}; i++)); do
     lastLine=$((linesByK + currentLine - 1))
-    sed -n ${currentLine},${lastLine}p ${fileName} > ${directory}/${name}_${i}.txt
+    sed -n ${currentLine},${lastLine}p "${fileName}" > ${directory}/${name}_${i}.txt
     currentLine=$((lastLine + 1))
   done
 
   # return the used amount of lines:
-  echo $3
   echo ${linesByK}
 }
 #################################################################################
@@ -68,7 +67,7 @@ if [ -n "${secondsToBlock}" ]; then
                     gsub(/^ +| +$/, "", $5); # trim string
                     print "<BOP> " $5 " <EOP>"
                   }
-                }' ${fileName} > ../data/blocked_full.txt
+                }' "${fileName}" > ../data/blocked_full.txt
 fi
 echo "Wrote blocked_full.txt to disk."
 
@@ -79,7 +78,7 @@ if [ -n "${secondsToBlock}" ]; then
                     gsub(/^ +| +$/, "", $5); # trim string
                     print "<BOP> " $5 " <EOP>"
                   }
-                }' ${fileName} > ../data/notBlocked_full.txt
+                }' "${fileName}" > ../data/notBlocked_full.txt
 fi
 echo "Wrote notBlocked_full.txt to disk."
 
@@ -92,10 +91,10 @@ echo "Wrote notBlocked_full.txt to disk."
 # If this script is called manually, the ${linesFile} can be removed.
 linesFile=../data/lines_temporary_file_DO_NOT_DELETE
 if [ -f "${linesFile}" ]; then
-  numberOfContributions=`head -n 1 ${linesFile}`
+  numberOfContributions=`head -n 1 "${linesFile}"`
   python Balancing.py --lines ${numberOfContributions}
 else
-  python Balancing.py > ${linesFile}
+  python Balancing.py > "${linesFile}"
   # In the first run, notBlocked.txt will be of the same length as
   # blocked_full.txt. Therefore, no sampling is applied to the blocked posts and
   # we can copy it fully to become blocked.txt:
