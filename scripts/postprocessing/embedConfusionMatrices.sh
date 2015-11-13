@@ -9,8 +9,9 @@
 # set this directory as current working directory:
 cd "$(dirname "$0")"
 
-#             13h,   1d,  1.5d,    2d,  2.5d,    3d,    4d,    5d,    6d
-timeframes=(46800 86400 129600 172800 216000 259200 345600 432000 518400)
+source ../helpers.sh
+# Reduce the array to the input parameter if any:
+timeframes=(`returnTimeFrames "$1"`)
 classifiers=("lm" "nb" "svm")
 path=../processed/timeframes
 mkdir -p ${path}

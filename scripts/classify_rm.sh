@@ -61,9 +61,8 @@ function extractByPattern {
   echo ${value}
 }
 
-# timeframes is used to keep an order—it is important that 46800 is evaluated
-# first:
-timeframes=(46800 86400 129600 172800 216000 259200 345600 432000 518400)
+source helpers.sh
+timeframes=(`returnTimeFrames "$1"`)
 # associative arrays are hashed so iterating over the keys will result in some
 # (for us) unpredictable order:
 timeframesMnemonic=([46800]="13 hours"

@@ -8,6 +8,11 @@
 # classify_rm.sh.
 #
 # Usage: ./classify_lm.sh
+#
+# A parameter (seconds) can be parsed (e.g. 86400) if only one timeframe should
+# be tested. It must be known to this script (see timeframeMnemonic). The size
+# of blocked.txt and notBlocked.txt will be set to |blocked_full.txt| in this
+# case.
 
 function process {
   seconds=$1
@@ -43,9 +48,8 @@ function process {
 # size in all runs and thus comparable results:
 rm data/lines_temporary_file_DO_NOT_DELETE > /dev/null 2>&1
 
-# timeframes is used to keep an order—it is important that 46800 is evaluated
-# first:
-timeframes=(46800 86400 129600 172800 216000 259200 345600 432000 518400)
+source helpers.sh
+timeframes=(`returnTimeFrames "$1"`)
 # associative arrays are hashed so iterating over the keys will result in some
 # (for us) unpredictable order:
 timeframesMnemonic=([46800]="13 hours"

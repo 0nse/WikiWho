@@ -109,7 +109,7 @@ def calculateYAxis(values):
 if __name__ == '__main__':
   import argparse
   parser = argparse.ArgumentParser(description='Calculates and plots the AUC from the data provided through the variables positiveFile and negativeFile.',
-                                   epilog='GLMTKPostprocessor comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions. For more information, see the LICENSE and README.md files this program should have been distributed with.')
+                                   epilog='AUC.py comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions. For more information, see the LICENSE and README.md files this program should have been distributed with.')
   parser.add_argument(dest='variation', type=str,
                       help='The variation of AUC to calculate. Valid options are "optimistic", "pessimistic" and "AUC" for the inbetween.')
   parser.add_argument('--dir', dest='outputDirectory', type=str, nargs='?',

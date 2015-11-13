@@ -3,6 +3,11 @@
 # Start classification by calling all relevant scripts.
 #
 # Usage: ./classify.sh
+#        will help you determine the best performing timeframe
+#        ./classify.sh 86400
+#        will evaluate the performance for the amount of seconds specified
+#
+# The seconds parameter must be known to the scripts (see timeframesMnemonic).
 
 path=processed/run9/
 
@@ -16,7 +21,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
   rm data/lines_temporary_file_DO_NOT_DELETE > /dev/null 2>&1
 
   echo "[I] Preparing files and doing LM classifcation."
-  ./classify_lm.sh
+  ./classify_lm.sh $1
   if [ $? -ne 0 ]; then
     # This will be 1 if the balancing did not work. set -e is not an option for
     # this script, because, e.g. rm will return 1 when a file to delete does not
@@ -27,14 +32,14 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
   rm -r data/{notB,b}locked
 
   echo "[I] Converting data for RapidMiner and creating RapidMiner processes."
-  dataPreparation/createRapidMinerFiles.sh
+  dataPreparation/createRapidMinerFiles.sh $1
 
   echo "[I] Classifying using SVM and NB classifier."
-  ./classify_rm.sh
+  ./classify_rm.sh $1
 
   echo "[I] Transforming results into LaTeX tables."
-  postprocessing/embedConfusionMatrices.sh
-  python postprocessing/TimeframeResultsExtraction.py
+  postprocessing/embedConfusionMatrices.sh $1
+  python postprocessing/TimeframeResultsExtraction.py $1
 
   echo "[I] Classifcations executed successfully."
 fi

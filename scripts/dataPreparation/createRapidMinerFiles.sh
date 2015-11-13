@@ -8,9 +8,16 @@
 # and LM. SOC would put the XML snippets into separate files but this is merely
 # a quick and dirty solution.
 #
+# If an input parameter is given, it will be used instead of iterating over all
+# timeframes.
+#
 # Databases will be stored in ~/RapidMiner/repository/data/timeframes -- make
 # sure, you have run classify_lm.sh beforehand.
 # Processes will be stored in ~/RapidMiner/repository/processes
+
+source ../helpers.sh
+# Reduce the array to the input parameter if any:
+timeframes=(`returnTimeFrames "$1"`)
 
 repositoryPath=~/RapidMiner/repository
 storePath=${repositoryPath}/processes/store
@@ -25,8 +32,6 @@ echo '<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <entry key="owner">0nse</entry>
 </properties>' > ${storePath}/store.properties
 
-#             13h,   1d,  1.5d,    2d,  2.5d,    3d,    4d,    5d,    6d
-timeframes=(46800 86400 129600 172800 216000 259200 345600 432000 518400)
 fileNames=(blocked notBlocked)
 classifiers=(svm_all nb_all)
 
