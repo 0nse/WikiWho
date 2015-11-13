@@ -43,7 +43,11 @@ def write(fileName, length):
 
   sample = random.sample(lines, length)
 
-  os.remove(outputFile)
+  try:
+    os.remove(outputFile)
+  except OSError:
+    # The file did not exist. We can continue:
+    pass
   with open(outputFile, 'a') as output:
     for post in sample:
       output.write(post)

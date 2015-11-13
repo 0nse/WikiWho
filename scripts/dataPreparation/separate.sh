@@ -17,6 +17,9 @@
 # If no parameter is given, blocked.txt and notBlocked_full.txt are assumed to be
 # existent from an earlier run and only random sampling and ten times splitting
 # will be done.
+#
+# Exits with 1 if the balanced files do not have the same length.
+# Exits with 2 if one of the balanced files is missing.
 
 # set this directory as current working directory:
 cd "$(dirname "$0")"
@@ -56,7 +59,12 @@ function getLength {
   # This method should not be called by splitKFold because both echo a return
   # value.
   fileName=$1
-  echo `wc -l "${fileName}" | cut -f1 -d ' '`
+  lines=`wc -l "${fileName}"`
+  if [ $? -ne 0 ]; then
+    echo "-1"
+    return 2
+  fi
+  echo `echo ${lines} | cut -f1 -d ' '`
 }
 #################################################################################
 
@@ -109,10 +117,18 @@ fi
 
 # assert that both files are of same length:
 echo "[I] Asserting that the generated files are of same length."
+statusCode=0
 blockedLength=`getLength "../data/blocked.txt"`
+statusCode=$(( statusCode + $? ))
 notBlockedLength=`getLength "../data/notBlocked.txt"`
+statusCode=$(( statusCode + $? ))
+
+if [ ${statusCode} -ne 0 ]; then
+  echo "[E] One or both balanced files were missing. Aborting."
+  exit 2
+fi
 if [ "${blockedLength}" -ne "${notBlockedLength}" ]; then
-  echo "[E] The files are not of same length! Aborting."
+  echo "[E] The files are not of same length. Aborting."
   exit 1
 fi
 

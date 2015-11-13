@@ -62,10 +62,15 @@ for timeframe in timeframes:
             value = retrieve(line, firstRe)
             values['AUC'].append(value)
   except IOError:
-    import pdb; pdb.set_trace()
     pass
 
-with open('%s/postprocessing/comparison.tex' % parentDir, 'a') as output:
+outputFile = '%s/postprocessing/comparison.tex' % parentDir
+try:
+  os.remove(outputFile)
+except OSError:
+  # The file did not exist in the first place. Continue:
+  pass
+with open(outputFile, 'a') as output:
   boldFont = '\\textbf{%s}'
   subscript = '$_{%s}$'
 
