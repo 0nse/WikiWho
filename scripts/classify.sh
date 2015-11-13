@@ -23,6 +23,8 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     # exist.
     exit 1
   fi
+  # cleanup data from last run:
+  rm -r data/{notB,b}locked
 
   echo "[I] Converting data for RapidMiner and creating RapidMiner processes."
   dataPreparation/createRapidMinerFiles.sh
