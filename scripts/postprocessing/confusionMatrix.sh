@@ -69,7 +69,7 @@ function createLaTeXTable {
     \textbf{AUC (pessimistic)}   & ${auc_pess} & &
   \end{tabular}
   \label{t:confusionMatrix_${RANDOM}} % give it a meaningful name; we use a pseudorandom number to prevent naming clashes
-  \caption{The confusion matrix built from the full text ${classifier} predictions. Contributions made ${timeframeMnemonic} before a blocking was issued, were assumed to have been of disruptive nature.}
+  \caption{The confusion matrix built from the ${classifier} predictions. Contributions made ${timeframeMnemonic} before a blocking was issued, were assumed to have been of disruptive nature.}
 \end{table}" > confusionMatrix.tex
 }
 

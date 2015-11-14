@@ -19,6 +19,19 @@ source ../helpers.sh
 # Reduce the array to the input parameter if any:
 timeframes=(`returnTimeFrames "$1"`)
 
+fileNames=(blocked notBlocked)
+classifiers=(svm_all nb_all)
+
+# This part gets a bit hackish but so is the whole script.
+if [ "${#timeframes[@]}" -eq 1 ]; then
+  # If we only provide one timeframe, we want to iterate twice over it. Once
+  # with full text classification and the second time only considering
+  # function words.
+  timeframes=(${timeframes} ${timeframes})
+  classifiers=("${classifiers[0]}" "${classifiers[1]}" svm_fw nb_fw)
+  echo "[I] Files for full text and function words classification will be created."
+fi
+
 repositoryPath=~/RapidMiner/repository
 storePath=${repositoryPath}/processes/store
 timeframePath=${repositoryPath}/processes/timeframes
@@ -31,9 +44,6 @@ echo '<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <comment>Properties of repository entry store</comment>
 <entry key="owner">0nse</entry>
 </properties>' > ${storePath}/store.properties
-
-fileNames=(blocked notBlocked)
-classifiers=(svm_all nb_all)
 
 for timeframe in "${timeframes[@]}"; do
   # create directory for storing the RM data container:
@@ -106,6 +116,7 @@ for timeframe in "${timeframes[@]}"; do
 
   for classifier in "${classifiers[@]}"; do
     classifierPath=${timeframePath}/${timeframe}/${classifier}
+    echo "[I] Creating process files for ${classifier}"
     # create properties file for the classifiers:
     echo '<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
@@ -202,10 +213,23 @@ for timeframe in "${timeframes[@]}"; do
           </operator>
           <operator activated="true" class="text:stem_snowball" compatibility="5.3.002" expanded="true" height="60" name="Stem (Snowball)" width="90" x="380" y="30">
             <parameter key="language" value="English"/>
-          </operator>
-          <connect from_port="document" to_op="Tokenize to words" to_port="document"/>
+          </operator>' > ${classifierPath}.rmp
+    ##################
+    # Function words #
+    ##################
+    if [[ "${classifier}" = *"_fw" ]]; then
+      echo '<operator activated="true" class="text:filter_tokens_by_content" compatibility="5.3.002" expanded="true" height="60" name="Filter (I/You, Function Words)" width="90" x="581" y="30">
+              <parameter key="condition" value="matches"/>
+              <parameter key="regular_expression" value="i|a|aboard|about|above|absent|according|accordingly|across|after|against|ahead|albeit|all|along|alongside|although|amid|amidst|among|amongst|an|and|another|anti|any|anybody|anyone|anything|around|as|aside|astraddle|astride|at|away|bar|barring|be|because|before|behind|below|beneath|beside|besides|between|beyond|bit|both|but|by|can|certain|circa|concerning|consequently|considering|could|dare|deal|despite|down|during|each|either|enough|every|everybody|everyone|everything|except|excepting|excluding|failing|few|fewer|following|for|four|from|given|great|had|he|heaps|hence|her|hers|herself|him|himself|his|however|if|in|including|inside|instead|into|it|its|itself|less|like|little|loads|lots|many|may|me|might|mine|minus|more|most|much|must|my|myself|near|neither|nevertheless|no|nobody|none|nor|nothing|notwithstanding|of|off|on|once|one|onto|or|other|ought|our|ours|ourselves|out|outside|over|past|pending|per|plenty|plus|regarding|respecting|round|save|saving|several|shall|she|should|since|so|some|somebody|someone|something|such|than|that|the|their|theirs|them|themselves|then|thence|therefore|these|they|this|those|though|three|through|throughout|thru|thus|till|to|toward|towards|two|under|underneath|unless|unlike|until|unto|up|upon|us|various|versus|via|wanting|we|what|whatever|when|whence|whenever|where|whereas|wherever|whether|which|whichever|while|whilst|who|whoever|whom|whomever|whose|will|with|within|without|would|yet|you|your|yours|yourself|yourselves"/>
+            </operator>
+            <connect from_op="Stem (Snowball)" from_port="document" to_op="Filter (I/You, Function Words)" to_port="document"/>
+            <connect from_op="Filter (I/You, Function Words)" from_port="document" to_port="document 1"/>' >> ${classifierPath}.rmp
+    else
+      echo '<connect from_op="Stem (Snowball)" from_port="document" to_port="document 1"/>' >> ${classifierPath}.rmp
+    fi
+
+    echo '<connect from_port="document" to_op="Tokenize to words" to_port="document"/>
           <connect from_op="Tokenize to words" from_port="document" to_op="Stem (Snowball)" to_port="document"/>
-          <connect from_op="Stem (Snowball)" from_port="document" to_port="document 1"/>
           <portSpacing port="source_document" spacing="0"/>
           <portSpacing port="sink_document 1" spacing="0"/>
           <portSpacing port="sink_document 2" spacing="0"/>
@@ -222,7 +246,7 @@ for timeframe in "${timeframes[@]}"; do
         <parameter key="number_of_threads" value="4"/>
         <parameter key="parallelize_training" value="true"/>
         <parameter key="parallelize_testing" value="true"/>
-        <process expanded="true">' > ${classifierPath}.rmp
+        <process expanded="true">' >> ${classifierPath}.rmp
     ####################
     # Switch operators #
     ####################

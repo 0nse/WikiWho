@@ -18,8 +18,13 @@ function process {
   seconds=$1
   classifier=$2
   timeframeMnemonic=$3
+  additionalPathsSuffix=$4
   path=processed/run9/${seconds}
+
   mkdir -p ${path}/{lm,nb,svm}_all
+  if [ -n "${additionalPathsSuffix}" ]; then
+    mkdir -p ${path}/{lm,nb,svm}_${additionalPathsSuffix}
+  fi
 
   dataPreparation/separate.sh ../../processed/run9/deletionRevisions.csv ${seconds}
   if [ $? -ne 0 ]; then
@@ -50,6 +55,10 @@ rm data/lines_temporary_file_DO_NOT_DELETE > /dev/null 2>&1
 
 source helpers.sh
 timeframes=(`returnTimeFrames "$1"`)
+# If a parameter was passed, we also want to check for function words.
+if [ -n "$1" ]; then
+  additionalPathsSuffix="fw"
+fi
 # associative arrays are hashed so iterating over the keys will result in some
 # (for us) unpredictable order:
 timeframesMnemonic=([46800]="13 hours"
@@ -63,7 +72,7 @@ timeframesMnemonic=([46800]="13 hours"
                     [518400]="6 days")
 
 for timeframe in "${timeframes[@]}"; do
-  process ${timeframe} lm_all "${timeframesMnemonic[${timeframe}]}"
+  process ${timeframe} lm_all "${timeframesMnemonic[${timeframe}]}" "${additionalPathsSuffix}"
 done
 
 rm data/lines_temporary_file_DO_NOT_DELETE > /dev/null 2>&1

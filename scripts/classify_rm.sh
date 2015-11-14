@@ -31,11 +31,16 @@ function process {
   auc=`extractByPattern "AUC" ${classifier}`
   auc_pess=`extractByPattern "AUC (pessimistic)" ${classifier}`
 
-  if [ "${classifier}" == "nb_all" ]; then
-    classifierMnemonic="na\\\"{i}ve Bayes"
-  else
-    classifierMnemonic="SVM"
-  fi
+  case "${classifier}" in
+    "nb_all" )
+      classifierMnemonic="full text na\\\"{i}ve Bayes";;
+    "nb_fw" )
+      classifierMnemonic="function words na\\\"{i}ve Bayes";;
+    "svm_all" )
+      classifierMnemonic="full text SVM";;
+    "svm_fw" )
+      classifierMnemonic="function words SVM";;
+  esac
   # create confusion matrix:
   postprocessing/confusionMatrix.sh "${timeframesMnemonic}" "${classifierMnemonic}" ${truePositives} ${falsePositives} ${falseNegatives} ${trueNegatives} ${auc_opt} ${auc} ${auc_pess}
 
@@ -63,6 +68,11 @@ function extractByPattern {
 
 source helpers.sh
 timeframes=(`returnTimeFrames "$1"`)
+
+classifiers=(svm_all nb_all)
+if [ -n "$1" ]; then
+  classifiers=("${classifiers[0]}" "${classifiers[1]}" svm_fw nb_fw)
+fi
 # associative arrays are hashed so iterating over the keys will result in some
 # (for us) unpredictable order:
 timeframesMnemonic=([46800]="13 hours"
@@ -76,6 +86,7 @@ timeframesMnemonic=([46800]="13 hours"
                     [518400]="6 days")
 
 for timeframe in "${timeframes[@]}"; do
-  process ${timeframe} svm_all "${timeframesMnemonic[${timeframe}]}"
-  process ${timeframe} nb_all "${timeframesMnemonic[${timeframe}]}"
+  for classifier in "${classifiers[@]}"; do
+    process ${timeframe} "${classifier}" "${timeframesMnemonic[${timeframe}]}"
+  done
 done
