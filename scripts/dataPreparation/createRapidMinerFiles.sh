@@ -15,6 +15,9 @@
 # sure, you have run classify_lm.sh beforehand.
 # Processes will be stored in ~/RapidMiner/repository/processes
 
+# set this directory as current working directory:
+cd "$(dirname "$0")"
+
 source ../helpers.sh
 # Reduce the array to the input parameter if any:
 timeframes=(`returnTimeFrames "$1"`)

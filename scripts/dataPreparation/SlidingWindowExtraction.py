@@ -18,7 +18,7 @@ sort criterion.
 import csv
 # Time between a contribution and a later blocking of the author in which the
 # contribution is assumed to have led to the blocking:
-BLOCK_TIME = 172800
+BLOCK_TIME = 86400
 blockedCount = notBlockedCount = 0
 
 def merge(shouldBeSlidingWindow=True, postsFile='../../processed/run9/userSortedDeletionRevisions.csv'):
