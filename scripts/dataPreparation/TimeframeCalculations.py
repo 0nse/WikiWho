@@ -13,18 +13,24 @@ The file is then sorted by username as first and post creation timestamp as seco
 sort criterion.
 '''
 
-def extractLastPostToBlockDeltas(postsFile='../../processed/run9/userSortedDeletionRevisions.csv', outputFile=None):
+def extractLastPostToBlockDeltas(postsFile='../../processed/run9/userSortedDeletionRevisions.csv', outputFile=None, usersOutputFile=None):
   ''' Extracts the time between the last post by a user and its (probably)
   corresponding blocking. If a user was blocked several times, multiple values
   will be returned for her.
+
   If outputFile is set, a file will be created at the given path. If the file
   exists, contents will be appended. The written time deltas are sorted from
   smallest to highest seconds until a blocking. The path may not lead to a
-  non-existent (parent-) directory. '''
+  non-existent (parent-) directory.
+
+  The same requirements hold for usersOutputFile. If it is set to a file via
+  a path, pickle will be used to dump a set of users, who were blocked at
+  least once and participated in an AfD at least once to disk.'''
   import csv
   with open(postsFile, 'r') as inputFile:
     blockLogReader = csv.reader(inputFile, delimiter='\t', quotechar='"')
     deltas = []
+    users = set()
 
     previousSecondsToBlock = -1
     previousTimestamp = 0
@@ -40,20 +46,26 @@ def extractLastPostToBlockDeltas(postsFile='../../processed/run9/userSortedDelet
       assert areDifferentUsers or (timeDelta >= 0), '[E] Time delta for one user can never be less than zero. Is the list sorted?'
 
       secondsToBlockDelta = previousSecondsToBlock - secondsToBlock
-      wasLastBlock = (previousSecondsToBlock > -1) and (secondsToBlock == -1)
-      # Determine whether the current post was blocked later than former and
-      # thus belongs to another blocking. We use some tolerance of two minutes
-      # assuming that no block would ever be this short.
+
+      # Determine whether the current post was blocked later than the former
+      # post and thus belongs to another blocking. We use some tolerance of two
+      # minutes assuming that no block would ever be this short.
       if (previousSecondsToBlock != -1 \
-         and ( \
-           secondsToBlockDelta < 0 \
-           # the difference between blocks was small but the two posts are a long
-           # time apart. Thus, these must be two different blockings:
-           or (timeDelta - secondsToBlockDelta) > 120 \
-           or wasLastBlock \
+         # same users and the last post had some time up to the block
+         and ( not areDifferentUsers
+           and (
+             # If the same user's new block time is geq 0, there was a block in between:
+             secondsToBlockDelta <= 0 \
+             # the difference between blocks was small but the two posts are a long
+             # time apart. Thus, these must be two different blockings:
+             or (timeDelta - secondsToBlockDelta) > 120 \
+             # This user was blocked in the last iteration and then never again:
+             or secondsToBlock == -1 \
+           )
            or areDifferentUsers) \
          ):
            deltas.append(previousSecondsToBlock)
+           users.add(previousUser)
 
       # we expect the input data to be sorted chronologically (oldest to newest
       # post by same author):
@@ -63,13 +75,20 @@ def extractLastPostToBlockDeltas(postsFile='../../processed/run9/userSortedDelet
 
     # last block, if any:
     if previousSecondsToBlock != -1:
-       deltas.append(previousSecondsToBlock)
+       deltas.append(secondsToBlock)
+       users.add(user)
 
   if outputFile:
     deltas.sort()
     with open(outputFile, 'a') as output:
       for delta in deltas:
          output.write('%i\n' % delta)
+
+  # Dump user set to disk for later use with other python scripts:
+  if usersOutputFile:
+    with open(usersOutputFile, 'wb') as output:
+      import pickle
+      pickle.dump(users, output)
 
   return deltas
 

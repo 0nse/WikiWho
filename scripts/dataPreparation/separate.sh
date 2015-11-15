@@ -17,6 +17,12 @@
 # If no parameter is given, blocked.txt and notBlocked_full.txt are assumed to be
 # existent from an earlier run and only random sampling and ten times splitting
 # will be done.
+#
+# Exits with 1 if the balanced files do not have the same length.
+# Exits with 2 if one of the balanced files is missing.
+
+# set this directory as current working directory:
+cd "$(dirname "$0")"
 
 #################################################################################
 # Expects a name like 'blocked' or 'notBlocked' for which there is a
@@ -24,29 +30,41 @@
 # script.
 # Returns the number of lines of the file divided by k rounded down.
 function splitKFold {
-  name=$1
-  fileName=../data/$1.txt
+  name="$1"
+  fileName=../data/${name}.txt
   k=$2
   if [ -z $3 ]; then # $3 is unset
-    lines=`wc -l ${fileName} | cut -f1 -d ' '`
+    lines=`getLength "${fileName}"`
     linesByK=$((lines / k)) # floor
   else
     linesByK=$3
   fi
 
   directory=../data/${name}
-  mkdir ${directory}
+  rm -r "${directory}" > /dev/null 2>&1
+  mkdir "${directory}"
   currentLine=1
 
   for ((i=1; i <= ${k}; i++)); do
     lastLine=$((linesByK + currentLine - 1))
-    sed -n ${currentLine},${lastLine}p ${fileName} > ${directory}/${name}_${i}.txt
+    sed -n ${currentLine},${lastLine}p "${fileName}" > ${directory}/${name}_${i}.txt
     currentLine=$((lastLine + 1))
   done
 
   # return the used amount of lines:
-  echo $3
   echo ${linesByK}
+}
+
+function getLength {
+  # This method should not be called by splitKFold because both echo a return
+  # value.
+  fileName=$1
+  lines=`wc -l "${fileName}"`
+  if [ $? -ne 0 ]; then
+    echo "-1"
+    return 2
+  fi
+  echo `echo ${lines} | cut -f1 -d ' '`
 }
 #################################################################################
 
@@ -56,32 +74,65 @@ fileName=$1
 # notBlocked_full.txt already exist. In this case, those are being split.
 secondsToBlock=$2
 
-rm -r ../data/blocked ../data/notBlocked
-
 # blocked:
-if [ -n ${secondsToBlock}]; then
+if [ -n "${secondsToBlock}" ]; then
   awk -F $'\t' '{ seconds=int($6);
                   if (seconds > -1 && seconds < int("'"$secondsToBlock"'")) {
                     gsub(/^ +| +$/, "", $5); # trim string
                     print "<BOP> " $5 " <EOP>"
                   }
-                }' $fileName > ../data/blocked.txt
+                }' "${fileName}" > ../data/blocked_full.txt
 fi
-echo "Wrote blocked to disk, now splitting."
-lines=`splitKFold "blocked" 10`
-echo "Split. Continuing with not blocked."
+echo "[I] Wrote blocked_full.txt to disk."
 
 # not blocked:
-if [ -n ${secondsToBlock}]; then
+if [ -n "${secondsToBlock}" ]; then
   awk -F $'\t' '{ seconds=int($6);
                   if (seconds < 0 || seconds >= int("'"$secondsToBlock"'")) {
                     gsub(/^ +| +$/, "", $5); # trim string
                     print "<BOP> " $5 " <EOP>"
                   }
-                }' $fileName > ../data/notBlocked_full.txt
+                }' "${fileName}" > ../data/notBlocked_full.txt
 fi
-# This script will randomly draw posts from notBlocked_full.txt and create
-# notBlocked.txt. It will draw as many posts as there are in blocked.txt.
-python NotBlockedBalancing.py
+echo "[I] Wrote notBlocked_full.txt to disk."
 
+# Assuming this script was called by classify_lm.sh, it starts with the lowest
+# timeframe and ends with the biggest. Thus, the amount of blocked contributions
+# will increase. To make the classifier results comparable, all have to be
+# trained on the same sample size. Hence, in the first run, all blocked
+# contributions are considered. The later will all use as many blocked
+# contributions as the first run, but randomly sampled.
+# If this script is called manually, the ${linesFile} can be removed.
+linesFile=../data/lines_temporary_file_DO_NOT_DELETE
+if [ -f "${linesFile}" ]; then
+  numberOfContributions=`head -n 1 "${linesFile}"`
+  python Balancing.py --lines ${numberOfContributions}
+else
+  python Balancing.py > "${linesFile}"
+  # In the first run, notBlocked.txt will be of the same length as
+  # blocked_full.txt. Therefore, no sampling is applied to the blocked posts and
+  # we can copy it fully to become blocked.txt:
+  cp ../data/blocked_full.txt ../data/blocked.txt
+fi
+
+# assert that both files are of same length:
+echo "[I] Asserting that the generated files are of same length."
+statusCode=0
+blockedLength=`getLength "../data/blocked.txt"`
+statusCode=$(( statusCode + $? ))
+notBlockedLength=`getLength "../data/notBlocked.txt"`
+statusCode=$(( statusCode + $? ))
+
+if [ ${statusCode} -ne 0 ]; then
+  echo "[E] One or both balanced files were missing. Aborting."
+  exit 2
+fi
+if [ "${blockedLength}" -ne "${notBlockedLength}" ]; then
+  echo "[E] The files are not of same length. Aborting."
+  exit 1
+fi
+
+lines=`splitKFold "blocked" 10`
+echo "[I] Split blocked."
 splitKFold "notBlocked" 10 ${lines}
+echo "[I] Split not blocked."

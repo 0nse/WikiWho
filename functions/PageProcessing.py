@@ -72,7 +72,7 @@ def process(page, isDeletionDiscussion=True):
             revision_curr.length = len(revision.text)
             revision_curr.timestamp = revision.timestamp
 
-            # Some revisions don't have contributor.
+            # Some revisions don't have a contributor.
             if (revision.contributor != None):
                 revision_curr.contributor_id = revision.contributor.id
                 revision_curr.contributor_name = revision.contributor.user_text

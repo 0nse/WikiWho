@@ -10,6 +10,9 @@
 #
 # WARNING: The "shortened" folder will be deleted with all its contents!
 
+# set this directory as current working directory:
+cd "$(dirname "$0")"
+
 function filterEvaluationResultsMin {
   fileName=../data/$1
   wordsAmount=$2
@@ -74,7 +77,7 @@ for ((i=2; i < 500; i++)); do
     echo "[At most ${i} words]" | tee -a ${log}
   fi
 
-  ../../venv/bin/python3 AUC.py --dir ${outputDir} --positive ${outputDir}/${b} --negative ${outputDir}/${nb} | tee -a ${log}
+  ../../venv/bin/python3 AUC.py AUC --dir ${outputDir} --positive ${outputDir}/${b} --negative ${outputDir}/${nb} | tee -a ${log}
 done
 
 ../../venv/bin/python3 FilterResultsPlotting.py ${log}
