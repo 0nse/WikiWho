@@ -63,6 +63,9 @@ def mergeRecentPostsOfSameUser(reader, bFile, nbFile):
   in the time frame. When this time frame ends or when there is a block in
   between, the posts are merged and written to disk. The algorithm will then
   continue from the first entry after the last already processed post.
+
+  Essentially, this method is deprecated as the classifiers perform subpar on
+  its results.
   '''
   previousUser = None
   previousSecondsToBlock = 0
@@ -108,6 +111,10 @@ def mergeSlidingWindow(reader, bFile, nbFile):
   successive blockings: [xBBx],[BBx],[Bx],[x] if the time until a block of the
   first blocking is greater than that of the second (the second was blocked
   sooner after posting).
+  However, this is a rather theoretical warning as this would either require a
+  very high BLOCK_TIME (greater than multiple days) or very short blockings (12
+  hours or less for example). If BLOCK_TIME is 1d and the average block is at
+  least 24h long, it is unlikely that this would happen.
 
   If a merged post contains a post that resulted in a blocking, the whole merged
   window will be considered as blocked.
@@ -122,17 +129,20 @@ def mergeSlidingWindow(reader, bFile, nbFile):
     [timestamp, user, post, secondsToBlock] = preprocessLine(line)
 
     postData = (timestamp, post, secondsToBlock)
+    # first collect all posts by the same user:
     if user == previousUser:
       postsData.append(postData)
+    # then, start creating windows and write them to disk:
     else:
       while postsData:
         (firstTimestamp, _, previousSecondsToBlock) = postsData[0]
         recentPosts = []
         smallestSecondsToBlock = sys.maxsize
 
+        # stretch sliding window as far as possible:
         for (timestamp, post, secondsToBlock) in postsData:
           timeDelta = timestamp - firstTimestamp
-          # out of blocked timeframe or blocked happened between the two posts,
+          # outside of BLOCK_TIME or blocked happened between the two posts,
           # thus break out of loop to write to disk:
           if (secondsToBlock > previousSecondsToBlock \
              or timeDelta > BLOCK_TIME): # or (previousSecondsToBlock != -1 and secondsToBlock == -1)
@@ -142,7 +152,7 @@ def mergeSlidingWindow(reader, bFile, nbFile):
           else:
             recentPosts.append(post)
             # if there is a block in recentPosts, we want to count it as
-            # blocked:
+            # blocked. Thus, we look for the lowest secondsToBlock:
             if (secondsToBlock != -1 and \
                secondsToBlock < smallestSecondsToBlock):
               smallestSecondsToBlock = secondsToBlock

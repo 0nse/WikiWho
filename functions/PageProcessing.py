@@ -158,7 +158,7 @@ def preprocessAbbreviations(text):
 
     return text
 
-entitiesRe = re.compile(r"\&(mdash|ndash|nbsp|middot);")
+entitiesRe = re.compile(r"\&(amp)?(mdash|ndash|nbsp|middot);")
 
 def removeUnresolvedEntities(text):
     """ Some entities remain in the final output if they are not manually
