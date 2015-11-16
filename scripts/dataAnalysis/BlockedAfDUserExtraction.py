@@ -3,6 +3,10 @@
 '''
 @author: Michael Ruster
 
+Extract the timestamp and user of contributions which were authored before the
+respecitve user had been blocked. The result can be further processed by
+TimeframeCalculations.py.
+
 Requirements: MediaWiki Utilities, WikiWho DiscussionParser
 
 Usage: python BlockedAfDUserExtraction.py -i /path/to/dumps/ -b /path/to/WikiParser/blocks.csv
@@ -68,7 +72,7 @@ if __name__ == '__main__':
                       help='Path to the Wikipedia page(s) dump (XML, 7z, bz2…).')
   parser.add_argument('-b', dest='blockLog',  type=argparse.FileType('r'),
                       default=None, nargs='?',
-                      help='Path to the block log file produced wit 0nse/WikiParser (CSV).'),
+                      help='Path to the block log file produced with 0nse/WikiParser (CSV).'),
   args = parser.parse_args()
 
   usersFile = '../data/blockedAfDUserNames_temp.pkl'
