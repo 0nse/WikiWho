@@ -27,21 +27,29 @@ def extractLastPostToBlockDeltas(postsFile='../../processed/run9/userSortedDelet
   a path, pickle will be used to dump a set of users, who were blocked at
   least once and participated in an AfD at least once to disk.'''
   import csv
+  from datetime import datetime
   with open(postsFile, 'r') as inputFile:
-    blockLogReader = csv.reader(inputFile, delimiter='\t', quotechar='"')
+    print('[I] starting to process "%s".' % postsFile)
+    blockLogReader = csv.reader(inputFile, delimiter='\t', quoting=csv.QUOTE_NONE)
     deltas = []
     users = set()
 
     previousSecondsToBlock = -1
-    previousTimestamp = 0
+    previousTimestamp = None
     previousUser = None
     for [timestamp, _, user, _, _, secondsToBlock] in blockLogReader:
       # type conversion from string and other preprocessing:
       secondsToBlock = int(secondsToBlock)
-      timestamp = int(timestamp)
+      try:
+        timestamp = datetime.strptime(timestamp, '%Y%m%d%H%M%S')
+      except ValueError:
+        raise ValueError('[E] The timestamp format was unknown.', timestamp)
       areDifferentUsers = previousUser != user
 
-      timeDelta = timestamp - previousTimestamp
+      if previousTimestamp:
+        timeDelta = (timestamp - previousTimestamp).total_seconds()
+      else: # only happens in first iteration
+        timeDelta = 0
       # timeDelta can be 0 if the timestamps are incomplete and missing seconds:
       assert areDifferentUsers or (timeDelta >= 0), '[E] Time delta for one user can never be less than zero. Is the list sorted?'
 
@@ -54,8 +62,12 @@ def extractLastPostToBlockDeltas(postsFile='../../processed/run9/userSortedDelet
          # same users and the last post had some time up to the block
          and ( not areDifferentUsers
            and (
-             # If the same user's new block time is geq 0, there was a block in between:
-             secondsToBlockDelta <= 0 \
+             # If the same user's new block time is greater than the old, there
+             # was a block in between. They can however be equal to zero if a
+             # user made multiple contributions within the same second. For
+             # example User:° did three (!) contributions on 19th July 2006,
+             # 18:04:37.
+             secondsToBlockDelta < 0 \
              # the difference between blocks was small but the two posts are a long
              # time apart. Thus, these must be two different blockings:
              or (timeDelta - secondsToBlockDelta) > 120 \
@@ -99,19 +111,21 @@ def countDeltaDistribution(deltas):
   from collections import Counter
   import numpy as np
 
+  # the counter is used for grouping by timestamp frequency and sorting:
   counter = Counter(deltas)
   counter = sorted(counter.items())
   # convert from seconds to days:
   valuesX = [keyValue[0]/60/60/24 for keyValue in counter]
+  # extract the actual value:
   valuesY = [keyValue[1] for keyValue in counter]
   valuesY = np.cumsum(valuesY)
+  print('[I] Number of blocks happening after a user contributed to an AfD: %i' % (len(counter)))
 
-  fig = plot(valuesX, valuesY, 'full')
-  fig = plot(valuesX[:100000], valuesY[:100000], '100k')
-  fig = plot(valuesX[:50000],  valuesY[:50000],  '50k')
+  return (valuesX, valuesY)
 
-def plot(x, y, suffix):
+def plot(suffix, *values):
   from matplotlib import pyplot as plt
+  import itertools
 
   fig = plt.figure()
 
@@ -121,15 +135,57 @@ def plot(x, y, suffix):
   plt.xlabel('Time in days')
   plt.ylabel('Number of last posts prior to blocking')
 
-  plt.scatter(x, y, marker='+')
+  # see http://matplotlib.org/api/markers_api.html for available markers
+  markers = itertools.cycle(['+', '.', 'o', 'x'])
+  # see http://matplotlib.org/api/colors_api.html for available colours
+  colours = itertools.cycle(['b', 'r', 'g', 'm'])
+  highestXValues = []
+  for (x, y) in values:
+    plt.scatter(x, y, marker=next(markers), color=next(colours))
+
+    highestXValues.append(x[-1])
 
   # Start the plot at (0.0) and end it at the highest x-value. These calls must
   # be made AFTER plt.scatter.
-  plt.axes().set_xlim(0, x[-1])
+  plt.axes().set_xlim(0, max(highestXValues))
   plt.axes().set_ylim(0)
 
-  plt.savefig('../data/deltasDistribution_%s.png' % suffix, dpi=300)
+  plt.savefig('../data/deltasDistribution_%s.png' % str(suffix), dpi=300)
+
+def shortenValues(values, length):
+  ''' A helper method so that the code is better readable. Shortens both values
+  according to length. '''
+  assert len(values) == 2, '[E] Values did not contain exactly two arguments (values for X and Y axis).'
+  return (values[0][:length], values[1][:length])
+
+def areaBetweenTwoCurves(valuesA, valuesB):
+  ''' Calculates the area between the two curves. The input order is irrelevant. '''
+  import numpy as np
+  areaA = np.trapz(valuesA[0], x=valuesA[1])
+  areaB = np.trapz(valuesB[0], x=valuesB[1])
+
+  return max(areaA, areaB) - min(areaA, areaB)
 
 if __name__ == '__main__':
-  deltas = extractLastPostToBlockDeltas()
-  countDeltaDistribution(deltas)
+  afdDeltas = extractLastPostToBlockDeltas()
+  afdValues = countDeltaDistribution(afdDeltas)
+  # This file has been created by executing BlockedAfDUserExtraction.py and
+  # sorting it afterwards as described in extractLastPostToBlockDeltas().
+  globalDeltas = extractLastPostToBlockDeltas('../processed/dump/afdContributions.csv')
+  globalValues = countDeltaDistribution(globalDeltas)
+
+  fig = plot('full', afdValues, globalValues)
+
+  subplotLengths = ('full', 100000, 50000)
+  for length in subplotLengths:
+    if type(length) is int:
+      afdValues = shortenValues(afdValues, length)
+      globalValues = shortenValues(globalValues, length)
+
+    fig = plot(length, afdValues, globalValues)
+
+    area = areaBetweenTwoCurves(afdValues, globalValues)
+    # we know that globalValues is >= afdValues:
+    import numpy as np
+    relativeArea  = area / np.trapz(globalValues[0], x=globalValues[1]) * 100
+    print('[I] The area for the subplot of length "%s" is %.3f. Thus, the relation is %.3f%%.' % (str(length), area, relativeArea))
