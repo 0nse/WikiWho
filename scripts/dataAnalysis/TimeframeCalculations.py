@@ -102,6 +102,8 @@ def extractLastPostToBlockDeltas(postsFile='../../processed/run9/userSortedDelet
       import pickle
       pickle.dump(users, output)
 
+  print('[I] Number of blocks happening after a user contributed to an AfD: %i.' % len(deltas))
+  print('[I] Users blocked multiple tiems: %i.' % (len(deltas) - len(users)))
   return deltas
 
 def countDeltaDistribution(deltas):
@@ -119,7 +121,6 @@ def countDeltaDistribution(deltas):
   # extract the actual value:
   valuesY = [keyValue[1] for keyValue in counter]
   valuesY = np.cumsum(valuesY)
-  print('[I] Number of blocks happening after a user contributed to an AfD: %i' % (len(counter)))
 
   return (valuesX, valuesY)
 
@@ -176,7 +177,7 @@ if __name__ == '__main__':
 
   fig = plot('full', afdValues, globalValues)
 
-  subplotLengths = ('full', 100000, 50000)
+  subplotLengths = ('full', 10000, 5000)
   for length in subplotLengths:
     if type(length) is int:
       afdValues = shortenValues(afdValues, length)

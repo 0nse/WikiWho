@@ -34,11 +34,30 @@ function process {
     rm data/lines_temporary_file_DO_NOT_DELETE > /dev/null 2>&1
     exit 1
   fi
+
+  if [ ${classifier} = "lm_fw" ]; then
+    fileNames=(blocked notBlocked)
+    for fileName in "${fileNames[@]}"; do
+      file=data/"${fileName}".txt
+      tempFile=data/"${fileName}"_all.txt
+      mv "${file}" "${tempFile}"
+      python dataPreparation/NonFunctionWordsFilter.py ${tempFile} ${file}
+    done
+  fi
   # start language model on data. The parameter is used for later LaTeX table
   # genration:
   lm/evaluate_posts.sh "${timeframeMnemonic}"
-  # move data files:
-  mv data/{blocked,notBlocked}{,_full}.txt ${path}/
+  # move data files. Rename, when function words are also considered:
+  if [ ${classifier} = "lm_fw" ]; then
+    for fileName in "${fileNames[@]}"; do
+      # function words
+      mv "${file}" ${path}/"${fileName}"_fw.txt
+      # all:
+      mv "${tempFile}" ${path}/"${fileName}".txt
+    done
+  else
+    mv data/{blocked,notBlocked}{,_full}.txt ${path}/
+  fi
   # move LM output:
   mv data/output_{n,}b.csv ${path}/${classifier}/
   # move LM log:
@@ -55,9 +74,11 @@ rm data/lines_temporary_file_DO_NOT_DELETE > /dev/null 2>&1
 
 source helpers.sh
 timeframes=(`returnTimeFrames "$1"`)
+classifiers=(lm_all)
 # If a parameter was passed, we also want to check for function words.
 if [ -n "$1" ]; then
   additionalPathsSuffix="fw"
+  classifiers=("${classifiers[0]}" lm_fw)
 fi
 # associative arrays are hashed so iterating over the keys will result in some
 # (for us) unpredictable order:
@@ -72,7 +93,9 @@ timeframesMnemonic=([46800]="13 hours"
                     [518400]="6 days")
 
 for timeframe in "${timeframes[@]}"; do
-  process ${timeframe} lm_all "${timeframesMnemonic[${timeframe}]}" "${additionalPathsSuffix}"
+  for classifier in "${classifiers[@]}"; do
+    process ${timeframe} "${classifier}" "${timeframesMnemonic[${timeframe}]}" "${additionalPathsSuffix}"
+  done
 done
 
 rm data/lines_temporary_file_DO_NOT_DELETE > /dev/null 2>&1
