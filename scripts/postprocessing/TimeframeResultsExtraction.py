@@ -118,7 +118,10 @@ def createArithmeticMeanTable(timeframe=None):
         decimalPlaces = 2
         if key == 'AUC':
           decimalPlaces = 3
-        means.append(str(round(arithmeticMean, decimalPlaces)))
+        mean = round(arithmeticMean, decimalPlaces)
+        # write 0.500 instead of 0.5:
+        mean = ('{:.%sf}' % decimalPlaces).format(mean)
+        means.append(mean)
       i += len(classifiers)
 
       # e.g. for |classifiers|=3 at i=8: index=(8-2) / 3 = 2nd iteration:
