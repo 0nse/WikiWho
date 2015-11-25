@@ -7,16 +7,22 @@ def createArithmeticMeanTable(timeframe=None):
   for a LaTeX table. '''
   import re
   import os
+  # script parent directory:
   fileDir = os.path.dirname(os.path.abspath(__file__)).split('/')
   parentDir = '/'.join(fileDir[:-1])
 
-  if timeframe:
-    timeframes = (timeframe,)
-  else:
-    #                13h,      1d,     1.5d,       2d,     2.5d,       3d,       4d,       5d,       6d
-    timeframes = ('46800', '86400', '129600', '172800', '216000', '259200', '345600', '432000', '518400')
+  timeframes = {'46800'  : '13 hours',
+                '86400'  : '1 day',
+                '129600' : '1.5 days',
+                '172800' : '2 days',
+                '216000' : '2.5 days',
+                '259200' : '3 days',
+                '345600' : '4 days',
+                '432000' : '5 days',
+                '518400' : '6 days'}
+  if timeframe: # reduce to single timeframe
+    timeframes = {timeframe : timeframes[timeframe]}
 
-  timeframesMnenomic = ['13 hours', '1 day', '1.5 days', '2 days', '2.5 days', '3 days', '4 days', '5 days', '6 days']
   classifiers = ('lm', 'svm', 'nb')
   order = ['recallPlus', 'recallMinus', 'precisionPlus', 'precisionMinus', 'F1Plus', 'F1Minus', 'accuracy', 'AUC']
 
@@ -91,8 +97,12 @@ def createArithmeticMeanTable(timeframe=None):
         output.write(boldFont % key + separator)
     output.write(r'\\' + '\\hline\n')
 
+    # Create a list of numerically sorted timeframe seconds. OrderedDict could
+    # be used as alternative.
+    orderedTimeframes = sorted(list(timeframes), key=lambda x:  int(x))
+
     i = len(classifiers) - 1
-    # Iterate over all values:
+    # iterate over all values:
     while i < len(classifiers) * len(timeframes):
       means = []
       # calculate arithmetic mean for one category (e.g. F1):
@@ -107,9 +117,10 @@ def createArithmeticMeanTable(timeframe=None):
         means.append(str(round(arithmeticMean, decimalPlaces)))
       i += len(classifiers)
 
-      # e.g. for |classifiers|=3 at i=8: index=(8-2) / 3 = 2nd iteration
+      # e.g. for |classifiers|=3 at i=8: index=(8-2) / 3 = 2nd iteration:
       timeframeIndex = (i - len(classifiers) - 1) / len(classifiers)
-      currentTimeframe = timeframesMnenomic[timeframeIndex]
+      # e.g. orderedTimeframes[2] == '86400', timeframes['86400'] == '1 day':
+      currentTimeframe = timeframes[orderedTimeframes[timeframeIndex]]
       output.write(currentTimeframe + separator)
       output.write( separator.join(means) + r'\\' + '\n' )
 
@@ -119,8 +130,8 @@ if __name__ == '__main__':
   import argparse
   parser = argparse.ArgumentParser(description='Calculates the average mean of the three classifiers and creates a LaTeX table from the results.',
                                    epilog='TimeframeResultsExtraction.py comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions. For more information, see the LICENSE and README.md files this program should have been distributed with.')
-  parser.add_argument('timeframe', type=int, nargs='?',
-                      help='A positional integer argument can be passed if only one timeframe should be averaged.')
+  parser.add_argument('timeframe', type=str, nargs='?',
+                      help='A positional number argument can be passed if only one timeframe should be averaged.')
   args = parser.parse_args()
 
   createArithmeticMeanTable(args.timeframe)
