@@ -38,41 +38,45 @@ def createArithmeticMeanTable(timeframe=None):
   for key in order:
     values[key] = []
 
+  variations = ['all', 'fw']
+
   for timeframe in timeframes:
-    try:
-      for classifier in classifiers:
-        with open('%s/processed/run9/%s/%s_all/confusionMatrix.tex' % (parentDir, timeframe, classifier), 'r') as matrix:
-          for line in matrix:
-            if 'Predicted positive' in line:
-              value = retrieve(line, lastRe)
-              values['precisionPlus'].append(value)
+    for classifier in classifiers:
+      try:
+        for variation in variations:
+          with open('%s/processed/run9/%s/%s_%s/confusionMatrix.tex' % (parentDir, timeframe, classifier, variation), 'r') as matrix:
+            for line in matrix:
+              if 'Predicted positive' in line:
+                value = retrieve(line, lastRe)
+                values['precisionPlus'].append(value)
 
-            if 'Predicted negative' in line:
-              value = retrieve(line, lastRe)
-              values['precisionMinus'].append(value)
+              if 'Predicted negative' in line:
+                value = retrieve(line, lastRe)
+                values['precisionMinus'].append(value)
 
-            elif 'Recall' in line:
-              value = retrieve(line, firstRe)
-              values['recallPlus'].append(value)
-              value = retrieve(line, secondRe)
-              values['recallMinus'].append(value)
+              elif 'Recall' in line:
+                value = retrieve(line, firstRe)
+                values['recallPlus'].append(value)
+                value = retrieve(line, secondRe)
+                values['recallMinus'].append(value)
 
-            elif 'F1' in line:
-              value = retrieve(line, firstRe)
-              values['F1Plus'].append(value)
-              value = retrieve(line, secondRe)
-              values['F1Minus'].append(value)
+              elif 'F1' in line:
+                value = retrieve(line, firstRe)
+                values['F1Plus'].append(value)
+                value = retrieve(line, secondRe)
+                values['F1Minus'].append(value)
 
-            elif 'Accuracy' in line:
-              value = retrieve(line, firstRe)
-              values['accuracy'].append(value)
+              elif 'Accuracy' in line:
+                value = retrieve(line, firstRe)
+                values['accuracy'].append(value)
 
-            # the parantheses guarantees that we ignore optimistic and pessimistic:
-            elif 'AUC}' in line:
-              value = retrieve(line, firstRe)
-              values['AUC'].append(value)
-    except IOError:
-      pass
+              # the parantheses guarantees that we ignore optimistic and pessimistic:
+              elif 'AUC}' in line:
+                value = retrieve(line, firstRe)
+                values['AUC'].append(value)
+      # file did not exist (e.g. no function words)
+      except IOError:
+        pass
 
   outputFile = '%s/postprocessing/comparison.tex' % parentDir
   try:
