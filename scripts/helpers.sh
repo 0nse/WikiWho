@@ -18,3 +18,15 @@ function returnTimeFrames {
     echo "${timeframe}";
   done
 }
+
+function getLength {
+  # Returns file length and returns a non-zero exit code if the file did not
+  # exist.
+  fileName=$1
+  lines=`wc -l "${fileName}"`
+  if [ $? -ne 0 ]; then
+    echo "-1"
+    return 2
+  fi
+  echo `echo ${lines} | cut -f1 -d ' '`
+}
