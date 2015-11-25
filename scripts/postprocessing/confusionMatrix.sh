@@ -76,11 +76,11 @@ function createLaTeXTable {
 function calc {
   # Use python for calculations and round to 2 decimal places.
   # The multiplication with 100 is used for percentages.
-  echo `python -c "print(round(${1} * 100, 2))"`
+  echo `python -c "print( '{:.2f}'.format(${1} * 100) )"`
 }
 
 function round3DecimalPlaces {
-  echo `python -c "print(round(${1}, 3))"`
+  echo `python -c "print( '{:.3f}'.format(${1}) )"`
 }
 
 function processAUCOutput {
