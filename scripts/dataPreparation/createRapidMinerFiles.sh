@@ -253,7 +253,7 @@ for timeframe in "${timeframes[@]}"; do
     ####################
     # Switch operators #
     ####################
-    if [ "${classifier}" == "nb_all" ]; then # NB
+    if [[ "${classifier}" = "nb_"* ]]; then # NB
       echo '          <operator activated="true" class="naive_bayes" compatibility="5.3.015" expanded="true" height="76" name="Naive Bayes" width="90" x="112" y="255">
             <parameter key="laplace_correction" value="true"/>
           </operator>
