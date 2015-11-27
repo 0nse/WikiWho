@@ -1,30 +1,34 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-def createArithmeticMeanTable(timeframe=None):
+import os
+# script parent directory:
+fileDir = os.path.dirname(os.path.abspath(__file__)).split('/')
+parentDir = '/'.join(fileDir[:-1])
+
+timeframes = {'46800'  : '13 hours',
+              '86400'  : '1 day',
+              '129600' : '1.5 days',
+              '172800' : '2 days',
+              '216000' : '2.5 days',
+              '259200' : '3 days',
+              '345600' : '4 days',
+              '432000' : '5 days',
+              '518400' : '6 days'}
+# Create a list of numerically sorted timeframe seconds. OrderedDict could
+# be used as alternative.
+orderedTimeframes = sorted(list(timeframes), key=lambda x:  int(x))
+
+classifiers = ('lm', 'svm', 'nb')
+measuresOrder = ['recallPlus', 'recallMinus', 'precisionPlus', 'precisionMinus', 'F1Plus', 'F1Minus', 'accuracy', 'AUC']
+
+variations = ['all', 'fw']
+
+def retrieveValues():
   ''' Calculate the arithmetic mean of the performance measures from the
   timeframe tests featuring three classifiers. The output can be used as cells
   for a LaTeX table. '''
   import re
-  import os
-  # script parent directory:
-  fileDir = os.path.dirname(os.path.abspath(__file__)).split('/')
-  parentDir = '/'.join(fileDir[:-1])
-
-  timeframes = {'46800'  : '13 hours',
-                '86400'  : '1 day',
-                '129600' : '1.5 days',
-                '172800' : '2 days',
-                '216000' : '2.5 days',
-                '259200' : '3 days',
-                '345600' : '4 days',
-                '432000' : '5 days',
-                '518400' : '6 days'}
-  if timeframe: # reduce to single timeframe
-    timeframes = {timeframe : timeframes[timeframe]}
-
-  classifiers = ('lm', 'svm', 'nb')
-  order = ['recallPlus', 'recallMinus', 'precisionPlus', 'precisionMinus', 'F1Plus', 'F1Minus', 'accuracy', 'AUC']
 
   firstRe = re.compile(r'.*?& ([0-9\.]*) & .*')
   secondRe = re.compile(r'.*& ([0-9\.]*) & .*')
@@ -32,15 +36,11 @@ def createArithmeticMeanTable(timeframe=None):
   lastRe = re.compile(r'.*{([0-9\.]*)} ?\\')
   retrieve = lambda x, y: float(y.findall(x)[0])
 
-  separator = ' & '
-
   values = {}
-  for key in order:
+  for key in measuresOrder:
     values[key] = []
 
-  variations = ['all', 'fw']
-
-  for timeframe in timeframes:
+  for timeframe in orderedTimeframes:
     for classifier in classifiers:
       try:
         for variation in variations:
@@ -77,7 +77,9 @@ def createArithmeticMeanTable(timeframe=None):
       # file did not exist (e.g. no function words)
       except IOError:
         pass
+  return values
 
+def createArithmeticMeanTable(values, considerFunctionWords=False):
   outputFile = '%s/postprocessing/comparison.tex' % parentDir
   try:
     os.remove(outputFile)
@@ -85,36 +87,37 @@ def createArithmeticMeanTable(timeframe=None):
     # The file did not exist in the first place. Continue:
     pass
   with open(outputFile, 'a') as output:
+    separator = ' & '
     boldFont = '\\textbf{%s}'
     subscript = '$_{%s}$'
 
     # create head:
-    output.write('\\begin{tabular}{' + ' c '*(len(order)+1) + '}\n')
+    output.write('\\begin{tabular}{' + ' c '*(len(measuresOrder)+1) + '}\n')
     output.write('\\hline\n')
     output.write(boldFont % 'time' + separator)
-    for key in order:
+    for key in measuresOrder:
       key = key.replace('Plus', subscript % '+')
       key = key.replace('Minus', subscript % '-')
-      if key == order[-1]:
+      if key == measuresOrder[-1]:
         output.write(boldFont % key + '\n')
       else:
         output.write(boldFont % key + separator)
     output.write(r'\\' + '\\hline\n')
 
-    # Create a list of numerically sorted timeframe seconds. OrderedDict could
-    # be used as alternative.
-    orderedTimeframes = sorted(list(timeframes), key=lambda x:  int(x))
+    classifiersLength = len(classifiers)
+    if considerFunctionWords:
+      classifiersLength *= len(variations)
 
-    i = len(classifiers) - 1
-    # iterate over all values:
-    while i < len(classifiers) * len(timeframes):
+    i = classifiersLength - 1
+    # iterate over all timeframes:
+    while i < classifiersLength * len(timeframes):
       means = []
       # calculate arithmetic mean for one category (e.g. F1):
-      for key in order:
-        results = values[key][i-len(classifiers) + 1 : i + 1]
-        assert(len(results) == len(classifiers))
+      for key in measuresOrder:
+        results = values[key][i-classifiersLength + 1 : i + 1]
+        assert(len(results) == classifiersLength)
 
-        arithmeticMean = sum(results) / len(classifiers)
+        arithmeticMean = sum(results) / classifiersLength
         decimalPlaces = 2
         if key == 'AUC':
           decimalPlaces = 3
@@ -122,16 +125,26 @@ def createArithmeticMeanTable(timeframe=None):
         # write 0.500 instead of 0.5:
         mean = ('{:.%sf}' % decimalPlaces).format(mean)
         means.append(mean)
-      i += len(classifiers)
+      i += classifiersLength
 
       # e.g. for |classifiers|=3 at i=8: index=(8-2) / 3 = 2nd iteration:
       timeframeIndex = (i - len(classifiers) - 1) / len(classifiers)
+      if considerFunctionWords:
+        timeframeIndex -= 1
+        timeframeIndex /= len(variations)
+
       # e.g. orderedTimeframes[2] == '86400', timeframes['86400'] == '1 day':
       currentTimeframe = timeframes[orderedTimeframes[timeframeIndex]]
       output.write(currentTimeframe + separator)
       output.write( separator.join(means) + r'\\' + '\n' )
 
     output.write('\\end{tabular}')
+
+def createBarChart(values):
+  # Each values[orderKey] is a list with values of the following:
+  # [lm_all, lm_fw, svm_all, svm_fw, nb_all, nb_fw]
+  pass # for key in measuresOrder:
+
 
 if __name__ == '__main__':
   import argparse
@@ -141,4 +154,11 @@ if __name__ == '__main__':
                       help='A positional number argument can be passed if only one timeframe should be averaged.')
   args = parser.parse_args()
 
-  createArithmeticMeanTable(args.timeframe)
+  if args.timeframe: # reduce to single timeframe
+    timeframes = {args.timeframe : timeframes[args.timeframe]}
+
+  values = retrieveValues()
+  createArithmeticMeanTable(values, args.timeframe != None)
+
+  if args.timeframe:
+    createBarChart(values)
