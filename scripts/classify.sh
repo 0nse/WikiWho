@@ -41,5 +41,8 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
   postprocessing/embedConfusionMatrices.sh $1
   python postprocessing/TimeframeResultsExtraction.py $1
 
+  mv postprocessing/comparison.tex processed/run9/.
+  mv data/relativePerformance_*.png processed/run9/.
+
   echo "[I] Classifcations executed successfully."
 fi

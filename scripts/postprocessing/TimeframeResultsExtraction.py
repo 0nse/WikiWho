@@ -1,6 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+'''
+Usage: python TimeframeResultsExtraction.py [timeframe,]
+       python TimeframeResultsExtraction.py 86400
+
+Requirements: Matplotlib
+
+If no timeframe is specified, all timeframes (see timeframes variable) will be
+considered.
+'''
+
 import os
 # script parent directory:
 fileDir = os.path.dirname(os.path.abspath(__file__)).split('/')
@@ -109,13 +119,15 @@ def createArithmeticMeanTable(values, considerFunctionWords=False):
       classifiersLength *= len(variations)
 
     i = classifiersLength - 1
+    # iteration:
+    j = 0
     # iterate over all timeframes:
-    while i < classifiersLength * len(timeframes):
+    while j < len(timeframes):
       means = []
       # calculate arithmetic mean for one category (e.g. F1):
       for key in measuresOrder:
         results = values[key][i-classifiersLength + 1 : i + 1]
-        assert(len(results) == classifiersLength)
+        assert len(results) == classifiersLength
 
         arithmeticMean = sum(results) / classifiersLength
         decimalPlaces = 2
@@ -127,24 +139,62 @@ def createArithmeticMeanTable(values, considerFunctionWords=False):
         means.append(mean)
       i += classifiersLength
 
-      # e.g. for |classifiers|=3 at i=8: index=(8-2) / 3 = 2nd iteration:
-      timeframeIndex = (i - len(classifiers) - 1) / len(classifiers)
-      if considerFunctionWords:
-        timeframeIndex -= 1
-        timeframeIndex /= len(variations)
-
-      # e.g. orderedTimeframes[2] == '86400', timeframes['86400'] == '1 day':
-      currentTimeframe = timeframes[orderedTimeframes[timeframeIndex]]
+      currentTimeframe = timeframes[orderedTimeframes[j]]
       output.write(currentTimeframe + separator)
       output.write( separator.join(means) + r'\\' + '\n' )
+      j += 1
 
     output.write('\\end{tabular}')
 
 def createBarChart(values):
   # Each values[orderKey] is a list with values of the following:
   # [lm_all, lm_fw, svm_all, svm_fw, nb_all, nb_fw]
-  pass # for key in measuresOrder:
+  from matplotlib import pyplot as plt
+  import numpy as np
 
+  assert len(values) == len(measuresOrder), '[E] There must be as many keys as there are measures to be displayed. Mismatch: %i vs %i' % (len(values), len(measuresOrder))
+  assert len(values[measuresOrder[0]]) == len(classifiers) * len(variations), '[E] There must be %i * %i classifiers per key for each classifier * variation.' % (len(classifiers), len(variations))
+
+  # graph colours:
+  colours = ['b', 'r']
+  barWidth = 0.2
+  # X axis labels (-1 because we exclude AUC):
+  axisX = range(0, len(measuresOrder) - 1)
+  # offset by bar width:
+  axisXOffset = [v + barWidth for v in axisX]
+  # beautify the measuresOrder for being displayed on a plot:
+  labels = [x.replace('Plus', '+').replace('Minus', '-').title() for x in measuresOrder]
+
+  # iterate over all classifiers + variations:
+  i = 0
+  while i < len(classifiers) * len(variations):
+    plt.subplots()
+    plt.axhline(0, color='black')
+    valuesY_all = []
+    valuesY_fw = []
+
+    # append values of all words and function words:
+    for axisY in (valuesY_all, valuesY_fw):
+      # iterate over all measures except AUC:
+      for key in measuresOrder[:-1]:
+        # set the value into relation with a random decision:
+        value = values[key][i] - 50
+        axisY.append(value)
+      if i % 2:
+        plt.bar(axisXOffset, axisY, width=barWidth, color=colours[i % 2], label='Function words')
+      else:
+        plt.bar(axisX, axisY, width=barWidth, color=colours[i % 2], label='Full text')
+      i += 1
+
+    currentVariation = variations[(i - 1) % len(variations)]
+    currentClassifier = classifiers[(i - 1) % len(classifiers)]
+
+    plt.legend()
+    # Labels:
+    plt.xticks(axisXOffset, labels)
+
+    plt.tight_layout()
+    plt.savefig('../data/relativePerformance_%s_%s.png' % (currentClassifier, currentVariation), dpi=300)
 
 if __name__ == '__main__':
   import argparse
@@ -156,6 +206,7 @@ if __name__ == '__main__':
 
   if args.timeframe: # reduce to single timeframe
     timeframes = {args.timeframe : timeframes[args.timeframe]}
+    orderedTimeframes = [args.timeframe]
 
   values = retrieveValues()
   createArithmeticMeanTable(values, args.timeframe != None)
