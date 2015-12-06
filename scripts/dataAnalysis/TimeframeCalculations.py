@@ -12,6 +12,7 @@ sort -t$'\t' -k3,3 -k1,1n deletionRevisions.csv -o userSortedDeletionRevisions.c
 The file is then sorted by username as first and post creation timestamp as second
 sort criterion.
 '''
+import numpy as np
 
 def extractLastPostToBlockDeltas(postsFile='../../processed/run9/userSortedDeletionRevisions.csv', outputFile=None, usersOutputFile=None):
   ''' Extracts the time between the last post by a user and its (probably)
@@ -107,11 +108,7 @@ def extractLastPostToBlockDeltas(postsFile='../../processed/run9/userSortedDelet
   return deltas
 
 def countDeltaDistribution(deltas):
-  ''' Scatter plot of the time passed (in days) after the last post before a
-  blocking until the actual blocking was issued.
-  '''
   from collections import Counter
-  import numpy as np
 
   # the counter is used for grouping by timestamp frequency and sorting:
   counter = Counter(deltas)
@@ -124,44 +121,59 @@ def countDeltaDistribution(deltas):
 
   return (valuesX, valuesY)
 
-def plot(suffix, *values):
+hasLegendBeenPrinted = False
+def plot(suffix, values):
+  ''' Scatter plot of the time passed (in days) after the last post before a
+  blocking until the actual blocking was issued.
+  Values is a dictionary of values to plot with the key being the label and
+  the value being a tuple of X and Y values.
+  '''
   from matplotlib import pyplot as plt
   import itertools
 
-  fig = plt.figure()
-
+  plt.subplot()
   # Add a title if you need one. I've disabled it, because the image will be
   # embedded into a figure with a caption.
   # plt.title('Number of last posts before their author was blocked in timeframe')
   plt.xlabel('Time in days')
-  plt.ylabel('Number of last posts prior to blocking')
+  plt.ylabel('Number of last posts prior to a block')
 
   # see http://matplotlib.org/api/markers_api.html for available markers
   markers = itertools.cycle(['+', '.', 'o', 'x'])
   # see http://matplotlib.org/api/colors_api.html for available colours
   colours = itertools.cycle(['b', 'r', 'g', 'm'])
   highestXValues = []
-  for (x, y) in values:
-    plt.scatter(x, y, marker=next(markers), color=next(colours))
+  highestYValues = []
+  for (label, (x, y)) in values.items():
+    plt.scatter(x, y, marker=next(markers), color=next(colours), label=label)
 
     highestXValues.append(x[-1])
+    highestYValues.append(y[-1])
 
   # Start the plot at (0.0) and end it at the highest x-value. These calls must
   # be made AFTER plt.scatter.
   plt.axes().set_xlim(0, max(highestXValues))
-  plt.axes().set_ylim(0)
+  plt.axes().set_ylim(0, max(highestYValues) + 250)
+
+  global hasLegendBeenPrinted
+  if not hasLegendBeenPrinted:
+    plt.legend(numpoints=1)
+    hasLegendBeenPrinted=True
 
   plt.savefig('../data/deltasDistribution_%s.png' % str(suffix), dpi=300)
 
-def shortenValues(values, length):
+def shortenValuesToDays(values, days):
   ''' A helper method so that the code is better readable. Shortens both values
-  according to length. '''
+  according to the amount of days given. If days is greater than all days in
+  values, values is returned as-is.'''
   assert len(values) == 2, '[E] Values did not contain exactly two arguments (values for X and Y axis).'
-  return (values[0][:length], values[1][:length])
+  for i in range(len(values[0])):
+    if values[0][i] >= days:
+      return (values[0][:i], values[1][:i])
+  return values
 
 def areaBetweenTwoCurves(valuesA, valuesB):
   ''' Calculates the area between the two curves. The input order is irrelevant. '''
-  import numpy as np
   areaA = np.trapz(valuesA[0], x=valuesA[1])
   areaB = np.trapz(valuesB[0], x=valuesB[1])
 
@@ -175,18 +187,17 @@ if __name__ == '__main__':
   globalDeltas = extractLastPostToBlockDeltas('../processed/dump/afdContributions.csv')
   globalValues = countDeltaDistribution(globalDeltas)
 
-  fig = plot('full', afdValues, globalValues)
+  assert len(afdValues) <= len(globalValues), '[E] The global values cannot be less than the AfD values as the former contain the later.'
 
-  subplotLengths = ('full', 10000, 5000)
-  for length in subplotLengths:
-    if type(length) is int:
-      afdValues = shortenValues(afdValues, length)
-      globalValues = shortenValues(globalValues, length)
+  subplotLengths = ('full', 30, 7)
+  for days in subplotLengths:
+    if type(days) is int or type(days) is float:
+      afdValues = shortenValuesToDays(afdValues, days)
+      globalValues = shortenValuesToDays(globalValues, days)
 
-    fig = plot(length, afdValues, globalValues)
+    plot(days, {'Only AfD discussions' : afdValues, 'Complete Wikipedia' : globalValues})
 
     area = areaBetweenTwoCurves(afdValues, globalValues)
     # we know that globalValues is >= afdValues:
-    import numpy as np
     relativeArea  = area / np.trapz(globalValues[0], x=globalValues[1]) * 100
-    print('[I] The area for the subplot of length "%s" is %.3f. Thus, the relation is %.3f%%.' % (str(length), area, relativeArea))
+    print('[I] The area for the subplot of "%s" days is %.3f. Thus, the relation is %.3f%%.' % (str(days), area, relativeArea))
