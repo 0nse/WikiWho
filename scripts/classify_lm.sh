@@ -76,6 +76,7 @@ function process {
   if [ ${classifier} = "lm_fw" ]; then
     for fileName in "${fileNames[@]}"; do
       # function words
+      fileFW=data/"${fileName}".txt
       mv "${fileFW}" "${path}"/"${fileName}"_fw.txt
     done
   else
