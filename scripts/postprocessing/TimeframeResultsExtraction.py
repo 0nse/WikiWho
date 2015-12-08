@@ -10,6 +10,8 @@ Requirements: Matplotlib
 If no timeframe is specified, all timeframes (see timeframes variable) will be
 considered.
 '''
+from matplotlib import pyplot as plt
+import numpy as np
 
 import os
 # script parent directory:
@@ -29,8 +31,10 @@ timeframes = {'46800'  : '13 hours',
 # be used as alternative.
 orderedTimeframes = sorted(list(timeframes), key=lambda x:  int(x))
 
-classifiers = ('lm', 'svm', 'nb')
+classifiers = ('svm', 'nb', 'lm')
 measuresOrder = ['recallPlus', 'recallMinus', 'precisionPlus', 'precisionMinus', 'F1Plus', 'F1Minus', 'accuracy', 'AUC']
+# beautify the measuresOrder for being displayed on a plot:
+labels = [x.replace('Plus', '+').replace('Minus', '-').title() for x in measuresOrder]
 
 variations = ['all', 'fw']
 
@@ -148,12 +152,8 @@ def createArithmeticMeanTable(values, considerFunctionWords=False):
 
 def createBarChart(values):
   # Each values[orderKey] is a list with values of the following:
-  # [lm_all, lm_fw, svm_all, svm_fw, nb_all, nb_fw]
-  from matplotlib import pyplot as plt
-  import numpy as np
-
-  assert len(values) == len(measuresOrder), '[E] There must be as many keys as there are measures to be displayed. Mismatch: %i vs %i' % (len(values), len(measuresOrder))
-  assert len(values[measuresOrder[0]]) == len(classifiers) * len(variations), '[E] There must be %i * %i classifiers per key for each classifier * variation.' % (len(classifiers), len(variations))
+  # [svm_all, svm_fw, nb_all, nb_fw, lm_all, lm_fw]
+  assertPlottableValues(values)
 
   # graph colours:
   colours = ['b', 'r']
@@ -162,8 +162,6 @@ def createBarChart(values):
   axisX = range(0, len(measuresOrder) - 1)
   # offset by bar width:
   axisXOffset = [v + barWidth for v in axisX]
-  # beautify the measuresOrder for being displayed on a plot:
-  labels = [x.replace('Plus', '+').replace('Minus', '-').title() for x in measuresOrder]
 
   # iterate over all classifiers + variations:
   i = 0
@@ -196,6 +194,58 @@ def createBarChart(values):
     plt.tight_layout()
     plt.savefig('../data/relativePerformance_%s_%s.png' % (currentClassifier, currentVariation), dpi=300)
 
+def assertPlottableValues(values):
+  assert len(values) == len(measuresOrder), '[E] There must be as many keys as there are measures to be displayed. Mismatch: %i vs %i' % (len(values), len(measuresOrder))
+  assert len(values[measuresOrder[0]]) == len(classifiers) * len(variations), '[E] There must be %i * %i classifiers per key for each classifier * variation.' % (len(classifiers), len(variations))
+
+def createClassifierDifferencesBarCharts(values):
+  assertPlottableValues(values)
+
+  colours = ['r', 'g', 'b']
+  barWidth = 0.2
+  # X axis labels (-1 because we exclude AUC):
+  axisX = range(0, len(measuresOrder) - 1)
+  # offset by bar width:
+  axisXLeftOffset = [v - barWidth for v in axisX]
+  axisXRightOffset = [v + barWidth for v in axisX]
+
+  offset = 0
+  for currentVariation in variations:
+    plt.subplots()
+    # start at offset up to e.g. 3 (SVM, NB, LM) and skip e.g. every second
+    # (all, fw) value:
+    for i in range(offset, len(classifiers) * len(variations), len(variations)):
+      # this is SVM, NB, LM:
+      axisY = []
+
+      # skip AUC for now:
+      for key in measuresOrder[:-1]:
+        value = values[key][i]
+        axisY.append(value)
+
+      j =  i - offset
+      variation = 'function words' if offset else 'full text'
+      if j == 0:
+        plt.bar(axisXLeftOffset, axisY, width=barWidth, color=colours[j % 3], label='SVM (%s)' % variation)
+      elif j == 2:
+        plt.bar(axisX, axisY, width=barWidth, color=colours[j % 3], label='NB (%s)' % variation)
+      else:
+        plt.bar(axisXRightOffset, axisY, width=barWidth, color=colours[j % 3], label='LM (%s)' % variation)
+
+    offset += 1
+
+    plt.legend()
+    # Labels:
+    plt.xticks(axisX, labels)
+
+    plt.tight_layout()
+    plt.savefig('../data/performanceComparison_%s.png' % currentVariation, dpi=300)
+
+
+
+
+
+
 if __name__ == '__main__':
   import argparse
   parser = argparse.ArgumentParser(description='Calculates the average mean of the three classifiers and creates a LaTeX table from the results.',
@@ -213,3 +263,4 @@ if __name__ == '__main__':
 
   if args.timeframe:
     createBarChart(values)
+    createClassifierDifferencesBarCharts(values)
