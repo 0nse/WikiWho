@@ -31,7 +31,7 @@ timeframes = {'46800'  : '13 hours',
 # be used as alternative.
 orderedTimeframes = sorted(list(timeframes), key=lambda x:  int(x))
 
-classifiers = ('svm', 'nb', 'lm')
+classifiers = ['svm', 'nb', 'lm']
 measuresOrder = ['recallPlus', 'recallMinus', 'precisionPlus', 'precisionMinus', 'F1Plus', 'F1Minus', 'accuracy', 'AUC']
 # beautify the measuresOrder for being displayed on a plot:
 labels = [x.replace('Plus', '+').replace('Minus', '-').title() for x in measuresOrder]
@@ -184,15 +184,15 @@ def createBarChart(values):
         plt.bar(axisX, axisY, width=barWidth, color=colours[i % 2], label='Full text')
       i += 1
 
-    currentVariation = variations[(i - 1) % len(variations)]
-    currentClassifier = classifiers[(i - 1) % len(classifiers)]
+    # i is multiplied by len(variations). Thus, we divide it by itself.
+    currentClassifier = classifiers[int((i - 1) / len(variations)) % len(classifiers)]
 
     plt.legend()
     # Labels:
     plt.xticks(axisXOffset, labels)
 
     plt.tight_layout()
-    plt.savefig('../data/relativePerformance_%s_%s.png' % (currentClassifier, currentVariation), dpi=300)
+    plt.savefig('../data/relativePerformance_%s.png' % currentClassifier, dpi=300)
 
 def assertPlottableValues(values):
   assert len(values) == len(measuresOrder), '[E] There must be as many keys as there are measures to be displayed. Mismatch: %i vs %i' % (len(values), len(measuresOrder))
@@ -240,10 +240,6 @@ def createClassifierDifferencesBarCharts(values):
 
     plt.tight_layout()
     plt.savefig('../data/performanceComparison_%s.png' % currentVariation, dpi=300)
-
-
-
-
 
 
 if __name__ == '__main__':
