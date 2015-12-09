@@ -21,13 +21,36 @@ import csv
 BLOCK_TIME = 86400
 blockedCount = notBlockedCount = 0
 
-def merge(shouldBeSlidingWindow=True, postsFile='../../processed/run9/userSortedDeletionRevisions.csv'):
+import os
+# script parent directory:
+fileDir = os.path.dirname(os.path.abspath(__file__)).split('/')
+parentDir = '/'.join(fileDir[:-1])
+wikiWhoDir = '/'.join(fileDir[:-2])
+
+def deleteClassDataFile(path):
+  ''' Try deleting file located under path. If it does not exist, continue.
+  Returns True on success, False else.
+  '''
+  try:
+    os.remove(path)
+    return True
+  except OSError:
+    return False
+
+def merge(shouldBeSlidingWindow=True, postsFile='%s/processed/run9/userSortedDeletionRevisions.csv' % wikiWhoDir):
   ''' This is the entry point method for mergeRecentPostsOfSameUser and
   mergeSlidingWindow. See their documentation for information in how they
   differ. '''
+
+  blockedFilePath = '%s/data/blocked_full.txt' % parentDir
+  notBlockedFilePath = '%s/data/notBlocked_full.txt' % parentDir
+  # We append to a file. So better safe than sorry and try removing it first:
+  deleteFile(blockedFilePath)
+  deleteFile(notBlockedFilePath)
+
   with open(postsFile, 'r') as inputFile, \
-       open('../data/blocked_sliding.txt', 'a') as bFile, \
-       open('../data/notBlocked_sliding.txt', 'a') as nbFile:
+       open(blockedFilePath, 'a') as bFile, \
+       open(notBlockedFilePath, 'a') as nbFile:
     blockLogReader = csv.reader(inputFile, delimiter='\t', quotechar='"')
 
     io = [blockLogReader,
@@ -142,7 +165,7 @@ def mergeSlidingWindow(reader, bFile, nbFile):
         # stretch sliding window as far as possible:
         for (timestamp, post, secondsToBlock) in postsData:
           timeDelta = timestamp - firstTimestamp
-          # outside of BLOCK_TIME or blocked happened between the two posts,
+          # outside of BLOCK_TIME or block happened between the two posts,
           # thus break out of loop to write to disk:
           if (secondsToBlock > previousSecondsToBlock \
              or timeDelta > BLOCK_TIME): # or (previousSecondsToBlock != -1 and secondsToBlock == -1)
