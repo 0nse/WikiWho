@@ -15,54 +15,97 @@ The file is then sorted by username as first and post creation timestamp as seco
 sort criterion.
 '''
 
+class OutputWrapper:
+  import os
+  # script parent directory:
+  fileDir = os.path.dirname(os.path.abspath(__file__)).split('/')
+  parentDir = '/'.join(fileDir[:-1])
+  wikiWhoDir = '/'.join(fileDir[:-2])
+
+  blockedCount = notBlockedCount = mergedBlockedCount = mergedNotBlockedCount= 0
+
+  def __init__(self, time):
+    ''' Initialise class by deleting existing files and then opening them anew
+    for appending mode. BLOCK_TIME is set.
+    The paths are obviously hard-coded. '''
+    self.blockedFilePath = '%s/data/blocked_DEBUG.txt' % self.parentDir
+    self.notBlockedFilePath = '%s/data/notBlocked_DEBUG.txt' % self.parentDir
+
+    # We append to a file. So better safe than sorry and try removing it first:
+    self.deleteFile(self.blockedFilePath)
+    self.deleteFile(self.notBlockedFilePath)
+
+    self.bFile = open(self.blockedFilePath, 'a')
+    self.nbFile = open(self.notBlockedFilePath, 'a')
+
+    self.BLOCK_TIME = time
+
+  def deleteFile(self, path):
+    ''' Try deleting file located under path. If it does not exist, continue.
+    Returns True on success, False else.
+    '''
+    try:
+      os.remove(path)
+      return True
+    except OSError:
+      return False
+
+  def write(self, recentPosts, secondsToBlock):
+    ''' Writes recentPosts to disk. Depending on secondsToBlock and BLOCK_TIME, in
+    which a post must have appeared to be considered a block, the blocked file
+    (bFile) or not blocked file (nbFile) is used. '''
+    mergedPost = '<BOP> %s <EOP>\n' % ' '.join(recentPosts)
+    if (secondsToBlock != -1 \
+       and secondsToBlock < self.BLOCK_TIME):
+      self.bFile.write(mergedPost)
+
+      self.mergedBlockedCount += len(recentPosts)
+      self.blockedCount += 1
+    else:
+      self.nbFile.write(mergedPost)
+
+      self.mergedNotBlockedCount += len(recentPosts)
+      self.notBlockedCount += 1
+
+  def printStatistics(self):
+      print('[I] Merged blocked posts:\t%i\n[I] Merged not blocked posts:\t%i' % (self.mergedBlockedCount, self.mergedNotBlockedCount))
+      print('[I] Blocked posts:\t%i\n[I] Not blocked posts:\t%i' % (self.blockedCount, self.notBlockedCount))
+
+  def close(self):
+    self.bFile.close()
+    self.nbFile.close()
+
+###############
+# Script code #
+###############
+import sys
 import csv
 # Time between a contribution and a later blocking of the author in which the
 # contribution is assumed to have led to the blocking:
 BLOCK_TIME = 86400
-blockedCount = notBlockedCount = 0
 
 import os
 # script parent directory:
 fileDir = os.path.dirname(os.path.abspath(__file__)).split('/')
-parentDir = '/'.join(fileDir[:-1])
 wikiWhoDir = '/'.join(fileDir[:-2])
-
-def deleteClassDataFile(path):
-  ''' Try deleting file located under path. If it does not exist, continue.
-  Returns True on success, False else.
-  '''
-  try:
-    os.remove(path)
-    return True
-  except OSError:
-    return False
 
 def merge(shouldBeSlidingWindow=True, postsFile='%s/processed/run9/userSortedDeletionRevisions.csv' % wikiWhoDir):
   ''' This is the entry point method for mergeRecentPostsOfSameUser and
   mergeSlidingWindow. See their documentation for information in how they
   differ. '''
 
-  blockedFilePath = '%s/data/blocked_full.txt' % parentDir
-  notBlockedFilePath = '%s/data/notBlocked_full.txt' % parentDir
-  # We append to a file. So better safe than sorry and try removing it first:
-  deleteFile(blockedFilePath)
-  deleteFile(notBlockedFilePath)
-
-  with open(postsFile, 'r') as inputFile, \
-       open(blockedFilePath, 'a') as bFile, \
-       open(notBlockedFilePath, 'a') as nbFile:
+  with open(postsFile, 'r') as inputFile:
     blockLogReader = csv.reader(inputFile, delimiter='\t', quotechar='"')
 
-    io = [blockLogReader,
-          bFile,
-          nbFile]
+    outputWrapper = OutputWrapper(BLOCK_TIME)
 
     if shouldBeSlidingWindow:
-      mergeSlidingWindow(*io)
+      mergeSlidingWindow(blockLogReader, outputWrapper)
     else:
-      mergeRecentPostsOfSameUser(*io)
+      mergeRecentPostsOfSameUser(blockLogReader, outputWrapper)
 
-    printStatistics()
+    outputWrapper.close()
+    outputWrapper.printStatistics()
 
 def preprocessLine(line):
   ''' type conversion from string and other preprocessing '''
@@ -75,8 +118,7 @@ def preprocessLine(line):
           post,
           secondsToBlock]
 
-
-def mergeRecentPostsOfSameUser(reader, bFile, nbFile):
+def mergeRecentPostsOfSameUser(reader, outputWrapper):
   ''' This function merges posts of the same user within a BLOCK_TIME time frame.
   There is no sliding window. Thus, posts in the same time frame will be grouped
   but without overlap. Naturally, many combinations of successive posts are left
@@ -89,6 +131,8 @@ def mergeRecentPostsOfSameUser(reader, bFile, nbFile):
 
   Essentially, this method is deprecated as the classifiers perform subpar on
   its results.
+
+  THIS METHOD IS DEPRECATED AND MAY BEHAVE INCORRECTLY.
   '''
   previousUser = None
   previousSecondsToBlock = 0
@@ -105,7 +149,7 @@ def mergeRecentPostsOfSameUser(reader, bFile, nbFile):
 
       # we are not in the first iteration so write to disk:
       if previousUser:
-        write(recentPosts, secondsToBlock, bFile, nbFile)
+        outputWrapper.write(recentPosts, secondsToBlock)
 
       recentPosts = [post]
       firstTimestamp = timestamp
@@ -116,9 +160,9 @@ def mergeRecentPostsOfSameUser(reader, bFile, nbFile):
     previousSecondsToBlock = secondsToBlock
   # write last post(s) to disk:
   if previousUser:
-    write(recentPosts, secondsToBlock, bFile, nbFile)
+    outputWrapper.write(recentPosts, secondsToBlock)
 
-def mergeSlidingWindow(reader, bFile, nbFile):
+def mergeSlidingWindow(reader, outputWrapper):
   ''' Merge posts of the same user within a BLOCK_TIME time frame. First, all
   posts by the same user are gathered and then all posts within the time frame
   will be merged into one post which will be written to disk. Next, the first
@@ -144,7 +188,6 @@ def mergeSlidingWindow(reader, bFile, nbFile):
 
   Be aware that this function will create many posts: The files can easily grow
   into many GB. '''
-  import sys
   previousUser = None
   previousSecondsToBlock = 0
   postsData = []
@@ -157,64 +200,51 @@ def mergeSlidingWindow(reader, bFile, nbFile):
       postsData.append(postData)
     # then, start creating windows and write them to disk:
     else:
-      while postsData:
-        (firstTimestamp, _, previousSecondsToBlock) = postsData[0]
-        recentPosts = []
-        smallestSecondsToBlock = sys.maxsize
-
-        # stretch sliding window as far as possible:
-        for (timestamp, post, secondsToBlock) in postsData:
-          timeDelta = timestamp - firstTimestamp
-          # outside of BLOCK_TIME or block happened between the two posts,
-          # thus break out of loop to write to disk:
-          if (secondsToBlock > previousSecondsToBlock \
-             or timeDelta > BLOCK_TIME): # or (previousSecondsToBlock != -1 and secondsToBlock == -1)
-            assert len(recentPosts), '[E] 0 posts should be written to disk. This should never happen.'
-            break
-          # all within the timeframe given in BLOCK_TIME:
-          else:
-            recentPosts.append(post)
-            # if there is a block in recentPosts, we want to count it as
-            # blocked. Thus, we look for the lowest secondsToBlock:
-            if (secondsToBlock != -1 and \
-               secondsToBlock < smallestSecondsToBlock):
-              smallestSecondsToBlock = secondsToBlock
-
-            previousSecondsToBlock = secondsToBlock
-
-        # write all in BLOCK_TIME frame to disk:
-        write(recentPosts, smallestSecondsToBlock, bFile, nbFile)
-        # drop oldest:
-        postsData = postsData[1:]
-      # add postData of different user:
+      processUser(postsData, outputWrapper)
+      postsData = []
+      previousUser = user
+      # add postData of different user (which triggered this branch):
       postsData = [postData]
-    previousUser = user
 
   # write last post(s) to disk:
   if previousUser:
-    write(recentPosts, secondsToBlock, bFile, nbFile)
+    # The condition ensures that nothing is written if only one user existed. In
+    # any other case, the posts by the last user in the input file have not been
+    # written yet.
+    processUser(postsData, outputWrapper)
 
-def write(recentPosts, secondsToBlock, bFile, nbFile):
-  ''' Writes recentPosts to disk. Depending on secondsToBlock and BLOCK_TIME, in
-  which a post must have appeared to be considered a block, the blocked file
-  (bFile) or not blocked file (nbFile) is used. '''
-  mergedPost = '<BOP> %s <EOP>\n' % ' '.join(recentPosts)
-  if (secondsToBlock != -1 \
-     and secondsToBlock < BLOCK_TIME):
-    bFile.write(mergedPost)
+def processUser(postsData, outputWrapper):
+  ''' Actual sliding window process. Slide a window over all posts by the same
+  user and write them to disk. '''
+  while postsData:
+    (firstTimestamp, _, previousSecondsToBlock) = postsData[0]
+    recentPosts = []
+    smallestSecondsToBlock = sys.maxsize
 
-    global blockedCount
-    blockedCount += len(recentPosts)
-  else:
-    nbFile.write(mergedPost)
+    # stretch sliding window as far as possible:
+    for (timestamp, post, secondsToBlock) in postsData:
+      timeDelta = timestamp - firstTimestamp
+      # outside of BLOCK_TIME or block happened between the two posts,
+      # thus break out of loop to write to disk:
+      if (secondsToBlock > previousSecondsToBlock \
+         or timeDelta > BLOCK_TIME): # or (previousSecondsToBlock != -1 and secondsToBlock == -1)
+        assert len(recentPosts), '[E] 0 posts should be written to disk. This should never happen.'
+        break
+      # all within the timeframe given in BLOCK_TIME:
+      else:
+        recentPosts.append(post)
+        # if there is a block in recentPosts, we want to count it as
+        # blocked. Thus, we look for the lowest secondsToBlock:
+        if (secondsToBlock != -1 and \
+           secondsToBlock < smallestSecondsToBlock):
+          smallestSecondsToBlock = secondsToBlock
 
-    global notBlockedCount
-    notBlockedCount += len(recentPosts)
+        previousSecondsToBlock = secondsToBlock
 
-def printStatistics():
-    global blockedCount
-    global notBlockedCount
-    print('[I] Blocked posts:\t%i\n[I] Not blocked posts:\t%i' % (blockedCount, notBlockedCount))
+    # write all in BLOCK_TIME frame to disk:
+    outputWrapper.write(recentPosts, secondsToBlock)
+    # drop oldest:
+    postsData = postsData[1:]
 
 if __name__ == '__main__':
   merge()
