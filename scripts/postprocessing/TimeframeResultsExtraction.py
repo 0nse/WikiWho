@@ -56,41 +56,37 @@ def retrieveValues():
 
   for timeframe in orderedTimeframes:
     for classifier in classifiers:
-      try:
-        for variation in variations:
-          with open('%s/processed/run9/%s/%s_%s/confusionMatrix.tex' % (parentDir, timeframe, classifier, variation), 'r') as matrix:
-            for line in matrix:
-              if 'Predicted positive' in line:
-                value = retrieve(line, lastRe)
-                values['precisionPlus'].append(value)
+      for variation in variations:
+        with open('%s/processed/run9/%s/%s_%s/confusionMatrix.tex' % (parentDir, timeframe, classifier, variation), 'r') as matrix:
+          for line in matrix:
+            if 'Predicted positive' in line:
+              value = retrieve(line, lastRe)
+              values['precisionPlus'].append(value)
 
-              if 'Predicted negative' in line:
-                value = retrieve(line, lastRe)
-                values['precisionMinus'].append(value)
+            if 'Predicted negative' in line:
+              value = retrieve(line, lastRe)
+              values['precisionMinus'].append(value)
 
-              elif 'Recall' in line:
-                value = retrieve(line, firstRe)
-                values['recallPlus'].append(value)
-                value = retrieve(line, secondRe)
-                values['recallMinus'].append(value)
+            elif 'Recall' in line:
+              value = retrieve(line, firstRe)
+              values['recallPlus'].append(value)
+              value = retrieve(line, secondRe)
+              values['recallMinus'].append(value)
 
-              elif 'F1' in line:
-                value = retrieve(line, firstRe)
-                values['F1Plus'].append(value)
-                value = retrieve(line, secondRe)
-                values['F1Minus'].append(value)
+            elif 'F1' in line:
+              value = retrieve(line, firstRe)
+              values['F1Plus'].append(value)
+              value = retrieve(line, secondRe)
+              values['F1Minus'].append(value)
 
-              elif 'Accuracy' in line:
-                value = retrieve(line, firstRe)
-                values['accuracy'].append(value)
+            elif 'Accuracy' in line:
+              value = retrieve(line, firstRe)
+              values['accuracy'].append(value)
 
-              # the parantheses guarantees that we ignore optimistic and pessimistic:
-              elif 'AUC}' in line:
-                value = retrieve(line, firstRe)
-                values['AUC'].append(value)
-      # file did not exist (e.g. no function words)
-      except IOError:
-        pass
+            # the parantheses guarantees that we ignore optimistic and pessimistic:
+            elif 'AUC}' in line:
+              value = retrieve(line, firstRe)
+              values['AUC'].append(value)
   return values
 
 def createArithmeticMeanTable(values, considerFunctionWords=False):
@@ -192,7 +188,7 @@ def createBarChart(values):
     plt.xticks(axisXOffset, labels)
 
     plt.tight_layout()
-    plt.savefig('../data/relativePerformance_%s.png' % currentClassifier, dpi=300)
+    plt.savefig('%s/data/relativePerformance_%s.png' % (parentDir, currentClassifier), dpi=300)
 
 def assertPlottableValues(values):
   assert len(values) == len(measuresOrder), '[E] There must be as many keys as there are measures to be displayed. Mismatch: %i vs %i' % (len(values), len(measuresOrder))
@@ -239,7 +235,7 @@ def createClassifierDifferencesBarCharts(values):
     plt.xticks(axisX, labels)
 
     plt.tight_layout()
-    plt.savefig('../data/performanceComparison_%s.png' % currentVariation, dpi=300)
+    plt.savefig('%s/data/performanceComparison_%s.png' % (parentDir, currentVariation), dpi=300)
 
 
 if __name__ == '__main__':
