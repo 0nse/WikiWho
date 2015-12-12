@@ -8,20 +8,27 @@
 # classify_rm.sh.
 #
 # Usage: ./classify_lm.sh
+#        ./classify_lm.sh 86400
+#        ./classify_lm.sh 86400 somethingSomething
 #
 # A parameter (seconds) can be parsed (e.g. 86400) if only one timeframe should
 # be tested. It must be known to this script (see timeframeMnemonic). The size
 # of blocked.txt and notBlocked.txt will be set to |blocked_full.txt| in this
 # case.
+# If a third parameter is passed, the sliding window approach  will be used.
 
 # getLength and returnTimeFrames:
 source helpers.sh
+# set this directory as current working directory:
+cd "$(dirname "$0")"
 
 function process {
   seconds=$1
   classifier=$2
   timeframeMnemonic=$3
+  isSlidingWindow="$4"
   path=processed/run9/${seconds}
+  sourcePath=../processed/run9/
 
   if [ "${classifier}" = "lm_all" ]; then
     mkdir -p ${path}/{lm,nb,svm}_all
@@ -30,14 +37,13 @@ function process {
   fi
 
   # Create blocked.txt and notBlocked.txt without anything other than function
-  # words. This method only works, if it has already been run at least once for
-  # this value of ${seconds}. That is: ${classifier} = lm_all must be executed
-  # before lm_fw!
+  # words. This method only works, if this function has already run at least once
+  # for this value of ${seconds}. That is: ${classifier} = lm_all must be
+  # executed before lm_fw!
   if [ ${classifier} = "lm_fw" ]; then
-    fileNames=(blocked notBlocked)
-    for fileName in "${fileNames[@]}"; do
-      fileFW=data/"${fileName}".txt
-      fileFull="${path}"/"${fileName}".txt
+    for class in {b,notB}locked; do
+      fileFW=data/"${class}".txt
+      fileFull="${path}"/"${class}".txt
       python dataPreparation/NonFunctionWordsFilter.py ${fileFull} ${fileFW}
     done
     # we drop empty lines (did not contain any function word). Thus, we need to
@@ -56,9 +62,20 @@ function process {
     fi
     # split with already existing blocked files:
     dataPreparation/separate.sh
-  else
+  else # lm_all:
+    if [ -n "${isSlidingWindow}" ]; then
+      # call separate.sh only after the data has been prepared. This is done
+      # only in the lm_all branch because lm_fw will reuse the files created in
+      # this iteration.
+
+      # sort by users if not done already:
+      if [ ! -f "${sourcePath}"userSortedDeletionRevisions.csv ]; then
+        sort -t$'\t' -k3,3 -k1,1n "${sourcePath}"deletionRevisions.csv -o "${sourcePath}"userSortedDeletionRevisions.csv
+      fi
+      ../venv/bin/python dataPreparation/SlidingWindowExtraction.py unusedValue ${seconds} "${isSlidingWindow}"
+    fi
     # Split into ten parts each for 10-fold cross validation:
-    dataPreparation/separate.sh ../../processed/run9/deletionRevisions.csv ${seconds}
+    dataPreparation/separate.sh "${sourcePath}"deletionRevisions.csv ${seconds} "${isSlidingWindow}"
   fi
 
   if [ $? -ne 0 ]; then
@@ -74,10 +91,10 @@ function process {
   lm/evaluate_posts.sh "${timeframeMnemonic}"
   # move data files. Rename, when function words are also considered:
   if [ ${classifier} = "lm_fw" ]; then
-    for fileName in "${fileNames[@]}"; do
+    for class in {b,notB}locked; do
       # function words
-      fileFW=data/"${fileName}".txt
-      mv "${fileFW}" "${path}"/"${fileName}"_fw.txt
+      fileFW=data/"${class}".txt
+      mv "${fileFW}" "${path}"/"${class}"_fw.txt
     done
   else
     mv data/{blocked,notBlocked}{,_full}.txt "${path}"/
@@ -97,6 +114,7 @@ function process {
 rm data/lines_temporary_file_DO_NOT_DELETE > /dev/null 2>&1
 
 timeframes=(`returnTimeFrames "$1"`)
+isSlidingWindow="$2"
 classifiers=(lm_all)
 # If a parameter was passed, we also want to check for function words.
 if [ -n "$1" ]; then
@@ -116,7 +134,11 @@ timeframesMnemonic=([46800]="13 hours"
 
 for timeframe in "${timeframes[@]}"; do
   for classifier in "${classifiers[@]}"; do
-    process ${timeframe} "${classifier}" "${timeframesMnemonic[${timeframe}]}"
+    process ${timeframe} "${classifier}" "${timeframesMnemonic[${timeframe}]}" "${isSlidingWindow}"
+    # store the lm n-gram results:
+    for class in {b,notB}locked; do
+      mv data/"${class}"/merged_"${class}".txt.glmtk/queries processed/run9/"${timeframe}"/"${classifier}"/"${class}"Queries
+    done
   done
 done
 

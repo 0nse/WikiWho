@@ -60,31 +60,39 @@ function splitKFold {
 }
 #################################################################################
 
-fileName=$1
+fileName="$1"
 # 172800 are two days. If it is unset, it will be assumed that blocked.txt and
 # notBlocked_full.txt already exist. In this case, those are being split.
 secondsToBlock=$2
+isSlidingWindow="$3"
 
 # If this is given, it is assumed that blocked.txt/notBlocked.txt do not exist
-# yet. Thus, they are created, split and balanced:
+# yet. Thus, they are created, split and balanced. When this script is called by
+# classify_lm.sh, secondsToBlock will only be given for lm_fw but not lm_all.
+# Thus, it is ensured that no additional extraction/balancing is done.
 if [ -n "${secondsToBlock}" ]; then
-  # blocked:
-  awk -F $'\t' '{ seconds=int($6);
-                  if (seconds > -1 && seconds < int("'"$secondsToBlock"'")) {
-                    gsub(/^ +| +$/, "", $5); # trim string
-                    print "<BOP> " $5 " <EOP>"
-                  }
-                }' "${fileName}" > ../data/blocked_full.txt
-  echo "[I] Wrote blocked_full.txt to disk."
+  # If isSlidingWindow is set, SlidingWindowExtraction.py will have been executed
+  # by classify_lm.sh. Hence, this code can be skipped. Only balancing is needed
+  # then.
+  if  [ -z "${isSlidingWindow}" ]; then
+    # blocked:
+    awk -F $'\t' '{ seconds=int($6);
+                    if (seconds > -1 && seconds < int("'"$secondsToBlock"'")) {
+                      gsub(/^ +| +$/, "", $5); # trim string
+                      print "<BOP> " $5 " <EOP>"
+                    }
+                  }' "${fileName}" > ../data/blocked_full.txt
+    echo "[I] Wrote blocked_full.txt to disk."
 
-  # not blocked:
-  awk -F $'\t' '{ seconds=int($6);
-                  if (seconds < 0 || seconds >= int("'"$secondsToBlock"'")) {
-                    gsub(/^ +| +$/, "", $5); # trim string
-                    print "<BOP> " $5 " <EOP>"
-                  }
-                }' "${fileName}" > ../data/notBlocked_full.txt
-  echo "[I] Wrote notBlocked_full.txt to disk."
+    # not blocked:
+    awk -F $'\t' '{ seconds=int($6);
+                    if (seconds < 0 || seconds >= int("'"$secondsToBlock"'")) {
+                      gsub(/^ +| +$/, "", $5); # trim string
+                      print "<BOP> " $5 " <EOP>"
+                    }
+                  }' "${fileName}" > ../data/notBlocked_full.txt
+    echo "[I] Wrote notBlocked_full.txt to disk."
+  fi
 
   # Assuming this script was called by classify_lm.sh, it starts with the lowest
   # timeframe and ends with the biggest. Thus, the amount of blocked contributions

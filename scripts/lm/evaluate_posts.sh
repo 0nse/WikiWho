@@ -22,7 +22,7 @@ function kFoldXValidation {
   nb="notBlocked"
 
   bTrainingFile=../data/${b}/merged_${b}.txt
-  nbTrainingFile=../data/$nb/merged_${nb}.txt
+  nbTrainingFile=../data/${nb}/merged_${nb}.txt
 
   bQueriesPath=../data/${bTrainingFile}.glmtk/queries/
   nbQueriesPath=../data/${nbTrainingFile}.glmtk/queries/
