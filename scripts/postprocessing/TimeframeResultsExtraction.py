@@ -34,7 +34,9 @@ orderedTimeframes = sorted(list(timeframes), key=lambda x:  int(x))
 classifiers = ['svm', 'nb', 'lm']
 measuresOrder = ['recallPlus', 'recallMinus', 'precisionPlus', 'precisionMinus', 'F1Plus', 'F1Minus', 'accuracy', 'AUC']
 # beautify the measuresOrder for being displayed on a plot:
-labels = [x.replace('Plus', '+').replace('Minus', '-').title() for x in measuresOrder]
+labels = [x.replace('Plus', '+').replace('Minus', '-').title() for x in measuresOrder[:-1]]
+# AUC should not be written 'Auc':
+labels.append(measuresOrder[-1])
 
 variations = ['all', 'fw']
 
@@ -155,7 +157,7 @@ def createBarChart(values):
   colours = ['b', 'r']
   barWidth = 0.2
   # X axis labels (-1 because we exclude AUC):
-  axisX = range(0, len(measuresOrder) - 1)
+  axisX = range(0, len(measuresOrder))
   # offset by bar width:
   axisXOffset = [v + barWidth for v in axisX]
 
@@ -163,6 +165,10 @@ def createBarChart(values):
   i = 0
   while i < len(classifiers) * len(variations):
     plt.subplots()
+    # fix layout (else, its moved to the left, with spacing to the right). For
+    # some illogical reason, 0.1 to the left is the same as 0.5 to the right:
+    plt.axes().set_xlim(-0.1, axisX[-1]+0.5)
+    # add a line at zero; must be done after set_xlim:
     plt.axhline(0, color='black')
     valuesY_all = []
     valuesY_fw = []
@@ -170,9 +176,13 @@ def createBarChart(values):
     # append values of all words and function words:
     for axisY in (valuesY_all, valuesY_fw):
       # iterate over all measures except AUC:
-      for key in measuresOrder[:-1]:
+      for key in measuresOrder:
+        value = values[key][i]
+        # make the probability a percentage:
+        if key == 'AUC':
+          value *= 100
         # set the value into relation with a random decision:
-        value = values[key][i] - 50
+        value -= 50
         axisY.append(value)
       if i % 2:
         plt.bar(axisXOffset, axisY, width=barWidth, color=colours[i % 2], label='Function words')
@@ -199,17 +209,21 @@ def createClassifierDifferencesBarCharts(values):
 
   colours = ['r', 'g', 'b']
   barWidth = 0.2
-  # X axis labels (-1 because we exclude AUC):
-  axisX = range(0, len(measuresOrder) - 1)
+  axisX = range(0, len(measuresOrder))
   # offset by bar width:
-  axisXLeftOffset = [v - barWidth for v in axisX]
-  axisXRightOffset = [v + barWidth for v in axisX]
+  axisXLeftOffset = [v - 1.5*barWidth for v in axisX]
+  axisXZeroOffset = [v - 0.5*barWidth for v in axisX]
+  axisXRightOffset = [v + 0.5*barWidth for v in axisX]
 
   offset = 0
   for currentVariation in variations:
     plt.subplots()
+    # stretch the figure so that 'Precision+' and 'Precision-' don't overlap:
+    plt.figure(figsize=(10,6))
     # scale to 0 to 100 so that charts are easier visually comparable:
     plt.axes().set_ylim(0, 100)
+    # tighter layout:
+    plt.axes().set_xlim(-0.5, axisX[-1]+0.5)
 
     # start at offset up to e.g. 3 (SVM, NB, LM) and skip e.g. every second
     # (all, fw) value:
@@ -217,9 +231,11 @@ def createClassifierDifferencesBarCharts(values):
       # this is SVM, NB, LM:
       axisY = []
 
-      # skip AUC for now:
-      for key in measuresOrder[:-1]:
+      for key in measuresOrder:
         value = values[key][i]
+        # make the probability a percentage:
+        if key == 'AUC':
+          value *= 100
         axisY.append(value)
 
       j =  i - offset
@@ -227,7 +243,7 @@ def createClassifierDifferencesBarCharts(values):
       if j == 0:
         plt.bar(axisXLeftOffset, axisY, width=barWidth, color=colours[j % 3], label='SVM (%s)' % variation)
       elif j == 2:
-        plt.bar(axisX, axisY, width=barWidth, color=colours[j % 3], label='NB (%s)' % variation)
+        plt.bar(axisXZeroOffset, axisY, width=barWidth, color=colours[j % 3], label='NB (%s)' % variation)
       else:
         plt.bar(axisXRightOffset, axisY, width=barWidth, color=colours[j % 3], label='LM (%s)' % variation)
 
