@@ -157,7 +157,8 @@ def plot(suffix, values):
 
   global hasLegendBeenPrinted
   if not hasLegendBeenPrinted:
-    plt.legend(numpoints=1)
+    # position lower right:
+    plt.legend(loc=4)
     hasLegendBeenPrinted=True
 
   plt.savefig('../data/deltasDistribution_%s.png' % str(suffix), dpi=300)
