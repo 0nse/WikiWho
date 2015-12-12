@@ -154,10 +154,16 @@ def roundLimit(x, shouldRoundDown=True):
   # make it a float and let the last decimal place be considered by ceil/floor:
   x /= 10
   if shouldRoundDown: # round down:
-    x = math.floor(x)
+    roundedX = math.floor(x)
+    # padding if needed:
+    if x - 0.1 <= roundedX:
+      roundedX -= 0.5
   else: # round up:
-    x = math.ceil(x)
-  return int(x * 10)
+    roundedX = math.ceil(x)
+    # padding if needed:
+    if x + 0.1 >= roundedX:
+      roundedX += 0.5
+  return int(roundedX * 10)
 
 
 def createBarChart(values):
@@ -218,7 +224,7 @@ def createBarChart(values):
     # i is multiplied by len(variations). Thus, we divide it by itself.
     currentClassifier = classifiers[int((i - 1) / len(variations)) % len(classifiers)]
 
-    plt.legend()
+    plt.legend(loc=4)
     # Labels:
     plt.xticks(axisXOffset, labels)
 
