@@ -148,6 +148,18 @@ def createArithmeticMeanTable(values, considerFunctionWords=False):
 
     output.write('\\end{tabular}')
 
+def roundLimit(x, shouldRoundDown=True):
+  ''' Rounds down or up. '''
+  import math
+  # make it a float and let the last decimal place be considered by ceil/floor:
+  x /= 10
+  if shouldRoundDown: # round down:
+    x = math.floor(x)
+  else: # round up:
+    x = math.ceil(x)
+  return int(x * 10)
+
+
 def createBarChart(values):
   # Each values[orderKey] is a list with values of the following:
   # [svm_all, svm_fw, nb_all, nb_fw, lm_all, lm_fw]
@@ -161,6 +173,22 @@ def createBarChart(values):
   # offset by bar width:
   axisXOffset = [v + barWidth for v in axisX]
 
+  # we preprocess the values so that we can determine the lowest and highest
+  # limit:
+  processedValues = {}
+  for item in values.items():
+    key = item[0]
+    vs = item[1] # vs because we do not want to override 'values'
+    # make the probability a percentage:
+    if key == 'AUC':
+      vs = [x * 100 for x in vs]
+    # set the value into relation with a random decision:
+    processedValues[key] = [x - 50 for x in vs]
+
+  # limits (max, max is needed to retrieve the lowest value's value):
+  bottomLimit = roundLimit(min(min(processedValues.values())))
+  topLimit = roundLimit(max(max(processedValues.values())), False)
+
   # iterate over all classifiers + variations:
   i = 0
   while i < len(classifiers) * len(variations):
@@ -168,6 +196,8 @@ def createBarChart(values):
     # fix layout (else, its moved to the left, with spacing to the right). For
     # some illogical reason, 0.1 to the left is the same as 0.5 to the right:
     plt.axes().set_xlim(-0.1, axisX[-1]+0.5)
+    # set equal limits for all graphs for better visual comparison:
+    plt.axes().set_ylim(bottomLimit, topLimit)
     # add a line at zero; must be done after set_xlim:
     plt.axhline(0, color='black')
     valuesY_all = []
@@ -177,12 +207,7 @@ def createBarChart(values):
     for axisY in (valuesY_all, valuesY_fw):
       # iterate over all measures except AUC:
       for key in measuresOrder:
-        value = values[key][i]
-        # make the probability a percentage:
-        if key == 'AUC':
-          value *= 100
-        # set the value into relation with a random decision:
-        value -= 50
+        value = processedValues[key][i]
         axisY.append(value)
       if i % 2:
         plt.bar(axisXOffset, axisY, width=barWidth, color=colours[i % 2], label='Function words')
