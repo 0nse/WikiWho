@@ -208,6 +208,9 @@ def createClassifierDifferencesBarCharts(values):
   offset = 0
   for currentVariation in variations:
     plt.subplots()
+    # scale to 0 to 100 so that charts are easier visually comparable:
+    plt.axes().set_ylim(0, 100)
+
     # start at offset up to e.g. 3 (SVM, NB, LM) and skip e.g. every second
     # (all, fw) value:
     for i in range(offset, len(classifiers) * len(variations), len(variations)):
@@ -230,12 +233,13 @@ def createClassifierDifferencesBarCharts(values):
 
     offset += 1
 
-    plt.legend()
+    plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
+                   ncol=2, mode="expand", borderaxespad=0.)
     # Labels:
     plt.xticks(axisX, labels)
 
-    plt.tight_layout()
-    plt.savefig('%s/data/performanceComparison_%s.png' % (parentDir, currentVariation), dpi=300)
+    # bbox_inches="tight" ensures that the legend will fit in the saved figure.
+    plt.savefig('%s/data/performanceComparison_%s.png' % (parentDir, currentVariation), dpi=300, bbox_inches='tight')
 
 
 if __name__ == '__main__':
