@@ -72,7 +72,7 @@ function process {
       if [ ! -f "${sourcePath}"userSortedDeletionRevisions.csv ]; then
         sort -t$'\t' -k3,3 -k1,1n "${sourcePath}"deletionRevisions.csv -o "${sourcePath}"userSortedDeletionRevisions.csv
       fi
-      ../venv/bin/python dataPreparation/SlidingWindowExtraction.py unusedValue ${seconds} "${isSlidingWindow}"
+      ../venv/bin/python dataPreparation/SlidingWindowExtraction.py
     fi
     # Split into ten parts each for 10-fold cross validation:
     dataPreparation/separate.sh "${sourcePath}"deletionRevisions.csv ${seconds} "${isSlidingWindow}"

@@ -44,12 +44,14 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
   ./classify_rm.sh ${seconds}
 
   echo "[I] Transforming results into LaTeX tables."
-  postprocessing/embedConfusionMatrices.sh ${seconds}
   ../venv/bin/python postprocessing/TimeframeResultsExtraction.py ${seconds}
-
+  postprocessing/embedConfusionMatrices.sh ${seconds}
   mv postprocessing/comparison.tex processed/run9/.
-  mv data/relativePerformance_*.png processed/run9/.
-  mv data/performanceComparison_*.png processed/run9/.
+
+  if [ -n "${isSlidingWindow}" ]; then
+    mv data/relativePerformance_*.png processed/run9/${seconds}/.
+    mv data/performanceComparison_*.png processed/run9/${seconds}/.
+  fi
 
   echo "[I] Classifcations executed successfully."
 fi
