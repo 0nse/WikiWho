@@ -28,8 +28,8 @@ class OutputWrapper:
     ''' Initialise class by deleting existing files and then opening them anew
     for appending mode. BLOCK_TIME is set.
     The paths are obviously hard-coded. '''
-    self.blockedFilePath = '%s/data/blocked_full.txt' % self.parentDir
-    self.notBlockedFilePath = '%s/data/notBlocked_full.txt' % self.parentDir
+    self.blockedFilePath = '%s/data/sw/blocked_full.txt' % self.parentDir
+    self.notBlockedFilePath = '%s/data/sw/notBlocked_full.txt' % self.parentDir
 
     # We append to a file. So better safe than sorry and try removing it first:
     self.deleteFile(self.blockedFilePath)

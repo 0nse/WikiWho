@@ -65,54 +65,66 @@ fileName="$1"
 # notBlocked_full.txt already exist. In this case, those are being split.
 secondsToBlock=$2
 isSlidingWindow="$3"
+if  [ -z "${isSlidingWindow}" ]; then
+  folder=regular
+else
+  folder=sw
+fi
 
 # If this is given, it is assumed that blocked.txt/notBlocked.txt do not exist
 # yet. Thus, they are created, split and balanced. When this script is called by
-# classify_lm.sh, secondsToBlock will only be given for lm_fw but not lm_all.
+# classify_lm.sh, secondsToBlock will only be given for lm_all but not lm_fw.
 # Thus, it is ensured that no additional extraction/balancing is done.
 if [ -n "${secondsToBlock}" ]; then
-  # If isSlidingWindow is set, SlidingWindowExtraction.py will have been executed
-  # by classify_lm.sh. Hence, this code can be skipped. Only balancing is needed
-  # then.
-  if  [ -z "${isSlidingWindow}" ]; then
+  # only create full files, if the directory does not exist yet and with it
+  # these files created by Balancing.py:
+  if [ ! -f ../data/regular/blocked_full.txt ]; then
     # blocked:
     awk -F $'\t' '{ seconds=int($6);
                     if (seconds > -1 && seconds < int("'"$secondsToBlock"'")) {
                       gsub(/^ +| +$/, "", $5); # trim string
                       print "<BOP> " $5 " <EOP>"
                     }
-                  }' "${fileName}" > ../data/blocked_full.txt
+                  }' "${fileName}" > ../data/regular/blocked_full.txt
     echo "[I] Wrote blocked_full.txt to disk."
+  fi
 
+  if [ ! -f ../data/regular/notBlocked_full.txt ]; then
     # not blocked:
     awk -F $'\t' '{ seconds=int($6);
                     if (seconds < 0 || seconds >= int("'"$secondsToBlock"'")) {
                       gsub(/^ +| +$/, "", $5); # trim string
                       print "<BOP> " $5 " <EOP>"
                     }
-                  }' "${fileName}" > ../data/notBlocked_full.txt
+                  }' "${fileName}" > ../data/regular/notBlocked_full.txt
     echo "[I] Wrote notBlocked_full.txt to disk."
   fi
 
-  # Assuming this script was called by classify_lm.sh, it starts with the lowest
-  # timeframe and ends with the biggest. Thus, the amount of blocked contributions
-  # will increase. To make the classifier results comparable, all have to be
-  # trained on the same sample size. Hence, in the first run, all blocked
-  # contributions are considered. The later will all use as many blocked
-  # contributions as the first run, but randomly sampled.
-  # If this script is called manually, the ${linesFile} can be removed.
-  linesFile=../data/lines_temporary_file_DO_NOT_DELETE
-  if [ -f "${linesFile}" ]; then
-    numberOfContributions=`head -n 1 "${linesFile}"`
-    python Balancing.py --lines ${numberOfContributions}
-  else
-    python Balancing.py > "${linesFile}"
-    # In the first run, notBlocked.txt will be of the same length as
-    # blocked_full.txt. Therefore, no sampling is applied to the blocked posts and
-    # we can copy it fully to become blocked.txt:
-    cp ../data/blocked_full.txt ../data/blocked.txt
+  if [ -n "${isSlidingWindow}" ]; then
+    # Assuming this script was called by classify_lm.sh, it starts with the lowest
+    # timeframe and ends with the biggest. Thus, the amount of blocked contributions
+    # will increase. To make the classifier results comparable, all have to be
+    # trained on the same sample size. Hence, in the first run, all blocked
+    # contributions are considered. The later will all use as many blocked
+    # contributions as the first run, but randomly sampled.
+    # If this script is called manually, the ${linesFile} can be removed.
+    linesFile=../data/lines_temporary_file_DO_NOT_DELETE
+    if [ -f ../data/"${folder}"/blocked.txt ] && [ -f ../data/"${folder}"/notBlocked.txt ]; then
+      # Balancing.py creates blocked.txt and notBlocked.txt
+      numberOfContributions=`head -n 1 "${linesFile}"`
+      python Balancing.py -sw --lines ${numberOfContributions}
+    else
+      python Balancing.py -sw > "${linesFile}"
+    fi
   fi
 fi
+# copy files for processing:
+# In the first run, notBlocked.txt will be of the same length as
+# blocked_full.txt. Therefore, no sampling is applied to the blocked posts and
+# we can copy it fully to become blocked.txt:
+cp ../data/"${folder}"/blocked_full.txt ../data/blocked.txt
+cp ../data/"${folder}"/blocked.txt ../data/. # not existing when there was no linesFile
+cp ../data/"${folder}"/notBlocked.txt ../data/.
 
 # assert that both files are of same length:
 echo "[I] Asserting that the generated files are of same length."

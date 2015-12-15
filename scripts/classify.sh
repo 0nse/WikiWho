@@ -12,19 +12,9 @@
 #
 # The seconds parameter must be known to the scripts (see timeframesMnemonic).
 
-path=processed/run9/
-
-echo "To start the classification process, all files in  ${path} will be deleted."
-echo "Moreover, the data and processes in RapidMiner's repository/{processes,data}/timeframes will be overwritten."
-read -p "Are you sure, you want to continue? [y/N] " -r
-
-seconds=$1
-isSlidingWindow="$2"
-
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-  rm -r ${path} > /dev/null 2>&1
-  # This file can exist, if classify_lm.sh or separate.sh was aborted.
-  rm data/lines_temporary_file_DO_NOT_DELETE > /dev/null 2>&1
+function classify {
+  seconds=$1
+  isSlidingWindow="$2"
 
   echo "[I] Preparing files and doing LM classifcation."
   ./classify_lm.sh ${seconds} "${isSlidingWindow}"
@@ -43,13 +33,40 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
   echo "[I] Classifying using SVM and NB classifier."
   ./classify_rm.sh ${seconds}
 
-  echo "[I] Transforming results into LaTeX tables."
-  postprocessing/embedConfusionMatrices.sh ${seconds}
-  ../venv/bin/python postprocessing/TimeframeResultsExtraction.py ${seconds}
+  echo "[I] Transforming results into LaTeX tables and creating performance charts"
+  if [ -n "${seconds}" ]; then
+    ../venv/bin/python postprocessing/TimeframeResultsExtraction.py ${seconds}
 
+    mv data/relativePerformance_*.png processed/run9/${seconds}/.
+    mv data/performanceComparison_*.png processed/run9/${seconds}/.
+  fi
+
+  postprocessing/embedConfusionMatrices.sh ${seconds}
   mv postprocessing/comparison.tex processed/run9/.
-  mv data/relativePerformance_*.png processed/run9/.
-  mv data/performanceComparison_*.png processed/run9/.
 
   echo "[I] Classifcations executed successfully."
+}
+
+path=processed/run9/
+
+echo "To start the classification process, all files in  ${path} will be deleted."
+echo "Moreover, the data and processes in RapidMiner's repository/{processes,data}/timeframes will be overwritten."
+read -p "Are you sure, you want to continue? [y/N] " -r
+
+seconds=$1
+isSlidingWindow="$2"
+
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+  rm -r ${path} > /dev/null 2>&1
+  # This file can exist, if classify_lm.sh or separate.sh was aborted.
+  rm data/lines_temporary_file_DO_NOT_DELETE > /dev/null 2>&1
+  # Remove leftover data files:
+  rm -r data/{regular,sw}/{b,notB}locked.txt > /dev/null 2>&1
+
+  if [ -n "${isSlidingWindow}" ]; then
+    echo "[I] Starting sliding window classification."
+    classify ${seconds} "${isSlidingWindow}"
+  fi
+  echo "[I] Starting sliding window classification."
+  classify ${seconds}
 fi

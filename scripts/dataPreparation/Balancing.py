@@ -7,20 +7,20 @@ Randomly samples blocked/notBlocked files to be of same size. See the argparse
 description for more information.
 
 If the --lines argument is missing, this script will print the number of lines
-in data/blocked_full.txt as used by dataPreparation/separate.sh.
+in data/regular/blocked_full.txt as used by dataPreparation/separate.sh.
 '''
 
 import random
 import subprocess
 import os
 
-def balance(length=None):
+def balance(isSlidingWindow, length=None):
   files = ['notBlocked']
 
   if not length:
     # assuming len(blocked) > len(notBlocked) and thus blocked needs to be
     # sampled to be of the same size:
-    with open('../data/blocked_full.txt', 'r') as blocked:
+    with open('../data/regular/blocked_full.txt', 'r') as blocked:
       length = sum(1 for line in blocked)
       # The print statement is used so that dataPreparation/separate.sh can
       # store the amount of lines into a file. Naturally, this could be done in
@@ -31,17 +31,20 @@ def balance(length=None):
     files.append('blocked')
 
   for fileName in files:
-    write(fileName, length)
+    write(fileName, length, isSlidingWindow)
 
-def write(fileName, length):
+def write(fileName, length, isSlidingWindow=False):
   ''' Randomly sample and write the file to disk. '''
-  fullFile = '../data/%s_full.txt' % fileName
-  outputFile = '../data/%s.txt' % fileName
+  fullFile = '../data/regular/%s_full.txt' % fileName
+  outputFile = '../data/regular/%s.txt' % fileName
 
   with open(fullFile, 'r') as fullInput:
     lines = fullInput.readlines() # make sure you have the available memory
 
-  sample = random.sample(lines, length)
+  if isSlidingWindow:
+    sampledLines = random.sample(range(len(lines)), length)
+  else:
+    sample = random.sample(lines, length)
 
   try:
     os.remove(outputFile)
@@ -49,8 +52,22 @@ def write(fileName, length):
     # The file did not exist. We can continue:
     pass
   with open(outputFile, 'a') as output:
-    for post in sample:
-      output.write(post)
+    # Write both regular and sliding window output file:
+    if isSlidingWindow:
+      fullFileSW = '../data/sw/%s_full.txt' % fileName
+      outputFileSW = '../data/sw/%s.txt' % fileName
+
+      with open(fullFileSW, 'r') as fullInputSW:
+        linesSW = fullInputSW.readlines() # this more than doubles the memory of this process
+
+      with open(outputFileSW, 'a') as outputSW:
+        for lineNo in sampledLines:
+          output.write(lines[lineNo])
+          outputSW.write(linesSW[lineNo])
+
+    else:
+      for post in sample:
+        output.write(post)
 
 if __name__ == '__main__':
   import argparse
@@ -59,6 +76,8 @@ if __name__ == '__main__':
 
   parser.add_argument('--lines', type=int, nargs='?',
                       help='The number of lines to extract. If none are given, it is assumed that blocked is the smaller file and notBlocked will be sampled to the same length.')
+  parser.add_argument('-sw', action='store_true',
+      help='If this flag is set, the data will be prepared for the sliding window approach. That is, the data will be sampled as usual but at the same time, the same lines from the original corpus will be sampled as well. Therefore, two new subsets will be created: sliding window data and regular data, both from the same posts.')
   args = parser.parse_args()
 
-  balance(args.lines)
+  balance(args.sw, args.lines)
