@@ -30,17 +30,10 @@ function process {
   path=processed/run9/${seconds}
   sourcePath=../processed/run9/
 
-  if [ -n "${isSlidingWindow}" ]; then
-    folder=sw
-  else
-    folder=regular
-  fi
-  mkdir -p data/{sw,regular}
-
   if [ "${classifier}" = "lm_all" ]; then
-    mkdir -p ${path}/{lm,nb,svm}_all/data
+    mkdir -p ${path}/{lm,nb,svm}_all
   else
-    mkdir -p ${path}/{lm,nb,svm}_fw/data
+    mkdir -p ${path}/{lm,nb,svm}_fw
   fi
 
   # Create blocked.txt and notBlocked.txt without anything other than function
@@ -50,7 +43,7 @@ function process {
   if [ ${classifier} = "lm_fw" ]; then
     for class in {b,notB}locked; do
       fileFW=data/"${class}".txt
-      fileFull="${path}"/data/"${folder}"/"${class}".txt
+      fileFull="${path}"/"${class}".txt
       python dataPreparation/NonFunctionWordsFilter.py ${fileFull} ${fileFW}
     done
     # we drop empty lines (did not contain any function word). Thus, we need to
@@ -79,13 +72,10 @@ function process {
       if [ ! -f "${sourcePath}"userSortedDeletionRevisions.csv ]; then
         sort -t$'\t' -k3,3 -k1,1n "${sourcePath}"deletionRevisions.csv -o "${sourcePath}"userSortedDeletionRevisions.csv
       fi
-      # create sliding window blocked_full.txt and notBlocked_full.txt:
-      if [ ! -f data/sw/blocked_full.txt ] && [ ! -f data/sw/notBlocked_full.txt ]; then
-        ../venv/bin/python dataPreparation/SlidingWindowExtraction.py
-      fi
+      ../venv/bin/python dataPreparation/SlidingWindowExtraction.py unusedValue ${seconds} "${isSlidingWindow}"
     fi
     # Split into ten parts each for 10-fold cross validation:
-    dataPreparation/separate.sh ../"${sourcePath}"deletionRevisions.csv ${seconds} "${isSlidingWindow}"
+    dataPreparation/separate.sh "${sourcePath}"deletionRevisions.csv ${seconds} "${isSlidingWindow}"
   fi
 
   if [ $? -ne 0 ]; then
@@ -104,11 +94,10 @@ function process {
     for class in {b,notB}locked; do
       # function words
       fileFW=data/"${class}".txt
-      mv "${fileFW}" "${path}"/data/"${folder}"/"${class}"_fw.txt
+      mv "${fileFW}" "${path}"/"${class}"_fw.txt
     done
   else
-    mv data/{blocked,notBlocked}.txt data/"${folder}"/.
-    mv data/"${folder}" "${path}"/data/.
+    mv data/{blocked,notBlocked}{,_full}.txt "${path}"/
   fi
   # move LM output:
   mv data/output_{n,}b.csv "${path}"/${classifier}/
