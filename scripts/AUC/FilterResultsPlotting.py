@@ -38,7 +38,7 @@ def plot(logFile):
   fig = plt.figure()
   plt.plot(range(2, len(aucValues) + 2), aucValues)
   plt.xlabel('Minimum number of words per post')
-  plt.ylabel('AUC (optimistic)')
+  plt.ylabel('AUC')
   plt.savefig('%s/auc_development.png' % outputDirectory, dpi=300)
 
 def extractValue(s, desc):
