@@ -75,7 +75,7 @@ function process {
       ../venv/bin/python dataPreparation/SlidingWindowExtraction.py
     fi
     # Split into ten parts each for 10-fold cross validation:
-    dataPreparation/separate.sh "${sourcePath}"deletionRevisions.csv ${seconds} "${isSlidingWindow}"
+    dataPreparation/separate.sh ../"${sourcePath}"deletionRevisions.csv ${seconds} "${isSlidingWindow}"
   fi
 
   if [ $? -ne 0 ]; then
@@ -97,7 +97,7 @@ function process {
       mv "${fileFW}" "${path}"/"${class}"_fw.txt
     done
   else
-    mv data/{blocked,notBlocked}{,_full}.txt "${path}"/
+    mv data/{b,notB}locked{,_full}.txt "${path}"/
   fi
   # move LM output:
   mv data/output_{n,}b.csv "${path}"/${classifier}/

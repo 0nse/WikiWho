@@ -48,7 +48,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
   postprocessing/embedConfusionMatrices.sh ${seconds}
   mv postprocessing/comparison.tex processed/run9/.
 
-  if [ -n "${isSlidingWindow}" ]; then
+  if [ -n "${seconds}" ]; then
     mv data/relativePerformance_*.png processed/run9/${seconds}/.
     mv data/performanceComparison_*.png processed/run9/${seconds}/.
   fi
