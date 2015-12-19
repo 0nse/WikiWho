@@ -52,14 +52,17 @@ def calculateAUC(variation, outputDirectory=None, positiveFile=None, negativeFil
 
   sortedValues = sort(values, variation)
   if len(sortedValues) == 2:
+    # AUC, calculate ROC Y valuesY values for both:
     optimisticY = calculateYAxis(sortedValues[0])
     pessimisticY = calculateYAxis(sortedValues[1])
 
     y = []
+    # average both to obtain AUC:
     for i in range(len(optimisticY)):
       averageValue = (optimisticY[i] + pessimisticY[i]) / 2
       y.append(averageValue)
   else:
+    # pessimistic or optimistic; calculate ROC Y values:
     y = calculateYAxis(sortedValues)
 
   # normalise to the scale of x=y=[0,1]
@@ -81,11 +84,15 @@ def calculateAUC(variation, outputDirectory=None, positiveFile=None, negativeFil
   plt.savefig('%s/auc%s.png' % (outputDirectory, suffix))
 
 def sort(values, order):
+  ''' Sort the values as needed for the different variations of AUC. Every order
+  string other than 'optimistic' and 'pessimistic' will be treated as normalised
+  AUC. '''
   values.sort(reverse=True)
-  if order == 'AUC':
+  if order == 'optimistic':
     return values
 
-  valuesPessimistic = values
+  # [:] ensures that we copy the list instead of copying pointers:
+  valuesPessimistic = values[:]
   # sort descending on confidence (higehst first) and ascending on value (False
   # first):
   sorted(valuesPessimistic, key = lambda x: (-x[0], x[1]))
