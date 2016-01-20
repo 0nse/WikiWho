@@ -61,12 +61,13 @@ fi
 outputDir=../data/shortened
 b=output_b.csv
 nb=output_nb.csv
-log=${outputDir}/AUC.log
+log="${outputDir}"/AUC.log
+rm "${log}"
 
 rm -r ${outputDir}
 mkdir ${outputDir}
 
-for ((i=2; i < 500; i++)); do
+for ((i=1; i < 500; i++)); do
   if [[ -z $1 ]]; then
     filterEvaluationResultsMin ${b}  ${i} ${outputDir}
     filterEvaluationResultsMin ${nb} ${i} ${outputDir}

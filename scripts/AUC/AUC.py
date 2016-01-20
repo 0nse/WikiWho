@@ -30,11 +30,15 @@ def calculateAUC(variation, outputDirectory=None, positiveFile=None, negativeFil
   #                  tested on not blocked, predicted as blocks
   values = []
 
+  # counts for false and true negative:
+  fn = tn = 0
   with open(positiveFile, 'r') as positivesFile:
     for line in positivesFile:
       difference = float(line.split('\t')[0])
       if difference >= 0: # true positive
         values.append( (difference, True) )
+      else:
+        fn += 1
   tp = len(values)
 
   with open(negativeFile, 'r') as negativesFile:
@@ -44,11 +48,15 @@ def calculateAUC(variation, outputDirectory=None, positiveFile=None, negativeFil
         # multiplying the value with -1 ensures that we end up with a positive
         # confidence value:
         values.append( (difference * -1, False) )
+      else:
+        tp += 1
   fp = len(values) - tp
+  # accuracy:
+  accuracy = (tn + tp) / (tn + fn + fp + tp) * 100
 
   # ratio except for when the denominator is zero; then just zero:
   ratio = 0 if not fp else tp / fp
-  print('True positives:\t%i\nFalse positives:\t%i\nRatio:\t%f' % (tp, fp, ratio))
+  print('True positives:\t%i\nFalse positives:\t%i\nRatio:\t%f\nAccuracy:\t%f' % (tp, fp, ratio, accuracy))
 
   sortedValues = sort(values, variation)
   if len(sortedValues) == 2:

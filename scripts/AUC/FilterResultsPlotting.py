@@ -16,30 +16,33 @@ def plot(logFile):
   import os
   outputDirectory = os.path.dirname(logFile.name)
 
-  ratioValues = []
+  accuracyValues = []
   aucValues = []
 
-  ratioString = 'Ratio'
+  accuracyString = 'Accuracy'
   aucString = 'AUC'
 
   for line in logFile:
-    if line.startswith(ratioString):
-      ratioValues.append(extractValue(line, ratioString))
+    if line.startswith(accuracyString):
+      accuracyValues.append(extractValue(line, accuracyString))
     elif line.startswith(aucString):
-      aucValues.append(extractValue(line, aucString))
+      # make it a percentage:
+      aucValues.append(extractValue(line, aucString) * 100)
 
   from matplotlib import pyplot as plt
   fig = plt.figure()
-  plt.plot(range(2, len(ratioValues) + 2), ratioValues)
+  plt.axes().set_xlim(1)
+  plt.plot(range(2, len(accuracyValues) + 2), accuracyValues, color='b', label=accuracyString)
   plt.xlabel('Minimum number of words per post')
-  plt.ylabel('TP/FP ratio')
-  plt.savefig('%s/ratio_development.png' % outputDirectory, dpi=300)
+  plt.ylabel('Accuracy')
 
-  fig = plt.figure()
-  plt.plot(range(2, len(aucValues) + 2), aucValues)
+  plt.plot(range(2, len(aucValues) + 2), aucValues, color='r', label=aucString)
   plt.xlabel('Minimum number of words per post')
   plt.ylabel('AUC')
-  plt.savefig('%s/auc_development.png' % outputDirectory, dpi=300)
+
+  plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
+                 ncol=2, mode="expand", borderaxespad=0.)
+  plt.savefig('%s/development.png' % outputDirectory, dpi=300, bbox_inches='tight')
 
 def extractValue(s, desc):
   value = s.replace('%s:	' % desc, '')

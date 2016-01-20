@@ -17,6 +17,7 @@
 
 # set this directory as current working directory:
 cd "$(dirname "$0")"
+python=`../../venv/bin/python3 ../AUC/AUC.py $1 --dir ../AUC/. | tail -n 1`
 
 function createLaTeXTable {
   timeframeMnemonic=$1
