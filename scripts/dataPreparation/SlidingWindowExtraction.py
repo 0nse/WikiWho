@@ -171,12 +171,12 @@ def mergeSlidingWindow(reader, outputWrapper):
 
   A window will not slide over a blocking but will end there and a new window
   will be created after the new blocking:
-  [xB],[xxx],[xx],[x] instead of [xBxxx],[Bxxx],[xxx],[xx],[x] and so on.
+  [xB]xx,x[B]xx,xB[xx],xBx[x] instead of [xBxx],x[Bxx],xB[xx],xBx[x] and so on.
   Where B is a blocked post, x is a regular one, [] indicates the window.
 
   As the code does not use the block log, the window can slide over two
-  successive blockings: [xBBx],[BBx],[Bx],[x] if the time until a block of the
-  first blocking is greater than that of the second (the second was blocked
+  successive blockings: [xBB]x,x[BB]x,xB[B]x,xBB[x] if the time until a block of
+  the first blocking is greater than that of the second (the second was blocked
   sooner after posting).
   However, this is a rather theoretical warning as this would either require a
   very high BLOCK_TIME (greater than multiple days) or very short blockings (12
