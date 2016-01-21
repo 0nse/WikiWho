@@ -247,12 +247,40 @@ def createClassifierDifferencesBarCharts(values):
   axisXRightOffset = [v + 0.5*barWidth for v in axisX]
 
   offset = 0
+
+  # this is not accessible in the program but you can manually set the variable
+  # to True:
+  plotDifferenceOfFWToAll = False
+  if plotDifferenceOfFWToAll:
+    ''' This setting plots the difference of FW values to full text
+    classification  values. Thus, the plot will illustrate for all classifiers,
+    how much worse the results are when respecting only FWs. '''
+    newValues = {}
+    for key in measuresOrder:
+      i = 0
+      newValues[key] = []
+      for j in range(len(classifiers)):
+        valueAll = values[key][i]
+        i += 1
+        valueFW = values[key][i]
+        i += 1
+        newValues[key].append(valueFW - valueAll)
+    variations = ['all']
+    values = newValues
+
   for currentVariation in variations:
     plt.subplots()
     # stretch the figure so that 'Precision+' and 'Precision-' don't overlap:
     plt.figure(figsize=(10,6))
-    # scale to 0 to 100 so that charts are easier visually comparable:
-    plt.axes().set_ylim(0, 100)
+
+    if plotDifferenceOfFWToAll:
+      plt.axes().set_ylim(-30, 30)
+      # add a line at zero; must be done after set_xlim:
+      plt.axhline(0, color='black')
+    else:
+      # scale to 0 to 100 so that charts are easier visually comparable:
+      plt.axes().set_ylim(0, 100)
+
     # tighter layout:
     plt.axes().set_xlim(-0.5, axisX[-1]+0.5)
 
