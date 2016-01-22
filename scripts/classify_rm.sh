@@ -42,7 +42,7 @@ function process {
       classifierMnemonic="function words SVM";;
   esac
   # create confusion matrix:
-  postprocessing/confusionMatrix.sh "${timeframesMnemonic}" "${classifierMnemonic}" ${truePositives} ${falsePositives} ${falseNegatives} ${trueNegatives} ${auc_opt} ${auc} ${auc_pess}
+  postprocessing/confusionMatrix.sh "${timeframesMnemonic}" "${classifierMnemonic}" "${truePositives}" "${falsePositives}" "${falseNegatives}" "${trueNegatives}" "${auc_opt}" "${auc}" "${auc_pess}"
 
   # move LM output:
   mv ~/${classifier}_{auc.per,model.mod,performance} ${path}/${classifier}/

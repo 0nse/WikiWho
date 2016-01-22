@@ -104,10 +104,14 @@ def extractLastPostToBlockDeltas(postsFile='../../processed/run9/userSortedDelet
       pickle.dump(users, output)
 
   print('[I] Number of blocks happening after a user contributed to an AfD: %i.' % len(deltas))
-  print('[I] Users blocked multiple tiems: %i.' % (len(deltas) - len(users)))
+  print('[I] Users blocked multiple times: %i.' % (len(deltas) - len(users)))
   return deltas
 
 def countDeltaDistribution(deltas):
+  ''' Counts the occurences of deltas, sorts them from lowest to highest and
+  returns a cumulative sum. E.g. [1, 5, 3, 1, 1, 5, 8] would be transformed
+  to {'1' : 3, '3' : 1, '5' : 2, '8' : 1} and returned as
+  ([3, 4, 6, 7], [1, 3, 5, 8]). '''
   from collections import Counter
 
   # the counter is used for grouping by timestamp frequency and sorting:
@@ -126,8 +130,7 @@ def plot(suffix, values):
   ''' Scatter plot of the time passed (in days) after the last post before a
   blocking until the actual blocking was issued.
   Values is a dictionary of values to plot with the key being the label and
-  the value being a tuple of X and Y values.
-  '''
+  the value being a tuple of X and Y values.'''
   from matplotlib import pyplot as plt
   import itertools
 
@@ -174,7 +177,8 @@ def shortenValuesToDays(values, days):
   return values
 
 def areaBetweenTwoCurves(valuesA, valuesB):
-  ''' Calculates the area between the two curves. The input order is irrelevant. '''
+  ''' Calculates the area between the two curves. The input order is irrelevant.
+  '''
   areaA = np.trapz(valuesA[0], x=valuesA[1])
   areaB = np.trapz(valuesB[0], x=valuesB[1])
 
@@ -187,6 +191,7 @@ if __name__ == '__main__':
   # sorting it afterwards as described in extractLastPostToBlockDeltas().
   globalDeltas = extractLastPostToBlockDeltas('../processed/dump/afdContributions.csv')
   globalValues = countDeltaDistribution(globalDeltas)
+  print('[I] There are %i blocks in AfD discussions, %i on Wikipedia in general. That\'s a difference of %i users.' % (len(afdDeltas), len(globalDeltas), len(globalDeltas) - len(afdDeltas)))
 
   assert len(afdValues) <= len(globalValues), '[E] The global values cannot be less than the AfD values as the former contain the later.'
 

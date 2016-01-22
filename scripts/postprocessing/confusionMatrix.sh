@@ -17,7 +17,6 @@
 
 # set this directory as current working directory:
 cd "$(dirname "$0")"
-python=`../../venv/bin/python3 ../AUC/AUC.py $1 --dir ../AUC/. | tail -n 1`
 
 function createLaTeXTable {
   timeframeMnemonic=$1
@@ -77,18 +76,18 @@ function createLaTeXTable {
 function calc {
   # Use python for calculations and round to 2 decimal places.
   # The multiplication with 100 is used for percentages.
-  echo `python -c "print( '{:.2f}'.format(${1} * 100) )"`
+  echo `../../venv/bin/python3 -c "print( '{:.2f}'.format(${1} * 100) )"`
 }
 
 function round3DecimalPlaces {
-  echo `python -c "print( '{:.3f}'.format(${1}) )"`
+  echo `../../venv/bin/python3 -c "print( '{:.3f}'.format(${1}) )"`
 }
 
 function processAUCOutput {
   # $1 can be of type "AUC", "optimistic" or "pessimistic"'
-  output=`../../venv/bin/python3 ../AUC/AUC.py $1 --dir ../AUC/. | tail -n 1`
+  output=`../../venv/bin/python3 ../AUC/AUC.py "${1}" --dir ../AUC/. | tail -n 1`
   # Remove leading "AUC:	":
-  echo ${output:5}
+  echo "${output:5}"
 }
 
 # Run LaTeX table creation function with all arguments passed:
