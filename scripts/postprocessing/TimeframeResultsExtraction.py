@@ -265,6 +265,7 @@ def createClassifierDifferencesBarCharts(values):
         valueFW = values[key][i]
         i += 1
         newValues[key].append(valueFW - valueAll)
+    global variations
     variations = ['all']
     values = newValues
 
