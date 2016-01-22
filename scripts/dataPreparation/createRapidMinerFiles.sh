@@ -14,6 +14,11 @@
 # Databases will be stored in ~/RapidMiner/repository/data/timeframes -- make
 # sure, you have run classify_lm.sh beforehand.
 # Processes will be stored in ~/RapidMiner/repository/processes
+#
+# Please note that you should use stratified sampling for tests using the
+# independent posts approach and linear sampling for tests using the sliding
+# window approach. If you want this script to be fully automatic, you can pass a
+# a sliding window variable and change the code below appropriately.
 
 # set this directory as current working directory:
 cd "$(dirname "$0")"
@@ -243,6 +248,9 @@ for timeframe in "${timeframes[@]}"; do
         <parameter key="average_performances_only" value="true"/>
         <parameter key="leave_one_out" value="false"/>
         <parameter key="number_of_validations" value="10"/>
+<!-- USE LINEAR SAMPLING FOR TESTS USING THE SLIDING WINDOW APPROACH
+        <parameter key="sampling_type" value="linear sampling"/> -->
+<!-- USE STRATIFIED SAMPLING FOR TESTS USING THE INDEPENT POSTS APPROACH -->
         <parameter key="sampling_type" value="stratified sampling"/>
         <parameter key="use_local_random_seed" value="true"/>
         <parameter key="local_random_seed" value="3055"/>
