@@ -238,7 +238,6 @@ def assertPlottableValues(values):
 def createClassifierDifferencesBarCharts(values):
   assertPlottableValues(values)
 
-  colours = ['r', 'g', 'b']
   barWidth = 0.2
   axisX = range(0, len(measuresOrder))
   # offset by bar width:
@@ -272,7 +271,7 @@ def createClassifierDifferencesBarCharts(values):
   for currentVariation in variations:
     plt.subplots()
     # stretch the figure so that 'Precision+' and 'Precision-' don't overlap:
-    plt.figure(figsize=(10,6))
+    plt.figure(figsize=(10, 6))
 
     if plotDifferenceOfFWToAll:
       plt.axes().set_ylim(-30, 30)
@@ -301,11 +300,11 @@ def createClassifierDifferencesBarCharts(values):
       j =  i - offset
       variation = 'function words' if offset else 'full text'
       if j == 0:
-        plt.bar(axisXLeftOffset, axisY, width=barWidth, color=colours[j % 3], label='SVM (%s)' % variation)
-      elif j == 2:
-        plt.bar(axisXZeroOffset, axisY, width=barWidth, color=colours[j % 3], label='NB (%s)' % variation)
+        plt.bar(axisXLeftOffset, axisY, width=barWidth, color='r', label='SVM (%s)' % variation)
+      elif j == len(variations):
+        plt.bar(axisXZeroOffset, axisY, width=barWidth, color='g', label='NB (%s)' % variation)
       else:
-        plt.bar(axisXRightOffset, axisY, width=barWidth, color=colours[j % 3], label='LM (%s)' % variation)
+        plt.bar(axisXRightOffset, axisY, width=barWidth, color='b', label='LM (%s)' % variation)
 
     offset += 1
 
