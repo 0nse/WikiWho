@@ -302,9 +302,9 @@ def createClassifierDifferencesBarCharts(values):
       if j == 0:
         plt.bar(axisXLeftOffset, axisY, width=barWidth, color='r', label='SVM (%s)' % variation)
       elif j == len(variations):
-        plt.bar(axisXZeroOffset, axisY, width=barWidth, color='g', label='NB (%s)' % variation)
+        plt.bar(axisXZeroOffset, axisY, width=barWidth, color='b', label='NB (%s)' % variation)
       else:
-        plt.bar(axisXRightOffset, axisY, width=barWidth, color='b', label='LM (%s)' % variation)
+        plt.bar(axisXRightOffset, axisY, width=barWidth, color='g', label='LM (%s)' % variation)
 
     offset += 1
 
