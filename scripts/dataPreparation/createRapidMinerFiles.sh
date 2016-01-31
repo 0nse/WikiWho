@@ -230,14 +230,14 @@ for timeframe in "${timeframes[@]}"; do
               <parameter key="condition" value="matches"/>
               <parameter key="regular_expression" value="i|a|aboard|about|above|absent|according|accordingly|across|after|against|ahead|albeit|all|along|alongside|although|amid|amidst|among|amongst|an|and|another|anti|any|anybody|anyone|anything|around|as|aside|astraddle|astride|at|away|bar|barring|be|because|before|behind|below|beneath|beside|besides|between|beyond|bit|both|but|by|can|certain|circa|concerning|consequently|considering|could|dare|deal|despite|down|during|each|either|enough|every|everybody|everyone|everything|except|excepting|excluding|failing|few|fewer|following|for|four|from|given|great|had|he|heaps|hence|her|hers|herself|him|himself|his|however|if|in|including|inside|instead|into|it|its|itself|less|like|little|loads|lots|many|may|me|might|mine|minus|more|most|much|must|my|myself|near|neither|nevertheless|no|nobody|none|nor|nothing|notwithstanding|of|off|on|once|one|onto|or|other|ought|our|ours|ourselves|out|outside|over|past|pending|per|plenty|plus|regarding|respecting|round|save|saving|several|shall|she|should|since|so|some|somebody|someone|something|such|than|that|the|their|theirs|them|themselves|then|thence|therefore|these|they|this|those|though|three|through|throughout|thru|thus|till|to|toward|towards|two|under|underneath|unless|unlike|until|unto|up|upon|us|various|versus|via|wanting|we|what|whatever|when|whence|whenever|where|whereas|wherever|whether|which|whichever|while|whilst|who|whoever|whom|whomever|whose|will|with|within|without|would|yet|you|your|yours|yourself|yourselves"/>
             </operator>
-            <connect from_op="Stem (Snowball)" from_port="document" to_op="Filter (I/You, Function Words)" to_port="document"/>
-            <connect from_op="Filter (I/You, Function Words)" from_port="document" to_port="document 1"/>' >> ${classifierPath}.rmp
+            <connect from_op="Tokenize to words" from_port="document" to_op="Filter (I/You, Function Words)" to_port="document"/>
+            <connect from_op="Filter (I/You, Function Words)" from_port="document" to_op="Stem (Snowball)" to_port="document"/>
+            <connect from_op="Stem (Snowball)" from_port="document" to_port="document 1"/>' >> ${classifierPath}.rmp
     else
-      echo '<connect from_op="Stem (Snowball)" from_port="document" to_port="document 1"/>' >> ${classifierPath}.rmp
+       echo '<connect from_op="Tokenize to words" from_port="document" to_op="Stem (Snowball)" to_port="document"/>
+             <connect from_op="Stem (Snowball)" from_port="document" to_port="document 1"/>' >> ${classifierPath}.rmp
     fi
-
     echo '<connect from_port="document" to_op="Tokenize to words" to_port="document"/>
-          <connect from_op="Tokenize to words" from_port="document" to_op="Stem (Snowball)" to_port="document"/>
           <portSpacing port="source_document" spacing="0"/>
           <portSpacing port="sink_document 1" spacing="0"/>
           <portSpacing port="sink_document 2" spacing="0"/>

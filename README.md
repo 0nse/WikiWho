@@ -1,18 +1,25 @@
 # WikiWho
 An algorithm for extracting posts on Wikipedia page deletion discussions.
+The `scripts` directory contains many scripts for data analysis.
+Mainly, it allows running an SVM, a multinomial naïve Bayes and a language model classifier on the data.
+Performances can be compared and the most influential features can be inspected to deduce the impact that words may have on the likeliness of a user being blocked afterwards.
+The scripts allow full text (i.e. without stop word removal) classification as well as a classification restricted to a list of function words.
 
 ## Installation Requirements
 WikiWho has been tested on Arch Linux running Python 3.4.3 and Ubuntu 12.04 running Python 3.2.3.
 
 WikiWho utilises the MediaWiki Utilities library to process the revisioned content extracted from Wikipedia.
-These functions can be downloaded from the official MediaWiki Utilities repository (under the MIT license) at the
-following link:
+These functions can be downloaded from the official MediaWiki Utilities repository (under the MIT license) at the following link:
 * https://github.com/halfak/Mediawiki-Utilities
 
 ## Running WikiWho
 
 ### `WikiWho.py`
-This file is the core of this project. Per default, it is used to extract deletion discussions from Wikipedia page dumps, attribute their authorship and write them to disk together with the amounts of seconds between the post creation and the author being blocked. `-1` expresses that the user has not been blocked afterwards. If the `condition` parameter `isRegisteredUserTalk` is passed, it parses user talk pages and writes a block file according to [warning templates](https://en.wikipedia.org/wiki/Wikipedia:Template_messages/User_talk_namespace) it found on the user's talk page. Only a subset of templates are actually considered. See the `writeUserWarning(text, revision, pageName)` method for more information.
+This file is the core of this project. Per default, it is used to extract deletion discussions from Wikipedia page dumps, attribute their authorship and write them to disk together with the amounts of seconds between the post creation and the author being blocked.
+`-1` expresses that the user has not been blocked afterwards.
+If the `condition` parameter `isRegisteredUserTalk` is passed, it parses user talk pages and writes a block file according to [warning templates](https://en.wikipedia.org/wiki/Wikipedia:Template_messages/User_talk_namespace) it found on the user's talk page.
+Only a subset of templates are actually considered.
+See the `writeUserWarning(text, revision, pageName)` method for more information.
 
 #### Parameters
 * `-i [source_file_name or directory]` (complete history dump of articles, either as XML, bzip2, gzip, LZMA or 7zip. Alternatively, if a directory is specified, all files residing in it, matching one of the supported file types, will be processed.)
