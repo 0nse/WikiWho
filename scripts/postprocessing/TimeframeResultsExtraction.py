@@ -7,6 +7,8 @@ Usage: python TimeframeResultsExtraction.py [timeframe,]
 
 Requirements: Matplotlib
 
+Creates various plots to compare the performance between different timeframes,
+classifiers and function words vs. full text classification.
 If no timeframe is specified, all timeframes (see timeframes variable) will be
 considered.
 '''
@@ -92,6 +94,8 @@ def retrieveValues():
   return values
 
 def createArithmeticMeanTable(values, considerFunctionWords=False):
+  ''' Creates a LaTeX table containing the arithmetic means of the passed values.
+  '''
   outputFile = '%s/postprocessing/comparison.tex' % parentDir
   try:
     os.remove(outputFile)
@@ -149,7 +153,9 @@ def createArithmeticMeanTable(values, considerFunctionWords=False):
     output.write('\\end{tabular}')
 
 def roundLimit(x, shouldRoundDown=True):
-  ''' Rounds down or up. '''
+  ''' Rounds down or up. Padding is added if otherwise the values would result in
+  the plots' Y-axes being cut off exactly at the value (which would make them
+  look odd). '''
   import math
   # make it a float and let the last decimal place be considered by ceil/floor:
   x /= 10
@@ -167,6 +173,12 @@ def roundLimit(x, shouldRoundDown=True):
 
 
 def createBarChart(values):
+  ''' Creates bar charts from the given values for the SVM, NB and LM
+  classifiers. Each plot (one for each classifier) compares its performance when
+  considering all words to that when only considering function words.
+
+  The charts are charts normalised at 50% as a way to compare them against a
+  random classifier that alternates between the two classes with p=0.5.'''
   # Each values[orderKey] is a list with values of the following:
   # [svm_all, svm_fw, nb_all, nb_fw, lm_all, lm_fw]
   assertPlottableValues(values)
@@ -236,6 +248,14 @@ def assertPlottableValues(values):
   assert len(values[measuresOrder[0]]) == len(classifiers) * len(variations), '[E] There must be %i * %i classifiers per key for each classifier * variation.' % (len(classifiers), len(variations))
 
 def createClassifierDifferencesBarCharts(values):
+  ''' Creates bar charts from the given values for the SVM, NB and LM
+  classifiers. Separate plots are created for full text and for function words
+  classifiers each. This way, SVM, NB and LM classifiers can be compared.
+
+  plotDifferenceOfFWToAll is a hardcoded switch to compute bar charts that show
+  how much a FW classifier as improved or worsened in comparison to its full
+  text run. The values won't be plotted side-by-side but instead the difference
+  is plotted. '''
   assertPlottableValues(values)
 
   barWidth = 0.2

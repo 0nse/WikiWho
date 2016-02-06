@@ -17,7 +17,7 @@
 #
 # Please note that you should use stratified sampling for tests using the
 # independent posts approach and linear sampling for tests using the sliding
-# window approach. If you want this script to be fully automatic, you can pass a
+# window approach. If you want this script to be fully automatic, you could pass
 # a sliding window variable and change the code below appropriately.
 
 # set this directory as current working directory:

@@ -51,6 +51,8 @@ function extractRandomSamples {
   # Draw 30 samples (15 each) of blocked and not blocked posts. Print them
   # together with their line number so that it becomes clear where the post
   # originated from.
+  # This can be used for manual evaluation of posts to illustrate the difficulty
+  # in distinguishing constructive from disruptive posts.
   tmpFileName="postsForManualEvaluation_tmp.txt"
   pick "run7/blocked.txt" ${tmpFileName} 15
   pick "run7/notBlocked.txt" ${tmpFileName} 15

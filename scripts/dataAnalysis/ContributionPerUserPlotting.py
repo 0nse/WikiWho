@@ -3,6 +3,10 @@
 
 '''
 Requirements: Numpy, Matplotlib
+
+Determine how many posts were made by the most active users and plot this. As a
+result, a distribution close to a pareto distribution can be illustrated on
+Wikipedia AfD discussions.
 '''
 
 def plotContributionFrequencyDistribution(postsFile='../../processed/run9/userSortedDeletionRevisions.csv'):

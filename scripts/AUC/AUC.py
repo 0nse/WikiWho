@@ -7,7 +7,7 @@ Usage: python AUC.py [AUC, optimistic, pessimistic]
 Requirements: Matplotlib, Numpy
 
 Calculate the AUC drawn from output_b.csv and output_nb.csv (or whatever is
-passed to calculateAUC(). An AUC plot is being saved into a given output
+passed to calculateAUC()). An AUC plot is being saved into a given output
 directory as AUC.png for the average AUC, else AUC_optimistic.png or
 AUC_pessimistic.png.
 

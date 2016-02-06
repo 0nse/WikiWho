@@ -14,6 +14,10 @@
 #      $9 pessimistic AUC
 # If an optional parameter is provided, the calculation from the provided first
 # variables is skipped. This is important for classifiers other than the LM.
+#
+# Creates a confusion matrix for the given classifier. $1 and $2 are solely for
+# creating captions. The calculations are all done classifier-independently by
+# using the provided values.
 
 # set this directory as current working directory:
 cd "$(dirname "$0")"
