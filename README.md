@@ -4,6 +4,8 @@ The `scripts` directory contains many scripts for data analysis.
 Mainly, it allows running an SVM, a multinomial naïve Bayes and a language model classifier on the data.
 Performances can be compared and the most influential features can be inspected to deduce the impact that words may have on the likeliness of a user being blocked afterwards.
 The scripts allow full text (i.e. without stop word removal) classification as well as a classification restricted to a list of function words.
+For more information, especially considering this software's use and the results obtained thereby, please refer to the corresponding master's thesis:
+[“Did I Say Something Wrong?” A Word-Level Analysis of Wikipedia Articles for Deletion Discussions](http://arxiv.org/abs/1603.08048v1)
 
 ## Installation Requirements
 WikiWho has been tested on Arch Linux running Python 3.4.3 and Ubuntu 12.04 running Python 3.2.3.
